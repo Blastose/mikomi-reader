@@ -24,6 +24,7 @@ pub fn run_migrations(
 }
 
 #[tauri::command]
+#[specta::specta]
 pub fn get_books() -> Vec<models::Book> {
     let mut conn: SqliteConnection = establish_connection();
     let books = schema::book::table
@@ -35,6 +36,7 @@ pub fn get_books() -> Vec<models::Book> {
 }
 
 #[tauri::command]
+#[specta::specta]
 pub fn add_book(title: String, path: String) -> models::Book {
     let mut conn: SqliteConnection = establish_connection();
     let new_book = models::Book {

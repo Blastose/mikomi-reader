@@ -1,7 +1,8 @@
 use diesel::prelude::*;
 use serde::Serialize;
+use specta::Type;
 
-#[derive(Queryable, Selectable, Insertable, Serialize)]
+#[derive(Queryable, Selectable, Insertable, Serialize, Type)]
 #[diesel(table_name = crate::schema::book)]
 pub struct Book {
     pub id: String,

@@ -1,18 +1,15 @@
 <script lang="ts">
 	import { setTitle } from '$lib/window/title';
 	import { onMount } from 'svelte';
-	import { invoke } from '@tauri-apps/api/tauri';
+	import { addBook as addBookBinding } from '$lib/bindings';
 
 	let a: string | undefined;
+	let loading = false;
 
 	async function addBook() {
-		try {
-			const res: string = await invoke('add_book', { title: 'My book', path: 'f' });
-			console.log(res);
-			a = res;
-		} catch {
-			console.log('pogpofjj');
-		}
+		loading = true;
+		await addBookBinding('My book2', '/f/');
+		loading = false;
 	}
 
 	onMount(async () => {
@@ -25,7 +22,7 @@
 <a href="/t">te</a>
 <a href="/books">books</a>
 
-<button on:click={addBook}>Add book</button>
+<button disabled={loading} on:click={addBook}>Add book</button>
 {#if a}
 	{a}
 {/if}

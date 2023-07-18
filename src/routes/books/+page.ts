@@ -1,9 +1,8 @@
 import type { PageLoad } from './$types';
-import type { GetBooks } from '$lib/invoke/types';
-import { invoke } from '@tauri-apps/api/tauri';
+import { getBooks } from '$lib/bindings';
 
 export const load = (async () => {
-	const books: GetBooks = await invoke('get_books');
+	const books = await getBooks();
 	return {
 		books
 	};
