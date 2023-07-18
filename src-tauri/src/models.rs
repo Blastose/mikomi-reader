@@ -1,6 +1,7 @@
 use diesel::prelude::*;
+use serde::Serialize;
 
-#[derive(Queryable, Selectable)]
+#[derive(Queryable, Selectable, Insertable, Serialize)]
 #[diesel(table_name = crate::schema::book)]
 pub struct Book {
     pub id: String,
