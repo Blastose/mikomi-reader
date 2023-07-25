@@ -11,7 +11,13 @@ pub mod schema;
 fn main() {
     #[cfg(debug_assertions)]
     ts::export(
-        collect_types![db::get_books, db::add_book],
+        collect_types![
+            db::get_books,
+            db::get_books_base64,
+            db::add_book,
+            db::add_book_from_file,
+            db::add_multiple_books_from_files
+        ],
         "../src/lib/bindings.ts",
     )
     .unwrap();
@@ -20,7 +26,13 @@ fn main() {
     db::run_migrations(&mut conn).expect("Unable to run migrations");
 
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![db::get_books, db::add_book])
+        .invoke_handler(tauri::generate_handler![
+            db::get_books,
+            db::get_books_base64,
+            db::add_book,
+            db::add_book_from_file,
+            db::add_multiple_books_from_files
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

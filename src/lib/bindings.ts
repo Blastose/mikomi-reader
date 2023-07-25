@@ -11,11 +11,25 @@ declare global {
 const invoke = () => window.__TAURI_INVOKE__;
 
 export function getBooks() {
-    return invoke()<Book[]>("get_books")
+    return invoke()<BookWithCover[]>("get_books")
+}
+
+export function getBooksBase64() {
+    return invoke()<BookWithCover2[]>("get_books_base64")
 }
 
 export function addBook(title: string, path: string) {
     return invoke()<Book>("add_book", { title,path })
 }
 
+export function addBookFromFile(path: string) {
+    return invoke()<Book>("add_book_from_file", { path })
+}
+
+export function addMultipleBooksFromFiles(paths: string[]) {
+    return invoke()<null>("add_multiple_books_from_files", { paths })
+}
+
 export type Book = { id: string; title: string; path: string }
+export type BookWithCover = { book: Book; cover: number[] | null }
+export type BookWithCover2 = { book: Book; cover: string | null }

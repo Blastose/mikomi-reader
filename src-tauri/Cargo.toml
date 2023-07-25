@@ -17,14 +17,17 @@ tauri-build = { version = "1.4.0", features = [] }
 [dependencies]
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "1.4.0", features = [ "window-set-size", "window-set-title"] }
+tauri = { version = "1.4.0", features = [ "dialog-open", "window-set-size", "window-set-title"] }
 diesel = { version = "2.1.0", features = ["sqlite"] }
 diesel_migrations = { version = "2.1.0", features = ["sqlite"] }
 libsqlite3-sys = { version = "0.26.0", features = ["bundled"] }
 dotenvy = "0.15"
+epub = "2.1.1"
 uuid = { version = "1.4.1", features = ["v4"] }
 specta = "1.0.5"
 tauri-specta = { version = "1.0.2", features = ["typescript"] }
+image = "0.24.6"
+base64 = "0.21.2"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.
