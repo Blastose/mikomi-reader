@@ -1,25 +1,38 @@
 <script lang="ts">
 	export let data;
-
-	function getI(i: number[] | null) {
-		if (!i) {
-			return null;
-		}
-
-		const imageBytes = i;
-		const blob = new Blob([new Uint8Array(imageBytes)]);
-		return URL.createObjectURL(blob);
-	}
 </script>
 
-<div>
-	{#each data.books as book}
-		<div>
-			{book.book.title}|{book.book.id}|{book.book.path}
-		</div>
-		<!-- {@const a = getI(book.cover)} -->
-		{#if book.cover}
-			<img height="100" width="100" src="data:image/jpeg;base64, {book.cover}" alt="" />
-		{/if}
-	{/each}
+<div class="container px-4 py-6 mx-auto">
+	<div class="flex flex-col gap-4">
+		<p class="text-xl font-bold text-gray-500">Recently Added</p>
+		{#await data.streamed.books}
+			<div>Loading..........</div>
+		{:then books}
+			<div class="grid grid-cols-2 gap-4 sm:grid-cols-4 md:grid-cols-6">
+				{#each books as book}
+					<div class="flex flex-col gap-1">
+						<div class="w-full h-[200px] md:h-60">
+							{#if book.cover}
+								<img
+									class="object-cover object-top w-full h-full shadow-md"
+									height="200"
+									width="140"
+									src="data:image/jpeg;base64, {book.cover}"
+									alt=""
+								/>
+							{:else}
+								<div class="w-full h-full bg-gray-300 shadow-md" />
+							{/if}
+						</div>
+						<div>
+							<p class="font-bold line-clamp-2" title={book.book.title}>
+								{book.book.title}
+							</p>
+							<p class="text-sm text-gray-600 line-clamp-1">Author</p>
+						</div>
+					</div>
+				{/each}
+			</div>
+		{/await}
+	</div>
 </div>
