@@ -10,11 +10,11 @@
 		{:then books}
 			<div class="grid grid-cols-2 gap-4 sm:grid-cols-4 md:grid-cols-6">
 				{#each books as book}
-					<div class="flex flex-col gap-1">
-						<div class="w-full h-[200px] md:h-60">
+					<a href="/book/{book.book.id}" class="flex flex-col gap-1">
+						<div class="shadow-md overflow-hidden w-full h-[200px] md:h-60">
 							{#if book.cover}
 								<img
-									class="object-cover object-top w-full h-full shadow-md"
+									class="object-cover object-top w-full h-full duration-200 hover:scale-105"
 									height="200"
 									width="140"
 									src="data:image/jpeg;base64, {book.cover}"
@@ -30,7 +30,7 @@
 							</p>
 							<p class="text-sm text-gray-600 line-clamp-1">Author</p>
 						</div>
-					</div>
+					</a>
 				{/each}
 			</div>
 		{/await}

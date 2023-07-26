@@ -117,7 +117,7 @@ pub fn get_books_base64() -> Vec<BookWithCover2> {
 #[tauri::command]
 #[specta::specta]
 pub fn add_book(title: String, path: String) -> models::Book {
-    let mut conn: SqliteConnection = establish_connection();
+    let mut conn = establish_connection();
     let new_book = models::Book {
         title,
         path,
@@ -129,6 +129,66 @@ pub fn add_book(title: String, path: String) -> models::Book {
         .execute(&mut conn)
         .expect("Error adding new book");
     new_book
+}
+
+pub fn upsert_author(name: String) -> String {
+    let mut conn = establish_connection();
+
+    let id_result: Result<Vec<String>, diesel::result::Error> = schema::author::table
+        .filter(schema::author::name.eq(name.clone()))
+        .select(schema::author::name)
+        .load::<String>(&mut conn);
+
+    let id = id_result.unwrap();
+    let first = id.first();
+    let id;
+
+    match first {
+        Some(v) => id = v.clone(),
+        None => {
+            let new_id = Uuid::new_v4().to_string();
+
+            let new_author = models::Author {
+                name: name.clone(),
+                id: new_id.clone(),
+            };
+
+            diesel::insert_into(schema::author::table)
+                .values(&new_author)
+                .execute(&mut conn)
+                .expect("Error adding new author");
+
+            id = new_id;
+        }
+    }
+
+    id
+}
+
+fn insert_book_author_link(book_id: String, author_id: String, primary: bool) {
+    let mut conn = establish_connection();
+    let new_book_author_link = models::BookAuthorLink {
+        book_id,
+        author_id,
+        primary_creator: primary,
+    };
+
+    diesel::insert_into(schema::book_author_link::table)
+        .values(&new_book_author_link)
+        .execute(&mut conn)
+        .expect("Error adding new book");
+}
+
+pub fn get_authors(names: Vec<String>) -> Vec<models::Author> {
+    let mut conn = establish_connection();
+
+    let authors = schema::author::table
+        .filter(schema::author::name.eq_any(names))
+        .select(models::Author::as_select())
+        .load(&mut conn)
+        .unwrap_or(vec![]);
+
+    authors
 }
 
 fn scale_image(image_data: Vec<u8>, max_height: u32) -> Result<Vec<u8>, String> {
@@ -204,6 +264,19 @@ pub fn add_book_from_file(path: String) -> Result<models::Book, String> {
             }
         }
         None => return Err(String::from("No cover found in epub")),
+    }
+
+    let f = vec![];
+    let authors = doc.metadata.get("creators").unwrap_or(&f);
+    let mut author_ids: Vec<String> = vec![];
+    for a in authors {
+        let id = upsert_author(a.to_string());
+        author_ids.push(id);
+    }
+
+    for (i, author_id) in author_ids.iter().enumerate() {
+        let primary = i == 0;
+        insert_book_author_link(uuid.clone(), author_id.to_string(), primary);
     }
 
     // TODO change unwrap to match
