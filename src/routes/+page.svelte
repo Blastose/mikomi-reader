@@ -2,21 +2,11 @@
 	import { open } from '@tauri-apps/api/dialog';
 	import { setTitle } from '$lib/window/title';
 	import { onMount } from 'svelte';
-	import {
-		addBook as addBookBinding,
-		addBookFromFile,
-		addMultipleBooksFromFiles
-	} from '$lib/bindings';
+	import { addBookFromFile, addMultipleBooksFromFiles } from '$lib/bindings';
 
 	let a: string | undefined;
 	let loading = false;
 	let imgNode: HTMLImageElement;
-
-	async function addBook() {
-		loading = true;
-		await addBookBinding('My book2', '/f/');
-		loading = false;
-	}
 
 	async function getEpubPath() {
 		const file = await open({
@@ -74,11 +64,6 @@
 	<button on:click={addEpubToDatabase}>Throw</button>
 
 	<button on:click={addEpubToDatabaseMany}>Add many</button>
-
-	<button disabled={loading} on:click={addBook}>Add book</button>
-	{#if a}
-		{a}
-	{/if}
 
 	<img alt="" bind:this={imgNode} />
 </div>

@@ -1,5 +1,13 @@
 <script lang="ts">
+	import { setCache } from '$lib/cache/cache.js';
+	import { page } from '$app/stores';
+
 	export let data;
+
+	(async function () {
+		let loadedData = await data.streamed.books;
+		setCache($page.url.toString(), loadedData);
+	})();
 </script>
 
 <div class="container px-4 py-6 mx-auto">
