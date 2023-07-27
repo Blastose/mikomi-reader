@@ -2,19 +2,16 @@ use crate::models;
 use crate::schema;
 use base64::{engine::general_purpose, Engine as _};
 use diesel::prelude::*;
-use diesel::sql_query;
 use diesel::{Connection, SqliteConnection};
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use epub::doc::EpubDoc;
+use image::imageops;
 use image::GenericImageView;
-use image::ImageBuffer;
-use image::{imageops, open, DynamicImage, ImageFormat};
 use serde::Serialize;
 use specta::Type;
 use std::error::Error;
 use std::fs;
 use std::fs::File;
-use std::io::BufWriter;
 use std::io::Cursor;
 use std::io::Write;
 use std::path::Path;
@@ -38,53 +35,6 @@ pub fn run_migrations(
     Ok(())
 }
 
-fn map_mime_type_to_file_extension(mime_type: &str) -> Option<&str> {
-    return match mime_type {
-        "image/png" => Some("png"),
-        "image/jpeg" => Some("jpg"),
-        "image/gif" => Some("gif"),
-        "image/svg+xml" => Some("svg"),
-        _ => None,
-    };
-}
-
-#[derive(Serialize, Type)]
-pub struct BookWithCover {
-    book: models::Book,
-    cover: Option<Vec<u8>>,
-}
-
-#[tauri::command]
-#[specta::specta]
-pub fn get_books() -> Vec<BookWithCover> {
-    let mut conn: SqliteConnection = establish_connection();
-    let books = schema::book::table
-        .select(models::Book::as_select())
-        .load(&mut conn)
-        .unwrap_or(vec![]);
-
-    let books_with_cover = books
-        .into_iter()
-        .map(|book| {
-            let path = Path::new("mikomi-data/covers").join(book.id.clone());
-            let cover = fs::read(path);
-            let cover: Option<Vec<u8>> = match cover {
-                Ok(c) => Some(c),
-                Err(_) => None,
-            };
-
-            BookWithCover { book, cover }
-        })
-        .collect();
-    books_with_cover
-}
-
-#[derive(Serialize, Type)]
-pub struct BookWithCover2 {
-    book: models::Book,
-    cover: Option<String>,
-}
-
 struct BookWithAuthors {
     book: models::Book,
     authors: Vec<models::Author>,
@@ -99,7 +49,7 @@ pub struct BookWithAuthorsAndCover {
 
 #[tauri::command]
 #[specta::specta]
-pub fn get_books_base64() -> Vec<BookWithAuthorsAndCover> {
+pub fn get_books() -> Vec<BookWithAuthorsAndCover> {
     let engine = general_purpose::STANDARD_NO_PAD;
     let mut conn: SqliteConnection = establish_connection();
 
@@ -152,23 +102,6 @@ pub fn get_books_base64() -> Vec<BookWithAuthorsAndCover> {
     books_with_authors_and_cover
 }
 
-#[tauri::command]
-#[specta::specta]
-pub fn add_book(title: String, path: String) -> models::Book {
-    let mut conn = establish_connection();
-    let new_book = models::Book {
-        title,
-        path,
-        id: Uuid::new_v4().to_string(),
-    };
-
-    diesel::insert_into(schema::book::table)
-        .values(&new_book)
-        .execute(&mut conn)
-        .expect("Error adding new book");
-    new_book
-}
-
 pub fn upsert_author(name: String) -> String {
     let mut conn = establish_connection();
 
@@ -215,18 +148,6 @@ fn insert_book_author_link(book_id: String, author_id: String, primary: bool) {
         .values(&new_book_author_link)
         .execute(&mut conn)
         .expect("Error adding new book");
-}
-
-pub fn get_authors(names: Vec<String>) -> Vec<models::Author> {
-    let mut conn = establish_connection();
-
-    let authors = schema::author::table
-        .filter(schema::author::name.eq_any(names))
-        .select(models::Author::as_select())
-        .load(&mut conn)
-        .unwrap_or(vec![]);
-
-    authors
 }
 
 fn scale_image(image_data: Vec<u8>, max_height: u32) -> Result<Vec<u8>, String> {
@@ -298,7 +219,7 @@ pub fn add_book_from_file(path: String) -> Result<models::Book, String> {
                 Path::new("mikomi-data/covers").join(uuid.clone()),
             ) {
                 Ok(_) => (),
-                Err(e) => return Err(String::from("Error saving epub cover")),
+                Err(_) => return Err(String::from("Error saving epub cover")),
             }
         }
         None => return Err(String::from("No cover found in epub")),
@@ -312,8 +233,12 @@ pub fn add_book_from_file(path: String) -> Result<models::Book, String> {
         author_ids.push(id);
     }
 
-    // TODO change unwrap to match
-    let title = doc.mdata("title").unwrap();
+    let title_res = doc.mdata("title");
+    let title;
+    match title_res {
+        Some(v) => title = v,
+        None => return Err(String::from("Epub does not have a title")),
+    }
     let new_book = models::Book {
         title,
         path,
@@ -326,7 +251,7 @@ pub fn add_book_from_file(path: String) -> Result<models::Book, String> {
 
     match res {
         Ok(_) => (),
-        Err(e) => return Err(String::from("Cannot add epub to database")),
+        Err(_) => return Err(String::from("Cannot add epub to database")),
     }
 
     for (i, author_id) in author_ids.iter().enumerate() {
@@ -349,10 +274,19 @@ pub fn add_multiple_books_from_files(paths: Vec<String>) -> Result<(), String> {
 
 #[cfg(test)]
 mod tests {
-    use crate::db::add_book_from_file;
+    use super::{establish_connection, run_migrations};
 
     #[test]
-    fn it_words() {
-        assert_eq!(1, 1);
+    fn it_establishes_a_connection() {
+        establish_connection();
+    }
+
+    #[test]
+    fn it_runs_migrations() {
+        let res = run_migrations(&mut establish_connection());
+        match res {
+            Ok(_) => (),
+            Err(_) => panic!(),
+        }
     }
 }

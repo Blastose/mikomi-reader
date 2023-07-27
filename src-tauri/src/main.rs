@@ -13,8 +13,6 @@ fn main() {
     ts::export(
         collect_types![
             db::get_books,
-            db::get_books_base64,
-            db::add_book,
             db::add_book_from_file,
             db::add_multiple_books_from_files
         ],
@@ -28,8 +26,6 @@ fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             db::get_books,
-            db::get_books_base64,
-            db::add_book,
             db::add_book_from_file,
             db::add_multiple_books_from_files
         ])
