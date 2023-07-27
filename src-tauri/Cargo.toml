@@ -28,6 +28,7 @@ specta = "1.0.5"
 tauri-specta = { version = "1.0.2", features = ["typescript"] }
 image = "0.24.6"
 base64 = "0.21.2"
+sqlx = { version = "0.7", features = [ "runtime-tokio" ] }
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.

@@ -2,6 +2,7 @@ use crate::models;
 use crate::schema;
 use base64::{engine::general_purpose, Engine as _};
 use diesel::prelude::*;
+use diesel::sql_query;
 use diesel::{Connection, SqliteConnection};
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use epub::doc::EpubDoc;
@@ -84,21 +85,53 @@ pub struct BookWithCover2 {
     cover: Option<String>,
 }
 
+struct BookWithAuthors {
+    book: models::Book,
+    authors: Vec<models::Author>,
+}
+
+#[derive(Serialize, Type)]
+pub struct BookWithAuthorsAndCover {
+    book: models::Book,
+    authors: Vec<models::Author>,
+    cover: Option<String>,
+}
+
 #[tauri::command]
 #[specta::specta]
-pub fn get_books_base64() -> Vec<BookWithCover2> {
+pub fn get_books_base64() -> Vec<BookWithAuthorsAndCover> {
     let engine = general_purpose::STANDARD_NO_PAD;
-
     let mut conn: SqliteConnection = establish_connection();
-    let books = schema::book::table
+
+    let all_books = schema::book::table
         .select(models::Book::as_select())
         .load(&mut conn)
-        .unwrap_or(vec![]);
+        .unwrap();
 
-    let books_with_cover = books
+    let authors_with_book_link: Vec<(models::BookAuthorLink, models::Author)> =
+        models::BookAuthorLink::belonging_to(&all_books)
+            .inner_join(schema::author::table)
+            .select((
+                models::BookAuthorLink::as_select(),
+                models::Author::as_select(),
+            ))
+            .load::<(models::BookAuthorLink, models::Author)>(&mut conn)
+            .unwrap();
+
+    let books_with_authors: Vec<BookWithAuthors> = authors_with_book_link
+        .grouped_by(&all_books)
+        .into_iter()
+        .zip(all_books)
+        .map(|(a, b)| BookWithAuthors {
+            book: b,
+            authors: a.into_iter().map(|(_, b)| b).collect(),
+        })
+        .collect();
+
+    let books_with_authors_and_cover: Vec<BookWithAuthorsAndCover> = books_with_authors
         .into_iter()
         .map(|book| {
-            let path = Path::new("mikomi-data/covers").join(book.id.clone());
+            let path = Path::new("mikomi-data/covers").join(book.book.id.clone());
             let cover = fs::read(path);
             let cover = match cover {
                 Ok(c) => {
@@ -108,10 +141,15 @@ pub fn get_books_base64() -> Vec<BookWithCover2> {
                 Err(_) => None,
             };
 
-            BookWithCover2 { book, cover }
+            BookWithAuthorsAndCover {
+                book: book.book,
+                authors: book.authors,
+                cover,
+            }
         })
         .collect();
-    books_with_cover
+
+    books_with_authors_and_cover
 }
 
 #[tauri::command]
@@ -136,7 +174,7 @@ pub fn upsert_author(name: String) -> String {
 
     let id_result: Result<Vec<String>, diesel::result::Error> = schema::author::table
         .filter(schema::author::name.eq(name.clone()))
-        .select(schema::author::name)
+        .select(schema::author::id)
         .load::<String>(&mut conn);
 
     let id = id_result.unwrap();
@@ -267,16 +305,11 @@ pub fn add_book_from_file(path: String) -> Result<models::Book, String> {
     }
 
     let f = vec![];
-    let authors = doc.metadata.get("creators").unwrap_or(&f);
+    let authors = doc.metadata.get("creator").unwrap_or(&f);
     let mut author_ids: Vec<String> = vec![];
     for a in authors {
         let id = upsert_author(a.to_string());
         author_ids.push(id);
-    }
-
-    for (i, author_id) in author_ids.iter().enumerate() {
-        let primary = i == 0;
-        insert_book_author_link(uuid.clone(), author_id.to_string(), primary);
     }
 
     // TODO change unwrap to match
@@ -284,7 +317,7 @@ pub fn add_book_from_file(path: String) -> Result<models::Book, String> {
     let new_book = models::Book {
         title,
         path,
-        id: uuid,
+        id: uuid.clone(),
     };
 
     let res = diesel::insert_into(schema::book::table)
@@ -294,6 +327,11 @@ pub fn add_book_from_file(path: String) -> Result<models::Book, String> {
     match res {
         Ok(_) => (),
         Err(e) => return Err(String::from("Cannot add epub to database")),
+    }
+
+    for (i, author_id) in author_ids.iter().enumerate() {
+        let primary = i == 0;
+        insert_book_author_link(uuid.clone(), author_id.to_string(), primary);
     }
 
     Ok(new_book)

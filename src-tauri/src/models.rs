@@ -2,7 +2,17 @@ use diesel::prelude::*;
 use serde::Serialize;
 use specta::Type;
 
-#[derive(Queryable, Selectable, Insertable, Serialize, Type, PartialEq, Debug)]
+#[derive(
+    Queryable,
+    Selectable,
+    Insertable,
+    Identifiable,
+    QueryableByName,
+    Serialize,
+    Type,
+    PartialEq,
+    Debug,
+)]
 #[diesel(table_name = crate::schema::book)]
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 pub struct Book {
@@ -11,7 +21,7 @@ pub struct Book {
     pub path: String,
 }
 
-#[derive(Queryable, Selectable, Insertable, Serialize, Type, PartialEq, Debug)]
+#[derive(Queryable, Selectable, Insertable, Serialize, Identifiable, Type, PartialEq, Debug)]
 #[diesel(table_name = crate::schema::author)]
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 pub struct Author {
@@ -19,7 +29,9 @@ pub struct Author {
     pub name: String,
 }
 
-#[derive(Queryable, Selectable, Insertable, Serialize, Type, PartialEq, Debug)]
+#[derive(
+    Queryable, Selectable, Insertable, Serialize, Associations, Identifiable, Type, PartialEq, Debug,
+)]
 #[diesel(belongs_to(Book))]
 #[diesel(belongs_to(Author))]
 #[diesel(table_name = crate::schema::book_author_link)]

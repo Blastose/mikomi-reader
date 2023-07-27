@@ -15,7 +15,7 @@ export function getBooks() {
 }
 
 export function getBooksBase64() {
-    return invoke()<BookWithCover2[]>("get_books_base64")
+    return invoke()<BookWithAuthorsAndCover[]>("get_books_base64")
 }
 
 export function addBook(title: string, path: string) {
@@ -30,6 +30,7 @@ export function addMultipleBooksFromFiles(paths: string[]) {
     return invoke()<null>("add_multiple_books_from_files", { paths })
 }
 
-export type Book = { id: string; title: string; path: string }
 export type BookWithCover = { book: Book; cover: number[] | null }
-export type BookWithCover2 = { book: Book; cover: string | null }
+export type BookWithAuthorsAndCover = { book: Book; authors: Author[]; cover: string | null }
+export type Book = { id: string; title: string; path: string }
+export type Author = { id: string; name: string }
