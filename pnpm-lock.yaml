@@ -5,6 +5,7 @@ specifiers:
   '@sveltejs/adapter-auto': ^2.0.0
   '@sveltejs/adapter-static': ^2.0.2
   '@sveltejs/kit': ^1.20.4
+  '@tauri-apps/api': ^1.4.0
   '@tauri-apps/cli': ^1.4.0
   '@typescript-eslint/eslint-plugin': ^5.45.0
   '@typescript-eslint/parser': ^5.45.0
@@ -22,6 +23,9 @@ specifiers:
   typescript: ^5.0.0
   vite: ^4.4.2
   vitest: ^0.32.2
+
+dependencies:
+  '@tauri-apps/api': 1.4.0
 
 devDependencies:
   '@playwright/test': 1.36.1
@@ -481,6 +485,11 @@ packages:
     transitivePeerDependencies:
       - supports-color
     dev: true
+
+  /@tauri-apps/api/1.4.0:
+    resolution: {integrity: sha512-Jd6HPoTM1PZSFIzq7FB8VmMu3qSSyo/3lSwLpoapW+lQ41CL5Dow2KryLg+gyazA/58DRWI9vu/XpEeHK4uMdw==}
+    engines: {node: '>= 14.6.0', npm: '>= 6.6.0', yarn: '>= 1.19.1'}
+    dev: false
 
   /@tauri-apps/cli-darwin-arm64/1.4.0:
     resolution: {integrity: sha512-nA/ml0SfUt6/CYLVbHmT500Y+ijqsuv5+s9EBnVXYSLVg9kbPUZJJHluEYK+xKuOj6xzyuT/+rZFMRapmJD3jQ==}
