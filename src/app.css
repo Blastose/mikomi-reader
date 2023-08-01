@@ -3,6 +3,11 @@
 @tailwind utilities;
 
 html {
-	overflow: auto;
+	overflow-x: hidden;
+	height: 100dvh;
 	scrollbar-gutter: stable;
+}
+
+body {
+	height: 100%;
 }
