@@ -4,15 +4,15 @@
 	import { fade } from 'svelte/transition';
 </script>
 
-<div in:fade out:fade class="sticky bottom-0 z-10 h-12 bg-slate-400 bg-opacity-20 backdrop-blur-lg">
+<div in:fade out:fade class="sticky bottom-0 z-10 h-12 bg-gray-100 bg-opacity-70 backdrop-blur-lg">
 	<div class="container flex items-center justify-between h-full gap-2 px-12 mx-auto">
-		<BottomNavButton text="Home">
+		<BottomNavButton text="Home" href="/" active={true}>
 			<IconHome />
 		</BottomNavButton>
-		<BottomNavButton text="Library">
+		<BottomNavButton text="Library" href="/books">
 			<IconBook />
 		</BottomNavButton>
-		<BottomNavButton text="Settings">
+		<BottomNavButton text="Settings" href="/">
 			<IconSettings />
 		</BottomNavButton>
 	</div>
