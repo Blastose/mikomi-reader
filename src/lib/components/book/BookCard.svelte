@@ -11,7 +11,7 @@
 			<img
 				class="object-cover object-top w-full h-full duration-200 hover:scale-105"
 				height="200"
-				width="140"
+				width="134"
 				src="data:image/jpeg;base64, {data.cover}"
 				alt=""
 			/>
