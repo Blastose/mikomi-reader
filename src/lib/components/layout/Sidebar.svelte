@@ -6,45 +6,36 @@
 		IconCircleArrowRight,
 		IconSettings
 	} from '@tabler/icons-svelte';
+	import SidebarItem from './SidebarItem.svelte';
+	import Logo from '$lib/components/logo/Logo.svelte';
 
 	let active = true;
 </script>
 
 <div class="sticky top-0 z-50 w-full h-screen overflow-y-auto bg-gray-500 scroll bg-opacity-20">
 	<div class="flex flex-col gap-1 py-4 pl-3 pr-1">
-		<p class="py-2 text-lg font-bold">Mikomi Reader</p>
+		<div class="flex items-center gap-2">
+			<Logo />
+			<p class="py-2 text-2xl font-bold">Mikomi Reader</p>
+		</div>
 
-		<a href="/" class="{active ? 'text-white bg-black' : ''}  rounded-md">
-			<button class="flex w-full gap-2 p-1">
-				<IconBook2 />
-				Home
-			</button>
-		</a>
+		<SidebarItem text="Home" href="/" active={true}>
+			<IconBook2 />
+		</SidebarItem>
+
 		<p class="text-lg font-bold">Library</p>
-		<a href="/books" class="duration-300 rounded-md hover:bg-gray-500 hover:text-white">
-			<button class="flex w-full gap-2 p-1">
-				<IconBooks />
-				All
-			</button>
-		</a>
-		<a href="/books" class="duration-300 rounded-md hover:bg-gray-500 hover:text-white">
-			<button class="flex w-full gap-2 p-1">
-				<IconCircleArrowRight />
-				Plan to Read
-			</button>
-		</a>
-		<a href="/books" class="duration-300 rounded-md hover:bg-gray-500 hover:text-white">
-			<button class="flex w-full gap-2 p-1">
-				<IconCheckbox />
-				Finished
-			</button>
-		</a>
-		<a href="/books" class="duration-300 rounded-md hover:bg-gray-500 hover:text-white">
-			<button class="flex w-full gap-2 p-1">
-				<IconSettings />
-				Settings
-			</button>
-		</a>
+		<SidebarItem text="All" href="/books" active={false}>
+			<IconBooks />
+		</SidebarItem>
+		<SidebarItem text="Plan to Read" href="/" active={false}>
+			<IconCircleArrowRight />
+		</SidebarItem>
+		<SidebarItem text="Finished" href="/" active={false}>
+			<IconCheckbox />
+		</SidebarItem>
+		<SidebarItem text="Settings" href="/" active={false}>
+			<IconSettings />
+		</SidebarItem>
 	</div>
 </div>
 
@@ -62,7 +53,7 @@
 	}
 
 	.scroll::-webkit-scrollbar-thumb {
-		background-color: rgba(155, 155, 155, 0.5);
+		background-color: rgba(107, 114, 128, 0.5);
 		border-radius: 20px;
 		border: transparent;
 		visibility: hidden;
