@@ -8,8 +8,7 @@
 	} from '@tabler/icons-svelte';
 	import SidebarItem from './SidebarItem.svelte';
 	import Logo from '$lib/components/logo/Logo.svelte';
-
-	let active = true;
+	import { page } from '$app/stores';
 </script>
 
 <div class="sticky top-0 z-50 w-full h-screen overflow-y-auto bg-gray-500 scroll bg-opacity-20">
@@ -19,12 +18,12 @@
 			<p class="py-2 text-2xl font-bold">Mikomi Reader</p>
 		</div>
 
-		<SidebarItem text="Home" href="/" active={true}>
+		<SidebarItem text="Home" href="/" active={$page.url.pathname === '/'}>
 			<IconBook2 />
 		</SidebarItem>
 
 		<p class="text-lg font-bold">Library</p>
-		<SidebarItem text="All" href="/books" active={false}>
+		<SidebarItem text="All" href="/books" active={$page.url.pathname === '/books'}>
 			<IconBooks />
 		</SidebarItem>
 		<SidebarItem text="Plan to Read" href="/" active={false}>
