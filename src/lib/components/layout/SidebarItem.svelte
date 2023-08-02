@@ -10,8 +10,8 @@
 		? 'text-white bg-black'
 		: 'hover:bg-gray-500 hover:text-white'} duration-300 rounded-md"
 >
-	<button class="flex w-full gap-2 p-1">
+	<div class="flex w-full gap-2 p-1">
 		<slot />
 		{text}
-	</button>
+	</div>
 </a>
