@@ -55,7 +55,7 @@
 	});
 </script>
 
-<div class="container flex flex-col gap-2 px-4 mx-auto">
+<div class="flex flex-col gap-2 container-mi">
 	<h1>Welcome to SvelteKit</h1>
 	<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
 	<a href="/t">te</a>

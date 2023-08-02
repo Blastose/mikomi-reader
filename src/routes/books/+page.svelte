@@ -12,7 +12,7 @@
 	})();
 </script>
 
-<div class="container px-4 py-6 mx-auto duration-[450ms]">
+<div class="py-6 container-mi">
 	<div class="flex flex-col gap-4">
 		<p class="text-xl font-bold text-gray-500">Recently Added</p>
 		<div class="grid grid-cols-2 gap-4 sm:grid-cols-4 md:grid-cols-6">

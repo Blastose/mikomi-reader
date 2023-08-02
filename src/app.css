@@ -11,3 +11,10 @@ html {
 body {
 	height: 100%;
 }
+
+@layer components {
+	.container-mi {
+		@apply container px-4 mx-auto;
+		transition: max-width 450ms;
+	}
+}
