@@ -17,7 +17,7 @@
 	});
 
 	let flyDirection = 1;
-	$: flyXOffset = 30;
+	$: flyXOffset = 50;
 </script>
 
 {#if key !== 'skip'}

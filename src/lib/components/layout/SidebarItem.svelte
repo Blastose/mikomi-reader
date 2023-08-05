@@ -7,8 +7,8 @@
 <a
 	{href}
 	class="{active
-		? 'text-white bg-black'
-		: 'hover:bg-gray-500 hover:text-white'} duration-300 rounded-md"
+		? 'text-white bg-neutral-800'
+		: 'hover:bg-neutral-600 hover:text-white'} duration-300 rounded-md"
 >
 	<div class="flex w-full gap-2 p-1">
 		<slot />
