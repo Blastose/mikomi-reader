@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { BookWithAuthorsAndCover } from '$lib/bindings.js';
 	import { IconDotsVertical } from '@tabler/icons-svelte';
+	import { buildBase64ImageUrl } from '$lib/util/util';
 
 	export let data: BookWithAuthorsAndCover;
 </script>
@@ -12,7 +13,7 @@
 				class="object-cover object-top w-full h-full duration-200 hover:scale-105"
 				height="200"
 				width="134"
-				src="data:image/jpeg;base64, {data.cover}"
+				src="{buildBase64ImageUrl(data.cover)}"
 				alt=""
 			/>
 		{:else}

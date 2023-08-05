@@ -3,7 +3,10 @@
 	import BottomNav from './BottomNav.svelte';
 	import { windowSizeStore } from '$lib/stores/windowSizeStore';
 	import Sidebar from './Sidebar.svelte';
+	import ToastContainer from '$lib/components/toast/ToastContainer.svelte';
 </script>
+
+<ToastContainer />
 
 <div class="grid grid-cols-[min-content_1fr] min-h-full">
 	<div class="invisible w-64 -ml-64 lg:visible sidebar-animation lg:ml-0">
@@ -13,7 +16,7 @@
 	<div class="flex flex-col min-h-full">
 		<Header />
 
-		<div class="flex-grow overflow-x-hidden">
+		<div class="flex-grow overflow-x-clip">
 			<slot />
 		</div>
 
