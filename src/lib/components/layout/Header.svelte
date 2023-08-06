@@ -30,6 +30,8 @@
 				>
 					<IconArrowLeft />
 				</button>
+			{:else if $page.url.pathname.startsWith('/books')}
+				{'Library'}
 			{:else}
 				{currentHeaderText}
 			{/if}
