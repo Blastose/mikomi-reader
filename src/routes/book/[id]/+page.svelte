@@ -4,33 +4,55 @@
 
 	export let data;
 
+	let titleElement: HTMLParagraphElement;
+	let timeout: ReturnType<typeof setTimeout>;
+	let delay = 100;
+
 	function resizeText(node: HTMLElement) {
 		const parent = document.querySelector('div.title')!;
 		const GAP_HEIGHT = 8;
 		const AUTHOR_TEXT_HEIGHT = 24;
+		node.style.fontSize = '36px';
+		node.style.lineHeight = '40px';
 		while (node.clientHeight + GAP_HEIGHT + AUTHOR_TEXT_HEIGHT > parent.clientHeight) {
-			node.style.fontSize = `${String(parseInt(node.style.fontSize) - 1)}px`;
-			console.log(node.style.fontSize);
+			node.style.fontSize = `${String(parseInt(node.style.fontSize) - 4)}px`;
+			node.style.lineHeight = `${String(parseInt(node.style.fontSize) + 6)}px`;
 		}
+	}
+
+	function onWindowResize() {
+		clearTimeout(timeout);
+		timeout = setTimeout(() => {
+			resizeText(titleElement);
+		}, delay);
 	}
 </script>
 
-<div class="-mt-16 g container-mi">
+<svelte:window on:resize={onWindowResize} />
+
+<div class="-mt-16 grid-container container-mi">
 	<div
-		style={`background-image: url("${buildBase64ImageUrl(data.book.cover ?? '')}");`}
-		class="bg-no-repeat bg-cover background-image -z-10 bg"
+		style={`background-image:linear-gradient(rgba(255, 255, 255, 0.99), rgba(255, 255, 255, 0.3)), url("${buildBase64ImageUrl(
+			data.book.cover ?? ''
+		)}");`}
+		class="bg-no-repeat bg-cover -z-10 bg"
 	>
-		<div class="h-full a blur" />
+		<div class="h-full backdrop-blur" />
 	</div>
 
 	<div class="filler" />
 
-	<div class="cover min-w-[200px] max-w-[512px]">
-		<img class="rounded-md" src={buildBase64ImageUrl(data.book.cover ?? '')} alt="" />
+	<div class="cover min-w-[128px] sm:min-w-[164px] md:min-w-[200px] max-w-[512px]">
+		<img class="rounded-md shadow-md" src={buildBase64ImageUrl(data.book.cover ?? '')} alt="" />
 	</div>
 
-	<div class="flex flex-col justify-between gap-1 py-2 title">
-		<p use:resizeText style="font-size: 36px;" class="max-w-3xl text-4xl font-bold">
+	<div class="flex flex-col justify-between gap-1 py-2 overflow-hidden title">
+		<p
+			bind:this={titleElement}
+			use:resizeText
+			style="font-size: 36px;"
+			class="max-w-3xl text-4xl font-bold"
+		>
 			{data.book.book.title}
 		</p>
 		<p class="font-bold">{data.book.authors[0]?.name ?? ''}</p>
@@ -38,7 +60,7 @@
 
 	<div class="flex flex-col gap-2 description">
 		<button
-			class="flex items-center gap-2 px-8 py-4 font-bold text-white duration-300 rounded-md hover:bg-black bg-neutral-800 w-fit"
+			class="flex items-center justify-center w-full gap-2 px-8 py-4 font-bold text-white duration-300 rounded-md hover:bg-black bg-neutral-800 sm:w-fit"
 		>
 			<IconBook />
 			Read book
@@ -83,11 +105,7 @@
 </div>
 
 <style>
-	.a {
-		backdrop-filter: blur(8px);
-	}
-
-	.g {
+	.grid-container {
 		display: grid;
 		grid-template-columns: min-content 1fr;
 		grid-template-rows: 64px 196px min-content 1fr;
@@ -110,6 +128,7 @@
 		grid-column: 1 / 3;
 		width: 100vw;
 		margin-left: calc(-50vw + 50%);
+		background-position: 20% 20%;
 	}
 
 	.cover {
@@ -121,15 +140,18 @@
 	}
 
 	.description {
-		grid-area: description;
+		grid-row: 3;
+		grid-column: 1 / 3;
+	}
+
+	@media (min-width: 640px) {
+		.description {
+			grid-row: 3;
+			grid-column: 2 / 3;
+		}
 	}
 
 	.content {
 		grid-area: content;
-	}
-
-	.background-image {
-		mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.65) 100%);
-		-webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.65) 100%);
 	}
 </style>
