@@ -1,9 +1,8 @@
 <script lang="ts">
-	import { open as openDialog } from '@tauri-apps/api/dialog';
-	import { IconDotsVertical, IconPlus } from '@tabler/icons-svelte';
-	import { addToast } from '$lib/components/toast/ToastContainer.svelte';
+	import { IconDotsVertical } from '@tabler/icons-svelte';
 	import { page } from '$app/stores';
 	import { IconArrowLeft } from '@tabler/icons-svelte';
+	import AddBookButton from './AddBookButton.svelte';
 
 	let currentHeaderText: string = 'Home';
 
@@ -38,20 +37,7 @@
 		</div>
 
 		<div class="flex items-center gap-4">
-			<button
-				type="button"
-				class="flex flex-col items-center p-2 text-gray-700 duration-300 rounded-md hover:text-black hover:bg-gray-200"
-				on:click={async () => {
-					const a = await openDialog({});
-					addToast({
-						data: { color: 'bg-green-500', description: `Added ${a}`, title: 'Success' }
-					});
-				}}
-				aria-label="Add books"
-			>
-				<IconPlus />
-				<span class="text-xs">Add book(s)</span>
-			</button>
+			<AddBookButton />
 
 			<button class="flex flex-col items-center text-gray-700 hover:text-black">
 				<IconDotsVertical />
