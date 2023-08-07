@@ -13,14 +13,16 @@
 	let delay = 96;
 
 	function resizeTitle(node: HTMLElement) {
-		const parent = document.querySelector('div.title')!;
-		const GAP_HEIGHT = 8;
-		const AUTHOR_TEXT_HEIGHT = 24;
+		const parent = document.querySelector('div#title')!;
 		node.style.fontSize = '36px';
 		node.style.lineHeight = '40px';
-		while (node.clientHeight + GAP_HEIGHT + AUTHOR_TEXT_HEIGHT > parent.clientHeight) {
+		let textHeightOverflow = parent.scrollHeight > parent.clientHeight;
+		let textWidthOverflow = parent.scrollWidth > parent.clientWidth;
+		while (textHeightOverflow || textWidthOverflow) {
 			node.style.fontSize = `${String(parseInt(node.style.fontSize) - 4)}px`;
 			node.style.lineHeight = `${String(parseInt(node.style.fontSize) + 6)}px`;
+			textHeightOverflow = parent.scrollHeight > parent.clientHeight;
+			textWidthOverflow = parent.scrollWidth > parent.clientWidth;
 		}
 	}
 
@@ -59,7 +61,7 @@
 		<img class="rounded-md shadow-md" src={buildBase64ImageUrl(data.book.cover ?? '')} alt="" />
 	</div>
 
-	<div class="flex flex-col justify-between gap-1 py-2 overflow-hidden title">
+	<div id="title" class="flex flex-col justify-between gap-1 py-2 overflow-hidden">
 		<p
 			bind:this={titleElement}
 			use:resizeTitle
@@ -68,6 +70,7 @@
 		>
 			{data.book.book.title}
 		</p>
+
 		<p class="font-bold">{data.book.authors[0]?.name ?? ''}</p>
 	</div>
 
@@ -170,7 +173,7 @@
 		grid-area: cover;
 	}
 
-	.title {
+	#title {
 		grid-area: title;
 	}
 
