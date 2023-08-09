@@ -10,7 +10,7 @@
 
 	let titleElement: HTMLParagraphElement;
 	let timeout: ReturnType<typeof setTimeout>;
-	let delay = 96;
+	let delay = 300;
 
 	function resizeTitle(node: HTMLElement) {
 		const parent = document.querySelector('div#title')!;
@@ -19,6 +19,11 @@
 		let textHeightOverflow = parent.scrollHeight > parent.clientHeight;
 		let textWidthOverflow = parent.scrollWidth > parent.clientWidth;
 		while (textHeightOverflow || textWidthOverflow) {
+			if (parseInt(node.style.fontSize) === 0) {
+				node.style.fontSize = '4px';
+				node.style.lineHeight = '0px';
+				break;
+			}
 			node.style.fontSize = `${String(parseInt(node.style.fontSize) - 4)}px`;
 			node.style.lineHeight = `${String(parseInt(node.style.fontSize) + 6)}px`;
 			textHeightOverflow = parent.scrollHeight > parent.clientHeight;
@@ -61,7 +66,7 @@
 		<img class="rounded-md shadow-md" src={buildBase64ImageUrl(data.book.cover ?? '')} alt="" />
 	</div>
 
-	<div id="title" class="flex flex-col justify-between gap-1 py-2 overflow-hidden">
+	<div id="title" class="flex flex-col gap-1 py-2 overflow-hidden">
 		<p
 			bind:this={titleElement}
 			use:resizeTitle
@@ -70,8 +75,7 @@
 		>
 			{data.book.book.title}
 		</p>
-
-		<p class="font-bold">{data.book.authors[0]?.name ?? ''}</p>
+		<p class="text-xs line-clamp-1 sm:line-clamp-3 sm:text-sm">{data.book.authors[0]?.name}</p>
 	</div>
 
 	<div class="flex flex-col gap-2 description">
