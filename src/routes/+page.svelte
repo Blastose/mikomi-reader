@@ -1,84 +1,24 @@
 <script lang="ts">
-	import { open } from '@tauri-apps/api/dialog';
-	import { setTitle } from '$lib/window/title';
-	import { onMount } from 'svelte';
-	import {
-		addBook as addBookBinding,
-		addBookFromFile,
-		addMultipleBooksFromFiles
-	} from '$lib/bindings';
+	import { buildBase64ImageUrl } from '$lib/util/util.js';
 
-	let a: string | undefined;
-	let loading = false;
-	let imgNode: HTMLImageElement;
-
-	async function addBook() {
-		loading = true;
-		await addBookBinding('My book2', '/f/');
-		loading = false;
-	}
-
-	async function getEpubPath() {
-		const file = await open({
-			multiple: false,
-			directory: false,
-			filters: [{ extensions: ['epub'], name: 'epub' }]
-		});
-		if (file === null || Array.isArray(file)) {
-			return null;
-		}
-		return file;
-	}
-
-	async function getEpubPathMany() {
-		const files = await open({
-			multiple: true,
-			directory: false,
-			filters: [{ extensions: ['epub'], name: 'epub' }]
-		});
-		if (files === null || !Array.isArray(files)) {
-			return null;
-		}
-		return files;
-	}
-
-	async function addEpubToDatabase() {
-		const path = await getEpubPath();
-		if (!path) return;
-		let res = await addBookFromFile(path).catch(() => null);
-		if (!res) return;
-
-		// const imageBytes = res[1];
-		// const blob = new Blob([new Uint8Array(imageBytes)]);
-		// imgNode.src = URL.createObjectURL(blob);
-	}
-
-	async function addEpubToDatabaseMany() {
-		const paths = await getEpubPathMany();
-		if (!paths) return;
-		let res = await addMultipleBooksFromFiles(paths).catch(() => null);
-		if (!res) return;
-	}
-
-	onMount(async () => {
-		await setTitle();
-	});
+	export let data;
 </script>
 
-<div class="flex flex-col gap-2">
-	<h1>Welcome to SvelteKit</h1>
-	<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
-	<a href="/t">te</a>
-	<a href="/books">books</a>
-
-	<button on:click={addEpubToDatabase}>Throw</button>
-
-	<button on:click={addEpubToDatabaseMany}>Add many</button>
-
-	<button disabled={loading} on:click={addBook}>Add book</button>
-	{#if a}
-		{a}
-	{/if}
-
-	<img alt="" bind:this={imgNode} />
+<div class="flex flex-col gap-2 py-6 container-mi">
+	<div class="flex flex-col gap-2">
+		<h2 class="text-xl font-bold">Recently read</h2>
+		<div class="flex items-end gap-2">
+			{#each data.books.slice(-4) as book}
+				<a href="/book/{book.book.id}" class="flex-1 flex flex-col max-w-[200px] gap-1">
+					{#if book.cover}
+						<img class="rounded-md shadow-md" src={buildBase64ImageUrl(book.cover)} alt="" />
+					{/if}
+					<div class="flex flex-col">
+						<p class="text-sm sm:text-base font-bold line-clamp-1">{book.book.title}</p>
+						<p class="text-sm sm:text-base text-gray-500">{Math.floor(Math.random() * 100)}%</p>
+					</div>
+				</a>
+			{/each}
+		</div>
+	</div>
 </div>

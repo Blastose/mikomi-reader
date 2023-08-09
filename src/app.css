@@ -3,6 +3,27 @@
 @tailwind utilities;
 
 html {
-	overflow: auto;
+	overflow-x: hidden;
+	height: 100dvh;
 	scrollbar-gutter: stable;
+}
+
+body {
+	height: 100%;
+}
+
+/* Remove blue highlight on mobile presses */
+input,
+textarea,
+button,
+select,
+a {
+	-webkit-tap-highlight-color: transparent;
+}
+
+@layer components {
+	.container-mi {
+		@apply container px-4 mx-auto;
+		transition: max-width 450ms;
+	}
 }

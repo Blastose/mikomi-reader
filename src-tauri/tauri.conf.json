@@ -103,7 +103,9 @@
 				"height": 600,
 				"resizable": true,
 				"title": "Mikomi Reader",
-				"width": 800
+				"width": 1024,
+				"minWidth": 320,
+				"minHeight": 128
 			}
 		]
 	}
