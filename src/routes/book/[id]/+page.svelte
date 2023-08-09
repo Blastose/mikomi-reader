@@ -1,8 +1,12 @@
 <script lang="ts">
 	import { buildBase64ImageUrl } from '$lib/util/util.js';
 	import { IconBook, IconChevronUp } from '@tabler/icons-svelte';
+	import { WebviewWindow } from '@tauri-apps/api/window';
+	import { page } from '$app/stores';
 
 	export let data;
+
+	$: id = $page.params.id;
 
 	let expandedSynopsis = false;
 	let parentSynopsisElement: HTMLDivElement;
@@ -46,6 +50,14 @@
 			resizeSynopsis();
 		}, delay);
 	}
+
+	function readBook() {
+		new WebviewWindow(id, {
+			url: `/reader/${id}`,
+			height: 1070,
+			width: 720
+		});
+	}
 </script>
 
 <svelte:window on:resize={onWindowResize} />
@@ -80,6 +92,7 @@
 
 	<div class="flex flex-col gap-2 description">
 		<button
+			on:click={readBook}
 			class="flex items-center justify-center w-full gap-2 px-8 py-4 font-bold text-white duration-300 rounded-md hover:bg-black bg-neutral-800 sm:w-fit"
 		>
 			<IconBook />
