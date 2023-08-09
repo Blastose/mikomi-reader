@@ -18,7 +18,7 @@
 	{scrollY > 0 ? 'bg-white bg-opacity-80 backdrop-blur-lg' : ''}"
 >
 	<div class="flex items-center justify-between h-full container-mi">
-		<div class="text-4xl font-bold text-gray-700 heading">
+		<div class="text-4xl font-bold text-neutral-700">
 			{#if isOnBookRoute}
 				<button
 					class="p-2 duration-300 rounded-full hover:bg-neutral-300"
@@ -48,10 +48,6 @@
 </div>
 
 <style>
-	.heading {
-		font-family: 'Times New Roman', Times, serif;
-	}
-
 	.header-transition {
 		transition: background-color 500ms;
 	}
