@@ -9,7 +9,7 @@ pub async fn get_epub(
     path: &str,
 ) -> Result<
     (
-        Vec<String>,
+        Vec<(String, String)>,
         HashMap<String, (Vec<u8>, u32, u32)>,
         HashMap<String, String>,
     ),
@@ -19,9 +19,10 @@ pub async fn get_epub(
     let mut doc = doc.unwrap();
     let mut imgs: HashMap<String, (Vec<u8>, u32, u32)> = HashMap::new();
     let mut csses: HashMap<String, String> = HashMap::new();
-    let mut html_full: Vec<String> = vec![];
+    let mut html_full: Vec<(String, String)> = vec![];
 
     loop {
+        let current_path = doc.get_current_path().unwrap();
         let ht = doc.get_current_with_epub_uris().unwrap();
         let xml_slice = ht.as_slice();
         let reader = ParserConfig::new().create_reader(BufReader::new(xml_slice));
@@ -79,7 +80,7 @@ pub async fn get_epub(
 
         let st_ht = String::from_utf8(ht).unwrap();
 
-        html_full.push(st_ht);
+        html_full.push((String::from(current_path.to_string_lossy()), st_ht));
 
         if !doc.go_next() {
             break;

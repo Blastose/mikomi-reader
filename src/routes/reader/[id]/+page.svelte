@@ -4,9 +4,25 @@
 	import postcss from 'postcss';
 	import prefixer from 'postcss-prefix-selector';
 	import { IconLoader2 } from '@tabler/icons-svelte';
-	import { page } from '$app/stores';
 
 	export let data;
+
+	function escapeCharacter(s: string) {
+		return `\\${s}`;
+	}
+
+	function escapeSelectorCharacters(s: string) {
+		const chars = ['/', '.'];
+		let newString = '';
+		for (const char of s) {
+			if (chars.includes(char)) {
+				newString = `${newString}${escapeCharacter(char)}`;
+			} else {
+				newString = `${newString}${char}`;
+			}
+		}
+		return newString;
+	}
 
 	async function prefixCss(css: string) {
 		const prefed = postcss()
@@ -71,7 +87,7 @@
 
 		for (const s of str2) {
 			const parser = new DOMParser();
-			const xmlDoc = parser.parseFromString(s, 'application/xhtml+xml');
+			const xmlDoc = parser.parseFromString(s[1], 'application/xhtml+xml');
 			// console.log(xmlDoc);
 			// console.log(s);
 
@@ -96,14 +112,6 @@
 				node.removeAttribute('preserveAspectRatio');
 			}
 
-			// Replace hash anchor links
-			const anchorNodes = xmlDoc.querySelectorAll('a');
-			for (const node of anchorNodes) {
-				if (node.hash) {
-					node.href = node.hash;
-				}
-			}
-
 			const imageNodes: any = xmlDoc.querySelector('body')?.querySelectorAll('image');
 			for (const node of imageNodes) {
 				const img = imgs[node.getAttribute('xlink:href')];
@@ -116,7 +124,7 @@
 				objectUrls.push(blobUrl);
 			}
 			// console.log(xmlDoc.body.outerHTML);
-			newHtml += `<div class="new-body">${xmlDoc.body.outerHTML}</div>`;
+			newHtml += `<div id="${s[0]}" class="new-body">${xmlDoc.body.outerHTML}</div>`;
 		}
 		const t1 = performance.now();
 		console.log(`Call to doSomething took ${t1 - t0} milliseconds.`);
@@ -211,13 +219,23 @@
 	}
 
 	function onAnchorClick(e: MouseEvent) {
-		const target = e.target as HTMLAnchorElement;
-		if (target.tagName === 'A') {
-			lastPageViewedBeforeJump = currentPage;
+		const node = e.currentTarget as HTMLAnchorElement;
+		e.preventDefault();
+		const id = node.href.replace(/^epub:\/\//, '').replace(/#.*$/, '');
+		const hash = node.hash;
+		let cssQuerySelector = '';
+		if (hash) {
+			cssQuerySelector = `#${escapeSelectorCharacters(id)} ${escapeSelectorCharacters(hash)}`;
+		} else {
+			cssQuerySelector = `#${escapeSelectorCharacters(id)}`;
 		}
-	}
+		let el = document.querySelector<HTMLElement>(cssQuerySelector);
+		if (!el) return;
 
-	let lastPageViewedBeforeJump = 1;
+		readerNode.scrollLeft =
+			Math.floor(el.offsetLeft / (readerWidth + COLUMN_GAP)) * (readerWidth + COLUMN_GAP);
+		updateCurrentPage();
+	}
 
 	let loading = true;
 	let currentPage = 1;
@@ -231,8 +249,15 @@
 
 	$: console.log(readerNode?.scrollLeft);
 
-	onMount(() => {
-		openFile();
+	onMount(async () => {
+		await openFile();
+
+		const anchorNodes = readerNode.querySelectorAll('a');
+		for (const node of anchorNodes) {
+			if (node.href.startsWith('epub:')) {
+				node.addEventListener('click', onAnchorClick);
+			}
+		}
 	});
 
 	onDestroy(() => {
