@@ -52,10 +52,12 @@
 	}
 
 	function readBook() {
+		const newUrl = `/reader/${id}`;
 		new WebviewWindow(id, {
-			url: `/reader/${id}`,
+			url: newUrl,
 			height: 1070,
-			width: 720
+			width: 720,
+			title: `${data.book.book.title} - Mikomi Reader`
 		});
 	}
 </script>
@@ -127,7 +129,7 @@
 
 			{#if synopsisElement?.clientHeight > 96}
 				<button
-					class="duration-300 flex items-center justify-center rounded-md hide-text-gradient
+					class="duration-300 flex flex-col items-center justify-center rounded-md hide-text-gradient
 					{expandedSynopsis ? 'mt-0' : '-mt-8'}"
 					on:click={() => {
 						expandedSynopsis = !expandedSynopsis;
@@ -138,6 +140,7 @@
 					<IconChevronUp
 						class="duration-200 ease-out {expandedSynopsis ? 'rotate-0' : 'rotate-180'}"
 					/>
+					<span class="-mt-2 text-xs">{expandedSynopsis ? 'Show less' : 'Show more'}</span>
 				</button>
 			{/if}
 		</div>
@@ -202,7 +205,7 @@
 	.hide-text-gradient {
 		background: linear-gradient(
 			rgba(0, 0, 0, 0) 0%,
-			rgba(255, 255, 255, 1) 90%,
+			rgba(255, 255, 255, 0.781) 50%,
 			rgba(255, 255, 255, 1) 100%
 		);
 	}

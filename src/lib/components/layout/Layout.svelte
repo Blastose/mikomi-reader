@@ -5,9 +5,10 @@
 	import Sidebar from './Sidebar.svelte';
 	import ToastContainer from '$lib/components/toast/ToastContainer.svelte';
 	import { page } from '$app/stores';
+	import Fly from './Fly.svelte';
 
 	function useLayoutF(path: string) {
-		if (path.startsWith('/reader')) {
+		if (path.startsWith('/reader') || path.startsWith('/settings')) {
 			return false;
 		}
 		return true;
@@ -28,7 +29,9 @@
 			<Header />
 
 			<div class="flex-grow overflow-x-clip">
-				<slot />
+				<Fly key={$page.url}>
+					<slot />
+				</Fly>
 			</div>
 
 			{#if $windowSizeStore === 'small'}

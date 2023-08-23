@@ -32,7 +32,7 @@
 		<SidebarItem text="Finished" href="/" active={false}>
 			<IconCheckbox />
 		</SidebarItem>
-		<SidebarItem text="Settings" href="/" active={false}>
+		<SidebarItem text="Settings" href="/settings" active={false}>
 			<IconSettings />
 		</SidebarItem>
 	</div>
