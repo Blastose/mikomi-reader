@@ -235,7 +235,10 @@
 		readerNode.scrollLeft =
 			Math.floor(el.offsetLeft / (readerWidth + COLUMN_GAP)) * (readerWidth + COLUMN_GAP);
 		updateCurrentPage();
+		history.pushState(currentPage, '');
 	}
+
+	$: history.replaceState({ page: currentPage }, '');
 
 	let loading = true;
 	let currentPage = 1;
@@ -248,6 +251,14 @@
 	let maxHeight = 0;
 
 	$: console.log(readerNode?.scrollLeft);
+
+	function onPopstate(e: PopStateEvent) {
+		e.preventDefault();
+		if (e.state?.page) {
+			currentPage = e.state.page;
+			updateDisplayedPage(currentPage);
+		}
+	}
 
 	onMount(async () => {
 		await openFile();
@@ -276,6 +287,7 @@
 	on:wheel={onScroll}
 	on:pointerdown={onPointerStart}
 	on:pointerup={onPointerEnd}
+	on:popstate={onPopstate}
 />
 
 <div class="fixed flex justify-between w-screen h-screen pointer-events-none">
