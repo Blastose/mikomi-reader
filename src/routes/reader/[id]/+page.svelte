@@ -124,7 +124,14 @@
 				objectUrls.push(blobUrl);
 			}
 			// console.log(xmlDoc.body.outerHTML);
-			newHtml += `<div id="${s[0]}" class="new-body">${xmlDoc.body.outerHTML}</div>`;
+
+			let bodyIdElement = '';
+			if (xmlDoc.body.id) {
+				bodyIdElement = `<span id="${xmlDoc.body.id}"></span>`;
+			}
+			newHtml += `<div id="${s[0]}" class="new-body ${xmlDoc.body.classList.toString()}">
+					${bodyIdElement}${xmlDoc.body.outerHTML}
+			</div>`;
 		}
 		const t1 = performance.now();
 		console.log(`Call to doSomething took ${t1 - t0} milliseconds.`);
