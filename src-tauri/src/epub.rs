@@ -1,20 +1,27 @@
 use epub::doc::EpubDoc;
 use image::GenericImageView;
+use serde::Serialize;
+use specta::Type;
 use std::{collections::HashMap, io::BufReader};
 use xml::reader::{ParserConfig, XmlEvent};
 
+#[derive(Serialize, Type)]
+pub struct EpubData {
+    html: Vec<(String, String)>,
+    img: HashMap<String, (Vec<u8>, u32, u32)>,
+    css: HashMap<String, String>,
+    toc: Vec<TocData>,
+}
+
+#[derive(Serialize, Type)]
+struct TocData {
+    pub label: String,
+    pub content: String,
+}
+
 #[tauri::command]
 #[specta::specta]
-pub async fn get_epub(
-    path: &str,
-) -> Result<
-    (
-        Vec<(String, String)>,
-        HashMap<String, (Vec<u8>, u32, u32)>,
-        HashMap<String, String>,
-    ),
-    (),
-> {
+pub async fn get_epub(path: &str) -> Result<EpubData, ()> {
     let doc = EpubDoc::new(path);
     let mut doc = doc.unwrap();
     let mut imgs: HashMap<String, (Vec<u8>, u32, u32)> = HashMap::new();
@@ -87,5 +94,20 @@ pub async fn get_epub(
         }
     }
 
-    Ok((html_full, imgs, csses))
+    let toc = doc.toc;
+    println!("{:#?}", toc);
+    let toc = toc
+        .into_iter()
+        .map(|v| TocData {
+            content: String::from(v.content.to_string_lossy()),
+            label: v.label,
+        })
+        .collect();
+
+    Ok(EpubData {
+        html: html_full,
+        img: imgs,
+        css: csses,
+        toc,
+    })
 }

@@ -1,9 +1,17 @@
 <script lang="ts">
-	import { getEpub } from '$lib/bindings';
+	import { getEpub, type TocData } from '$lib/bindings';
 	import { onDestroy, onMount, tick } from 'svelte';
 	import postcss from 'postcss';
 	import prefixer from 'postcss-prefix-selector';
 	import { IconLoader2 } from '@tabler/icons-svelte';
+	import { createDialog, melt } from '@melt-ui/svelte';
+	import { fade, fly } from 'svelte/transition';
+	import Toc from './Toc.svelte';
+
+	const {
+		elements: { trigger, overlay, content, title, description, close, portalled },
+		states: { open }
+	} = createDialog();
 
 	export let data;
 
@@ -45,6 +53,10 @@
 		return prefed;
 	}
 
+	function getHrefFromTocContent(a: string) {
+		return `epub://${a.replace('\\', '/')}`;
+	}
+
 	const COLUMN_GAP = 16;
 
 	let swipeScroll = false;
@@ -57,6 +69,8 @@
 
 	let objectUrls: string[] = [];
 
+	let tocData: TocData[] = [];
+
 	function clearEpubStyles() {
 		const styleNodes = document.querySelectorAll('style.epub-css') ?? [];
 		for (const node of styleNodes) {
@@ -68,7 +82,17 @@
 		loading = true;
 
 		const t0 = performance.now();
-		const [str2, imgs, csses] = await getEpub(data.book.book.path);
+		const { html: str2, img: imgs, css: csses, toc } = await getEpub(data.book.book.path);
+
+		console.log(toc);
+		tocData = toc.map((t) => {
+			const res = getHrefFromTocContent(t.content);
+			console.log(res);
+			return {
+				label: t.label,
+				content: res
+			};
+		});
 
 		clearEpubStyles();
 		let newHtml = '';
@@ -228,8 +252,12 @@
 	function onAnchorClick(e: MouseEvent) {
 		const node = e.currentTarget as HTMLAnchorElement;
 		e.preventDefault();
-		const id = node.href.replace(/^epub:\/\//, '').replace(/#.*$/, '');
-		const hash = node.hash;
+		anchorClick(node);
+	}
+
+	function anchorClick(a: HTMLAnchorElement) {
+		const id = a.href.replace(/^epub:\/\//, '').replace(/#.*$/, '');
+		const hash = a.hash;
 		let cssQuerySelector = '';
 		if (hash) {
 			cssQuerySelector = `#${escapeSelectorCharacters(id)} ${escapeSelectorCharacters(hash)}`;
@@ -280,12 +308,13 @@
 	onMount(async () => {
 		await openFile();
 
-		const anchorNodes = readerNode.querySelectorAll('a');
-		for (const node of anchorNodes) {
-			if (node.href.startsWith('epub:')) {
-				node.addEventListener('click', onAnchorClick);
+		document.addEventListener('click', (e: MouseEvent) => {
+			const target = e.target as HTMLAnchorElement | null;
+			if (target?.tagName === 'A') {
+				e.preventDefault();
+				anchorClick(target);
 			}
-		}
+		});
 	});
 
 	onDestroy(() => {
@@ -307,6 +336,41 @@
 	on:popstate={onPopstate}
 	on:resize={debouncedOnResize}
 />
+
+<div use:melt={$portalled}>
+	{#if $open}
+		<div
+			use:melt={$overlay}
+			class="fixed inset-0 z-50 bg-black/50"
+			transition:fade={{ duration: 150 }}
+		/>
+		<div
+			use:melt={$content}
+			class="fixed left-0 top-0 z-50 h-screen w-full max-w-[350px] bg-white p-6
+            shadow-lg focus:outline-none"
+			transition:fly={{
+				x: -350,
+				duration: 300,
+				opacity: 1
+			}}
+		>
+			<button
+				use:melt={$close}
+				aria-label="Close"
+				class="absolute right-[10px] top-[10px] inline-flex h-6 w-6
+                appearance-none items-center justify-center rounded-full text-gray-800
+                hover:bg-gray-100 focus:shadow-gray-400 focus:outline-none focus:ring-2
+                focus:ring-gray-400"
+			>
+				X
+			</button>
+			<h2 use:melt={$title} class="mb-0 text-lg font-medium text-black">Table of Contents</h2>
+			<section>
+				<Toc {tocData} />
+			</section>
+		</div>
+	{/if}
+</div>
 
 <div class="fixed flex justify-between w-screen h-screen pointer-events-none">
 	<button
@@ -343,6 +407,7 @@
 				history.back();
 			}}>Back</button
 		>
+		<button use:melt={$trigger}>Open TOC</button>
 	</div>
 
 	<div class="h-12" />

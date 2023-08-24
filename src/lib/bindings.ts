@@ -23,9 +23,11 @@ export function addMultipleBooksFromFiles(paths: string[]) {
 }
 
 export function getEpub(path: string) {
-    return invoke()<[([string, string])[], { [key: string]: [number[], number, number] }, { [key: string]: string }]>("get_epub", { path })
+    return invoke()<EpubData>("get_epub", { path })
 }
 
 export type BookWithAuthorsAndCover = { book: Book; authors: Author[]; cover: string | null }
+export type TocData = { label: string; content: string }
+export type EpubData = { html: ([string, string])[]; img: { [key: string]: [number[], number, number] }; css: { [key: string]: string }; toc: TocData[] }
 export type Book = { id: string; title: string; path: string }
 export type Author = { id: string; name: string }
