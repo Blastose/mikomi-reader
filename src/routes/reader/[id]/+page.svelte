@@ -260,6 +260,16 @@
 		}
 	}
 
+	function onResize() {
+		totalPages = Math.ceil(readerNode.scrollWidth / (readerWidth + COLUMN_GAP));
+	}
+
+	let onResizeTimeout: ReturnType<typeof setTimeout>;
+	function debouncedOnResize() {
+		clearTimeout(onResizeTimeout);
+		onResizeTimeout = setTimeout(onResize, 500);
+	}
+
 	onMount(async () => {
 		await openFile();
 
@@ -288,6 +298,7 @@
 	on:pointerdown={onPointerStart}
 	on:pointerup={onPointerEnd}
 	on:popstate={onPopstate}
+	on:resize={debouncedOnResize}
 />
 
 <div class="fixed flex justify-between w-screen h-screen pointer-events-none">
