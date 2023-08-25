@@ -91,7 +91,7 @@
 				toc.kind;
 				const navElement = tocDoc.querySelector('nav > ol');
 				if (navElement) {
-					const res = parseNavToc(navElement);
+					const res = parseNavToc(navElement, toc.path);
 					console.log(res);
 					tocData = res;
 				}
@@ -99,7 +99,7 @@
 				toc.kind;
 				const navMap = tocDoc.querySelector('navMap');
 				if (navMap) {
-					const res = parseNcxToc(navMap);
+					const res = parseNcxToc(navMap, toc.path);
 					console.log(res);
 					tocData = res;
 				}

@@ -4,7 +4,7 @@ export type NavPoint = {
 	children: NavPoint[];
 };
 
-export function parseNcxToc(doc: Element): NavPoint[] {
+export function parseNcxToc(doc: Element, basePath: string): NavPoint[] {
 	const navPoints: NavPoint[] = [];
 
 	const childNavPoints = doc.querySelectorAll(':scope > navPoint');
@@ -16,9 +16,9 @@ export function parseNcxToc(doc: Element): NavPoint[] {
 				?.textContent ?? '';
 
 		const newNavPoint = {
-			content,
+			content: buildEpubUri(basePath, content),
 			label,
-			children: parseNcxToc(childNavPoint)
+			children: parseNcxToc(childNavPoint, basePath)
 		};
 		navPoints.push(newNavPoint);
 	}
@@ -26,7 +26,7 @@ export function parseNcxToc(doc: Element): NavPoint[] {
 	return navPoints;
 }
 
-export function parseNavToc(doc: Element) {
+export function parseNavToc(doc: Element, basePath: string) {
 	const navPoints: NavPoint[] = [];
 
 	const childNavPoints = doc.querySelectorAll(':scope > li');
@@ -41,13 +41,34 @@ export function parseNavToc(doc: Element) {
 		}
 
 		const childOlNode = childNavPoint.querySelector(':scope > ol');
+
 		const newNavPoint = {
-			content: content,
+			content: buildEpubUri(basePath, content),
 			label,
-			children: childOlNode ? parseNavToc(childOlNode) : []
+			children: childOlNode ? parseNavToc(childOlNode, basePath) : []
 		};
 		navPoints.push(newNavPoint);
 	}
 
 	return navPoints;
+}
+
+function buildEpubUri(path: string, append: string): string {
+	if (append.startsWith('http')) {
+		return append;
+	}
+
+	const pathSegments = path.split('/');
+	const appendSegments = append.split('/');
+	pathSegments.pop();
+
+	for (const segment of appendSegments) {
+		if (segment === '..') {
+			pathSegments.pop();
+		} else {
+			pathSegments.push(segment);
+		}
+	}
+
+	return `epub://${pathSegments.join('/')}`;
 }
