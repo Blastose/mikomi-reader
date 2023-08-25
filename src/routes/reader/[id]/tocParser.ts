@@ -2,6 +2,7 @@ export type NavPoint = {
 	content: string;
 	label: string;
 	children: NavPoint[];
+	page?: number;
 };
 
 export function parseNcxToc(doc: Element, basePath: string): NavPoint[] {

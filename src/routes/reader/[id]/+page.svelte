@@ -3,7 +3,7 @@
 	import { onDestroy, onMount, tick } from 'svelte';
 	import postcss from 'postcss';
 	import prefixer from 'postcss-prefix-selector';
-	import { IconLoader2 } from '@tabler/icons-svelte';
+	import { IconLoader2, IconX } from '@tabler/icons-svelte';
 	import { createDialog, melt } from '@melt-ui/svelte';
 	import { fade, fly } from 'svelte/transition';
 	import Toc from './Toc.svelte';
@@ -20,9 +20,24 @@
 		return `\\${s}`;
 	}
 
+	function escapeFirstCharacterIfItStartsWithANumber(s: string) {
+		if (s.length === 0) {
+			return s;
+		}
+
+		if (!(s[0] >= '0' && s[0] <= '9')) {
+			return s;
+		}
+
+		return `\\3${s[0]} ${s.substring(1)}`;
+	}
+
 	function escapeSelectorCharacters(s: string) {
 		const chars = ['/', '.'];
 		let newString = '';
+
+		s = escapeFirstCharacterIfItStartsWithANumber(s);
+
 		for (const char of s) {
 			if (chars.includes(char)) {
 				newString = `${newString}${escapeCharacter(char)}`;
@@ -221,8 +236,12 @@
 		//
 	}
 
+	function calculatePageFromScrollLeft(scrollLeft: number) {
+		return 1 + Math.ceil(scrollLeft / (readerWidth + COLUMN_GAP));
+	}
+
 	function updateCurrentPage() {
-		currentPage = 1 + Math.ceil(readerNode.scrollLeft / (readerWidth + COLUMN_GAP));
+		currentPage = calculatePageFromScrollLeft(readerNode.scrollLeft);
 	}
 
 	function onKeyDown(e: KeyboardEvent) {
@@ -239,6 +258,8 @@
 	}
 
 	function onScroll(e: WheelEvent) {
+		if ($open) return;
+
 		if (e.deltaY > 0) {
 			nextPage();
 		} else if (e.deltaY < 0) {
@@ -272,10 +293,10 @@
 
 	function anchorClick(a: HTMLAnchorElement) {
 		const id = a.href.replace(/^epub:\/\//, '').replace(/#.*$/, '');
-		const hash = a.hash;
+		const hash = a.hash.split('#')[1];
 		let cssQuerySelector = '';
 		if (hash) {
-			cssQuerySelector = `#${escapeSelectorCharacters(id)} ${escapeSelectorCharacters(hash)}`;
+			cssQuerySelector = `#${escapeSelectorCharacters(id)} #${escapeSelectorCharacters(hash)}`;
 		} else {
 			cssQuerySelector = `#${escapeSelectorCharacters(id)}`;
 		}
@@ -312,6 +333,8 @@
 
 	function onResize() {
 		totalPages = Math.ceil(readerNode.scrollWidth / (readerWidth + COLUMN_GAP));
+		calculateTocPageNumbers(tocData);
+		tocData = tocData;
 	}
 
 	let onResizeTimeout: ReturnType<typeof setTimeout>;
@@ -320,8 +343,31 @@
 		onResizeTimeout = setTimeout(onResize, 500);
 	}
 
+	function calculateTocPageNumbers(d: NavPoint[]) {
+		for (const a of d) {
+			const [id2, hash] = a.content.split('#');
+			const id = id2.replace(/^epub:\/\//, '');
+
+			let cssQuerySelector = '';
+			if (hash) {
+				cssQuerySelector = `#${escapeSelectorCharacters(id)} #${escapeSelectorCharacters(hash)}`;
+			} else {
+				cssQuerySelector = `#${escapeSelectorCharacters(id)}`;
+			}
+			let el = document.querySelector<HTMLElement>(cssQuerySelector);
+			if (!el) return;
+
+			const scrollLeft =
+				Math.floor(el.offsetLeft / (readerWidth + COLUMN_GAP)) * (readerWidth + COLUMN_GAP);
+			a.page = calculatePageFromScrollLeft(scrollLeft);
+			calculateTocPageNumbers(a.children);
+		}
+	}
+
 	onMount(async () => {
 		await openFile();
+
+		calculateTocPageNumbers(tocData);
 	});
 
 	onDestroy(() => {
@@ -355,7 +401,7 @@
 		/>
 		<div
 			use:melt={$content}
-			class="fixed left-0 top-0 z-50 h-screen w-full max-w-[350px] bg-white p-6
+			class="fixed left-0 top-0 overflow-y-auto z-50 h-screen w-full max-w-[350px] bg-white p-6
             shadow-lg focus:outline-none"
 			transition:fly={{
 				x: -350,
@@ -371,9 +417,9 @@
                 hover:bg-gray-100 focus:shadow-gray-400 focus:outline-none focus:ring-2
                 focus:ring-gray-400"
 			>
-				X
+				<IconX />
 			</button>
-			<h2 use:melt={$title} class="mb-0 text-lg font-medium text-black">Table of Contents</h2>
+			<h2 use:melt={$title} class="mb-4 text-lg font-medium text-black">Table of Contents</h2>
 			<section>
 				<Toc {tocData} />
 			</section>

@@ -123,6 +123,10 @@ fn get_toc_data(mut doc: EpubDoc<BufReader<File>>) -> Option<Toc> {
             kind: TocKind::Nav,
         },
         PossibleTocId {
+            id: "toc",
+            kind: TocKind::Nav,
+        },
+        PossibleTocId {
             id: "ncx",
             kind: TocKind::Ncx,
         },
