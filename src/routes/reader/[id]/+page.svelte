@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getEpub, type TocData } from '$lib/bindings';
+	import { getEpub } from '$lib/bindings';
 	import { onDestroy, onMount, tick } from 'svelte';
 	import postcss from 'postcss';
 	import prefixer from 'postcss-prefix-selector';
@@ -7,6 +7,7 @@
 	import { createDialog, melt } from '@melt-ui/svelte';
 	import { fade, fly } from 'svelte/transition';
 	import Toc from './Toc.svelte';
+	import { parseNavToc, parseNcxToc, type NavPoint } from './tocParser';
 
 	const {
 		elements: { trigger, overlay, content, title, description, close, portalled },
@@ -49,12 +50,8 @@
 			)
 			.process(css).css;
 
-		console.log(prefed);
+		// console.log(prefed);
 		return prefed;
-	}
-
-	function getHrefFromTocContent(a: string) {
-		return `epub://${a.replace('\\', '/')}`;
 	}
 
 	const COLUMN_GAP = 16;
@@ -69,7 +66,7 @@
 
 	let objectUrls: string[] = [];
 
-	let tocData: TocData[] = [];
+	let tocData: NavPoint[] = [];
 
 	function clearEpubStyles() {
 		const styleNodes = document.querySelectorAll('style.epub-css') ?? [];
@@ -83,16 +80,31 @@
 
 		const t0 = performance.now();
 		const { html: str2, img: imgs, css: csses, toc } = await getEpub(data.book.book.path);
+		const parser = new DOMParser();
 
 		console.log(toc);
-		tocData = toc.map((t) => {
-			const res = getHrefFromTocContent(t.content);
-			console.log(res);
-			return {
-				label: t.label,
-				content: res
-			};
-		});
+		if (toc) {
+			const tocDoc = parser.parseFromString(toc.content, 'text/html');
+			console.log(tocDoc);
+			console.log(toc.content);
+			if (toc.kind === 'Nav') {
+				toc.kind;
+				const navElement = tocDoc.querySelector('nav > ol');
+				if (navElement) {
+					const res = parseNavToc(navElement);
+					console.log(res);
+					tocData = res;
+				}
+			} else {
+				toc.kind;
+				const navMap = tocDoc.querySelector('navMap');
+				if (navMap) {
+					const res = parseNcxToc(navMap);
+					console.log(res);
+					tocData = res;
+				}
+			}
+		}
 
 		clearEpubStyles();
 		let newHtml = '';
@@ -110,15 +122,14 @@
 		}
 
 		for (const s of str2) {
-			const parser = new DOMParser();
 			const xmlDoc = parser.parseFromString(s[1], 'application/xhtml+xml');
 			// console.log(xmlDoc);
 			// console.log(s);
 
 			const imgNodes: NodeListOf<HTMLImageElement> | never[] =
 				xmlDoc.querySelector('body')?.querySelectorAll('img[src]') ?? [];
-			console.log(imgNodes);
-			console.log(imgs);
+			// console.log(imgNodes);
+			// console.log(imgs);
 			for (const node of imgNodes) {
 				const img = imgs[node.src];
 
@@ -249,10 +260,14 @@
 		}
 	}
 
-	function onAnchorClick(e: MouseEvent) {
-		const node = e.currentTarget as HTMLAnchorElement;
-		e.preventDefault();
-		anchorClick(node);
+	function onDocumentClick(e: MouseEvent) {
+		const target = e.target as HTMLAnchorElement | null;
+		const a = target?.closest('a');
+
+		if (a?.tagName === 'A') {
+			e.preventDefault();
+			anchorClick(a);
+		}
 	}
 
 	function anchorClick(a: HTMLAnchorElement) {
@@ -307,14 +322,6 @@
 
 	onMount(async () => {
 		await openFile();
-
-		document.addEventListener('click', (e: MouseEvent) => {
-			const target = e.target as HTMLAnchorElement | null;
-			if (target?.tagName === 'A') {
-				e.preventDefault();
-				anchorClick(target);
-			}
-		});
 	});
 
 	onDestroy(() => {
@@ -336,6 +343,8 @@
 	on:popstate={onPopstate}
 	on:resize={debouncedOnResize}
 />
+
+<svelte:document on:click={onDocumentClick} />
 
 <div use:melt={$portalled}>
 	{#if $open}

@@ -27,7 +27,8 @@ export function getEpub(path: string) {
 }
 
 export type BookWithAuthorsAndCover = { book: Book; authors: Author[]; cover: string | null }
-export type TocData = { label: string; content: string }
-export type EpubData = { html: ([string, string])[]; img: { [key: string]: [number[], number, number] }; css: { [key: string]: string }; toc: TocData[] }
+export type Toc = { kind: TocKind; content: string; path: string }
+export type EpubData = { html: ([string, string])[]; img: { [key: string]: [number[], number, number] }; css: { [key: string]: string }; toc: Toc | null }
+export type TocKind = "Ncx" | "Nav"
 export type Book = { id: string; title: string; path: string }
 export type Author = { id: string; name: string }

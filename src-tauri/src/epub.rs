@@ -2,7 +2,7 @@ use epub::doc::EpubDoc;
 use image::GenericImageView;
 use serde::Serialize;
 use specta::Type;
-use std::{collections::HashMap, io::BufReader};
+use std::{collections::HashMap, fs::File, io::BufReader};
 use xml::reader::{ParserConfig, XmlEvent};
 
 #[derive(Serialize, Type)]
@@ -10,13 +10,25 @@ pub struct EpubData {
     html: Vec<(String, String)>,
     img: HashMap<String, (Vec<u8>, u32, u32)>,
     css: HashMap<String, String>,
-    toc: Vec<TocData>,
+    toc: Option<Toc>,
 }
 
 #[derive(Serialize, Type)]
-struct TocData {
-    pub label: String,
+pub enum TocKind {
+    Ncx,
+    Nav,
+}
+
+#[derive(Serialize, Type)]
+pub struct Toc {
+    pub kind: TocKind,
     pub content: String,
+    pub path: String,
+}
+
+pub struct PossibleTocId<'a> {
+    pub kind: TocKind,
+    pub id: &'a str,
 }
 
 #[tauri::command]
@@ -94,15 +106,7 @@ pub async fn get_epub(path: &str) -> Result<EpubData, ()> {
         }
     }
 
-    let toc = doc.toc;
-    println!("{:#?}", toc);
-    let toc = toc
-        .into_iter()
-        .map(|v| TocData {
-            content: String::from(v.content.to_string_lossy()),
-            label: v.label,
-        })
-        .collect();
+    let toc = get_toc_data(doc);
 
     Ok(EpubData {
         html: html_full,
@@ -110,4 +114,41 @@ pub async fn get_epub(path: &str) -> Result<EpubData, ()> {
         css: csses,
         toc,
     })
+}
+
+fn get_toc_data(mut doc: EpubDoc<BufReader<File>>) -> Option<Toc> {
+    let possible_tocs = vec![
+        PossibleTocId {
+            id: "nav",
+            kind: TocKind::Nav,
+        },
+        PossibleTocId {
+            id: "ncx",
+            kind: TocKind::Ncx,
+        },
+        PossibleTocId {
+            id: "toc.ncx",
+            kind: TocKind::Ncx,
+        },
+    ];
+
+    let mut toc: Option<Toc> = None;
+
+    for possible_toc in possible_tocs {
+        let resource_option = doc.get_resource(possible_toc.id);
+        match resource_option {
+            Some(resource) => {
+                let path_and_mime = doc.resources.get(possible_toc.id).unwrap();
+                toc = Some(Toc {
+                    kind: possible_toc.kind,
+                    content: String::from_utf8(resource.0).unwrap(),
+                    path: String::from(path_and_mime.to_owned().0.to_string_lossy()),
+                });
+                break;
+            }
+            None => (),
+        }
+    }
+
+    toc
 }
