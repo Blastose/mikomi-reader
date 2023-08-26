@@ -421,7 +421,7 @@
 			</button>
 			<h2 use:melt={$title} class="mb-4 text-lg font-medium text-black">Table of Contents</h2>
 			<section>
-				<Toc {tocData} />
+				<Toc {tocData} {currentPage} />
 			</section>
 		</div>
 	{/if}
@@ -578,8 +578,13 @@
 		display: inline;
 	}
 
-	.text-epub > :global(div) {
+	.text-epub > :global(div.new-body) {
 		break-before: column;
+	}
+
+	.text-epub :global([epub\:type='pagebreak']) {
+		break-before: column;
+		display: block;
 	}
 
 	.text-epub :global(a) {
