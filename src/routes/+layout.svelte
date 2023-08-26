@@ -32,7 +32,5 @@
 <svelte:window use:monitorScreenSize />
 
 <Layout>
-	<Fly key={$page.url}>
-		<slot />
-	</Fly>
+	<slot />
 </Layout>

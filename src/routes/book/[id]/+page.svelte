@@ -1,8 +1,12 @@
 <script lang="ts">
 	import { buildBase64ImageUrl } from '$lib/util/util.js';
 	import { IconBook, IconChevronUp } from '@tabler/icons-svelte';
+	import { WebviewWindow } from '@tauri-apps/api/window';
+	import { page } from '$app/stores';
 
 	export let data;
+
+	$: id = $page.params.id;
 
 	let expandedSynopsis = false;
 	let parentSynopsisElement: HTMLDivElement;
@@ -46,6 +50,16 @@
 			resizeSynopsis();
 		}, delay);
 	}
+
+	function readBook() {
+		const newUrl = `/reader/${id}`;
+		new WebviewWindow(id, {
+			url: newUrl,
+			height: 1070,
+			width: 720,
+			title: `${data.book.book.title} - Mikomi Reader`
+		});
+	}
 </script>
 
 <svelte:window on:resize={onWindowResize} />
@@ -80,6 +94,7 @@
 
 	<div class="flex flex-col gap-2 description">
 		<button
+			on:click={readBook}
 			class="flex items-center justify-center w-full gap-2 px-8 py-4 font-bold text-white duration-300 rounded-md hover:bg-black bg-neutral-800 sm:w-fit"
 		>
 			<IconBook />
@@ -114,7 +129,7 @@
 
 			{#if synopsisElement?.clientHeight > 96}
 				<button
-					class="duration-300 flex items-center justify-center rounded-md hide-text-gradient
+					class="duration-300 flex flex-col items-center justify-center rounded-md hide-text-gradient
 					{expandedSynopsis ? 'mt-0' : '-mt-8'}"
 					on:click={() => {
 						expandedSynopsis = !expandedSynopsis;
@@ -125,6 +140,7 @@
 					<IconChevronUp
 						class="duration-200 ease-out {expandedSynopsis ? 'rotate-0' : 'rotate-180'}"
 					/>
+					<span class="-mt-2 text-xs">{expandedSynopsis ? 'Show less' : 'Show more'}</span>
 				</button>
 			{/if}
 		</div>
@@ -189,7 +205,7 @@
 	.hide-text-gradient {
 		background: linear-gradient(
 			rgba(0, 0, 0, 0) 0%,
-			rgba(255, 255, 255, 1) 90%,
+			rgba(255, 255, 255, 0.781) 50%,
 			rgba(255, 255, 255, 1) 100%
 		);
 	}

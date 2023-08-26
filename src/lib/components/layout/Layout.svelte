@@ -4,27 +4,44 @@
 	import { windowSizeStore } from '$lib/stores/windowSizeStore';
 	import Sidebar from './Sidebar.svelte';
 	import ToastContainer from '$lib/components/toast/ToastContainer.svelte';
+	import { page } from '$app/stores';
+	import Fly from './Fly.svelte';
+
+	function useLayoutF(path: string) {
+		if (path.startsWith('/reader') || path.startsWith('/settings')) {
+			return false;
+		}
+		return true;
+	}
+
+	$: useLayout = useLayoutF($page.url.pathname);
 </script>
 
 <ToastContainer />
 
-<div class="grid grid-cols-[min-content_1fr] min-h-full">
-	<div class="invisible w-64 -ml-64 lg:visible sidebar-animation lg:ml-0">
-		<Sidebar />
-	</div>
-
-	<div class="flex flex-col min-h-full">
-		<Header />
-
-		<div class="flex-grow overflow-x-clip">
-			<slot />
+{#if useLayout}
+	<div class="grid grid-cols-[min-content_1fr] min-h-full">
+		<div class="invisible w-64 -ml-64 lg:visible sidebar-animation lg:ml-0">
+			<Sidebar />
 		</div>
 
-		{#if $windowSizeStore === 'small'}
-			<BottomNav />
-		{/if}
+		<div class="flex flex-col min-h-full">
+			<Header />
+
+			<div class="flex-grow overflow-x-clip">
+				<Fly key={$page.url}>
+					<slot />
+				</Fly>
+			</div>
+
+			{#if $windowSizeStore === 'small'}
+				<BottomNav />
+			{/if}
+		</div>
 	</div>
-</div>
+{:else}
+	<slot />
+{/if}
 
 <style>
 	.sidebar-animation {

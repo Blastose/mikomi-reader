@@ -202,7 +202,7 @@ fn write_cover_to_file(
 
 #[tauri::command]
 #[specta::specta]
-pub fn add_book_from_file(path: String) -> Result<models::Book, String> {
+pub async fn add_book_from_file(path: String) -> Result<models::Book, String> {
     let mut conn: SqliteConnection = establish_connection();
 
     let mut doc = EpubDoc::new(path.clone()).map_err(|_| String::from("Cannot read epub file"))?;
@@ -264,9 +264,16 @@ pub fn add_book_from_file(path: String) -> Result<models::Book, String> {
 
 #[tauri::command]
 #[specta::specta]
-pub fn add_multiple_books_from_files(paths: Vec<String>) -> Result<(), String> {
+pub async fn add_multiple_books_from_files(paths: Vec<String>) -> Result<(), String> {
     for path in paths {
-        let _ = add_book_from_file(path).map_err(|e| e.to_string());
+        let res = add_book_from_file(path).await;
+        match res {
+            Ok(_) => (),
+            Err(e) => {
+                println!("{e}");
+                return Err(String::from("Error adding book"));
+            }
+        }
     }
 
     Ok(())
