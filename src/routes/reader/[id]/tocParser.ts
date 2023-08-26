@@ -3,6 +3,7 @@ export type NavPoint = {
 	label: string;
 	children: NavPoint[];
 	page?: number;
+	playOrder?: number;
 };
 
 export function parseNcxToc(doc: Element, basePath: string): NavPoint[] {
@@ -16,13 +17,22 @@ export function parseNcxToc(doc: Element, basePath: string): NavPoint[] {
 			childNavPoint.querySelector(':scope > navLabel')?.querySelector(':scope > text')
 				?.textContent ?? '';
 
+		const playOrder = Number.parseInt(childNavPoint.getAttribute('playOrder') ?? '0');
+
 		const newNavPoint = {
 			content: buildEpubUri(basePath, content),
 			label,
-			children: parseNcxToc(childNavPoint, basePath)
+			children: parseNcxToc(childNavPoint, basePath),
+			playOrder
 		};
 		navPoints.push(newNavPoint);
 	}
+
+	navPoints.sort((a, b) => {
+		const aPlayOrder = a.playOrder ?? 0;
+		const bPlayOrder = b.playOrder ?? 0;
+		return aPlayOrder - bPlayOrder;
+	});
 
 	return navPoints;
 }

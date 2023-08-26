@@ -136,7 +136,7 @@
 			document.head.appendChild(styleNode);
 		}
 
-		for (const s of str2) {
+		for (const [index, s] of str2.entries()) {
 			const xmlDoc = parser.parseFromString(s[1], 'application/xhtml+xml');
 			// console.log(xmlDoc);
 			// console.log(s);
@@ -180,6 +180,7 @@
 				bodyIdElement = `<span id="${xmlDoc.body.id}"></span>`;
 			}
 			newHtml += `<div id="${s[0]}" class="new-body ${xmlDoc.body.classList.toString()}">
+					${index === 0 ? '<div id="text-epub-start"></div>' : ''}
 					${bodyIdElement}${xmlDoc.body.outerHTML}
 			</div>`;
 		}
@@ -245,13 +246,13 @@
 	}
 
 	function onKeyDown(e: KeyboardEvent) {
-		if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+		if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'd' || e.key === ' ') {
 			e.preventDefault();
 			nextPage();
-		} else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+		} else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'a') {
 			e.preventDefault();
 			prevPage();
-		} else if (e.key === 'a') {
+		} else if (e.key === 'l') {
 			console.log(readerNode?.scrollLeft);
 			console.log(readerNode?.scrollWidth);
 		}
@@ -287,6 +288,7 @@
 
 		if (a?.tagName === 'A') {
 			e.preventDefault();
+			if (!a.href.startsWith('epub://')) return;
 			anchorClick(a);
 		}
 	}
@@ -333,6 +335,8 @@
 
 	function onResize() {
 		totalPages = Math.ceil(readerNode.scrollWidth / (readerWidth + COLUMN_GAP));
+		readerNode.scrollLeft =
+			Math.floor(readerNode.scrollLeft / (readerWidth + COLUMN_GAP)) * (readerWidth + COLUMN_GAP);
 		calculateTocPageNumbers(tocData);
 		tocData = tocData;
 	}
@@ -421,7 +425,7 @@
 			</button>
 			<h2 use:melt={$title} class="mb-4 text-lg font-medium text-black">Table of Contents</h2>
 			<section>
-				<Toc {tocData} {currentPage} />
+				<Toc {tocData} {currentPage} isRoot={true} />
 			</section>
 		</div>
 	{/if}
