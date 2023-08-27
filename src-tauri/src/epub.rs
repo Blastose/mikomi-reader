@@ -119,20 +119,20 @@ pub async fn get_epub(path: &str) -> Result<EpubData, ()> {
 fn get_toc_data(mut doc: EpubDoc<BufReader<File>>) -> Option<Toc> {
     let possible_tocs = vec![
         PossibleTocId {
-            id: "nav",
-            kind: TocKind::Nav,
-        },
-        PossibleTocId {
-            id: "toc",
-            kind: TocKind::Nav,
+            id: "toc.ncx",
+            kind: TocKind::Ncx,
         },
         PossibleTocId {
             id: "ncx",
             kind: TocKind::Ncx,
         },
         PossibleTocId {
-            id: "toc.ncx",
-            kind: TocKind::Ncx,
+            id: "nav",
+            kind: TocKind::Nav,
+        },
+        PossibleTocId {
+            id: "toc",
+            kind: TocKind::Nav,
         },
     ];
 

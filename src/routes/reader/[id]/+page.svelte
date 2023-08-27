@@ -8,6 +8,14 @@
 	import { fade, fly } from 'svelte/transition';
 	import Toc from './Toc.svelte';
 	import { parseNavToc, parseNcxToc, type NavPoint } from './tocParser';
+	import Bookmarks from './Bookmarks.svelte';
+	import { window as tauriWindow } from '@tauri-apps/api';
+	import { TauriEvent } from '@tauri-apps/api/event';
+
+	tauriWindow.getCurrent().listen(TauriEvent.WINDOW_CLOSE_REQUESTED, async () => {
+		console.log('alsdkjalsd');
+		await tauriWindow.getCurrent().close();
+	});
 
 	const {
 		elements: { trigger, overlay, content, title, description, close, portalled },
@@ -368,6 +376,80 @@
 		}
 	}
 
+	function jumpToHTMLElement(el: HTMLElement) {
+		console.log(el);
+		readerNode.scrollLeft =
+			Math.floor(el.offsetLeft / (readerWidth + COLUMN_GAP)) * (readerWidth + COLUMN_GAP);
+		updateCurrentPage();
+		history.pushState(currentPage, '');
+	}
+
+	function getSelector(el: Element) {
+		if (el.classList.contains('text-epub')) return 'body';
+		const names = [];
+
+		while (el.parentElement && !el.classList.contains('text-epub')) {
+			if (el.id) {
+				names.push('#' + escapeSelectorCharacters(el.getAttribute('id')!));
+				break;
+			} else {
+				let count = 1;
+				let e = el;
+				while (e.previousElementSibling) {
+					e = e.previousElementSibling;
+					count++;
+				}
+				names.push(el.tagName.toLowerCase() + ':nth-child(' + count + ')');
+			}
+
+			el = el.parentElement;
+		}
+		return names.reverse().join(' > ');
+	}
+
+	function getCurrentElementOnPage() {
+		let el: HTMLElement | null = null;
+		let foundPage = -1;
+		const validTagNames = ['P', 'SPAN', 'DIV', 'IMG', 'IMAGE', 'SECTION'];
+		for (const e of document.querySelectorAll<HTMLElement>('.text-epub *')) {
+			if (!validTagNames.includes(e.tagName)) {
+				continue;
+			}
+
+			const rect = e.getBoundingClientRect();
+			let res =
+				rect.top >= 0 &&
+				rect.left >= 0 &&
+				rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+				rect.right <= (window.innerWidth || document.documentElement.clientWidth);
+			if (res) {
+				const scrollLeft =
+					Math.floor(e.offsetLeft / (readerWidth + COLUMN_GAP)) * (readerWidth + COLUMN_GAP);
+				const page = calculatePageFromScrollLeft(scrollLeft);
+
+				if (page !== currentPage) {
+					continue;
+				}
+
+				el = e;
+				foundPage = page;
+				break;
+			}
+		}
+
+		if (!el) return;
+
+		const selector = getSelector(el);
+		console.log(selector);
+		console.log(document.querySelector(selector));
+
+		bookmarks.push({ el, page: foundPage });
+		bookmarks = bookmarks;
+		console.log(bookmarks);
+	}
+
+	let bookmarks: { el: HTMLElement; page?: number }[] = [];
+
 	onMount(async () => {
 		await openFile();
 
@@ -405,12 +487,11 @@
 		/>
 		<div
 			use:melt={$content}
-			class="fixed left-0 top-0 overflow-y-auto z-50 h-screen w-full max-w-[350px] bg-white p-6
+			class="fixed left-0 top-0 overflow-y-auto z-50 h-screen w-full max-w-[550px] bg-white p-6
             shadow-lg focus:outline-none"
 			transition:fly={{
-				x: -350,
-				duration: 300,
-				opacity: 1
+				x: -550,
+				duration: 300
 			}}
 		>
 			<button
@@ -459,7 +540,8 @@
 		<p class="line-clamp-1">
 			p:{currentPage}/{totalPages}|{readerNode?.scrollLeft}|{readerNode?.scrollWidth}|{readerWidth}|{path}
 		</p>
-		<a href="#toc-004" on:click={() => {}}>Jump Test</a>
+		<button on:click={getCurrentElementOnPage}>Get It</button>
+		<Bookmarks {bookmarks} onClick={jumpToHTMLElement} />
 		<button
 			on:click={() => {
 				console.log(history);
