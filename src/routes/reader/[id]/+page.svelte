@@ -221,14 +221,12 @@
 
 	function prevPage() {
 		readerNode.scrollLeft -= readerWidth + COLUMN_GAP;
+		readerNode.scrollTop -= readerHeight + COLUMN_GAP;
 		updateCurrentPage();
 	}
 	function nextPage() {
-		// readerNode.scrollTo({
-		// 	left: readerNode.scrollLeft + readerWidth + COLUMN_GAP,
-		// 	behavior: 'smooth'
-		// });
 		readerNode.scrollLeft += readerWidth + COLUMN_GAP;
+		readerNode.scrollTop += readerHeight + COLUMN_GAP;
 		updateCurrentPage();
 	}
 
@@ -284,8 +282,16 @@
 		return 1 + Math.ceil(scrollLeft / (readerWidth + COLUMN_GAP));
 	}
 
+	function calculatePageFromScrollTop(scrollTop: number) {
+		return 1 + Math.ceil(scrollTop / (readerHeight + COLUMN_GAP));
+	}
+
 	function updateCurrentPage() {
-		currentPage = calculatePageFromScrollLeft(readerNode.scrollLeft);
+		if (writingMode === 'hori') {
+			currentPage = calculatePageFromScrollLeft(readerNode.scrollLeft);
+		} else {
+			currentPage = calculatePageFromScrollTop(readerNode.scrollTop);
+		}
 	}
 
 	function onKeyDown(e: KeyboardEvent) {
@@ -350,6 +356,9 @@
 
 		readerNode.scrollLeft =
 			Math.floor(el.offsetLeft / (readerWidth + COLUMN_GAP)) * (readerWidth + COLUMN_GAP);
+
+		readerNode.scrollTop =
+			Math.floor(el.offsetTop / (readerHeight + COLUMN_GAP)) * (readerHeight + COLUMN_GAP);
 		updateCurrentPage();
 		history.pushState(currentPage, '');
 
@@ -364,10 +373,11 @@
 
 	let fontSize = 16;
 	let columnCount = 1;
+	let writingMode: 'vert' | 'hori' = 'hori';
 
 	let startX = 0;
 
-	let maxHeight = 0;
+	let readerHeight = 0;
 
 	$: console.log(`scrollLeft: ${readerNode?.scrollLeft}`);
 	$: console.log(`scrollWidth: ${readerNode?.scrollWidth}`);
@@ -463,6 +473,7 @@
 				rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
 				rect.right <= (window.innerWidth || document.documentElement.clientWidth);
 			if (res) {
+				// TODO change this for vertical-rl
 				const scrollLeft =
 					Math.floor(e.offsetLeft / (readerWidth + COLUMN_GAP)) * (readerWidth + COLUMN_GAP);
 				const page = calculatePageFromScrollLeft(scrollLeft);
@@ -620,10 +631,12 @@
 
 	{#if html}
 		<div
-			style="--column-count: {columnCount}; --max-height: {maxHeight}px; font-size: {fontSize}px !important;"
-			class="text-epub text-lr"
+			style="--column-count: {columnCount}; --max-height: {readerHeight}px; --max-width: {readerWidth}px; font-size: {fontSize}px !important;"
+			class="text-epub text-lr {writingMode === 'hori'
+				? 'writing-horizontal-tb'
+				: 'writing-vertical-rl'}"
 			bind:this={readerNode}
-			bind:clientHeight={maxHeight}
+			bind:clientHeight={readerHeight}
 			bind:clientWidth={readerWidth}
 		>
 			{@html html}
@@ -687,6 +700,11 @@
 					columnCount = columnCount === 1 ? 2 : 1;
 				}}>ColCount</button
 			>
+			<button
+				on:click={() => {
+					writingMode = writingMode === 'hori' ? 'vert' : 'hori';
+				}}>Writing Dir</button
+			>
 		</div>
 	{/if}
 </main>
@@ -700,7 +718,7 @@
 	:global(image),
 	:global(svg:has(image)) {
 		max-height: var(--max-height) !important;
-		max-width: 100% !important;
+		max-width: var(--max-width) !important;
 		height: auto;
 		object-fit: contain;
 	}
@@ -716,6 +734,7 @@
 		user-select: text;
 		max-height: calc(100dvh - 200px);
 		height: 100vh;
+		width: 100vw;
 		max-width: 100%;
 		overflow-y: hidden;
 		overflow-x: hidden;
@@ -724,17 +743,38 @@
 		/* column-gap needs to match the variable `columnGap` above */
 		column-gap: 16px;
 		scroll-snap-type: x mandatory;
-		writing-mode: horizontal-tb !important;
+		/* writing-mode: horizontal-tb !important;
 		-epub-writing-mode: horizontal-tb !important;
 		-webkit-writing-mode: horizontal-tb !important;
-		text-orientation: sideways !important;
+		text-orientation: sideways !important; */
 	}
 
-	:global(div.new-body) {
+	.text-epub.writing-vertical-rl {
+		column-count: 1 !important;
+	}
+
+	.writing-horizontal-tb :global(div.new-body) {
 		writing-mode: horizontal-tb !important;
 		-epub-writing-mode: horizontal-tb !important;
 		-webkit-writing-mode: horizontal-tb !important;
-		text-orientation: sideways !important;
+	}
+
+	.writing-vertical-rl :global(div.new-body) {
+		writing-mode: vertical-rl !important;
+		-epub-writing-mode: vertical-rl !important;
+		-webkit-writing-mode: vertical-rl !important;
+	}
+
+	.writing-horizontal-tb {
+		writing-mode: horizontal-tb !important;
+		-epub-writing-mode: horizontal-tb !important;
+		-webkit-writing-mode: horizontal-tb !important;
+	}
+
+	.writing-vertical-rl {
+		writing-mode: vertical-rl !important;
+		-epub-writing-mode: vertical-rl !important;
+		-webkit-writing-mode: vertical-rl !important;
 	}
 
 	.text-lr :global(*) {

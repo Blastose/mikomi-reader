@@ -63,7 +63,7 @@
 			<label class="mb-2.5 block text-sm leading-none text-neutral-900" for="new">
 				New password
 			</label>
-			<input id="new" type="password" />
+			<input id="new1" type="password" />
 		</fieldset>
 		<div class="mt-5 flex justify-end">
 			<button class="save">Save changes</button>
@@ -78,7 +78,7 @@
 			<label class="mb-2.5 block text-sm leading-none text-neutral-900" for="new">
 				New email
 			</label>
-			<input id="new" type="password" />
+			<input id="new2" type="password" />
 		</fieldset>
 		<div class="mt-5 flex justify-end">
 			<button class="save">Save changes</button>
