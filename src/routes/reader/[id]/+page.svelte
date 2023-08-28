@@ -369,7 +369,9 @@
 
 	let maxHeight = 0;
 
-	$: console.log(readerNode?.scrollLeft);
+	$: console.log(`scrollLeft: ${readerNode?.scrollLeft}`);
+	$: console.log(`scrollWidth: ${readerNode?.scrollWidth}`);
+	$: console.log(`offsetWidth: ${readerNode?.offsetWidth}`);
 
 	function onPopstate(e: PopStateEvent) {
 		e.preventDefault();
@@ -622,7 +624,7 @@
 			class="text-epub text-lr"
 			bind:this={readerNode}
 			bind:clientHeight={maxHeight}
-			bind:offsetWidth={readerWidth}
+			bind:clientWidth={readerWidth}
 		>
 			{@html html}
 		</div>
@@ -697,8 +699,8 @@
 	:global(img),
 	:global(image),
 	:global(svg:has(image)) {
-		max-height: var(--max-height);
-		max-width: 100%;
+		max-height: var(--max-height) !important;
+		max-width: 100% !important;
 		height: auto;
 		object-fit: contain;
 	}
