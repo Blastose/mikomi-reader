@@ -5,11 +5,17 @@
 	export let currentPage: number;
 </script>
 
-<div class="flex flex-col {toc.page && currentPage > toc.page ? 'text-gray-300' : ''}">
+<div
+	class="flex items-start justify-between {toc.page && currentPage > toc.page
+		? 'text-gray-300'
+		: ''}"
+>
 	<a href={toc.content} title={toc.content}>{toc.label}</a>
 	{#if toc.page}
-		<span class="text-sm {toc.page && currentPage > toc.page ? 'text-gray-300' : 'text-gray-500'}"
-			>p{toc.page}</span
+		<span
+			class="text-sm min-w-[64px] text-end {toc.page && currentPage > toc.page
+				? 'text-gray-300'
+				: 'text-gray-500'}">{toc.page}</span
 		>
 	{/if}
 </div>

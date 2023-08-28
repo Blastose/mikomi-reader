@@ -3,7 +3,7 @@
 	import { onDestroy, onMount, tick } from 'svelte';
 	import postcss from 'postcss';
 	import prefixer from 'postcss-prefix-selector';
-	import { IconLoader2, IconX } from '@tabler/icons-svelte';
+	import { IconChevronLeft, IconChevronRight, IconLoader2, IconX } from '@tabler/icons-svelte';
 	import { createDialog, melt } from '@melt-ui/svelte';
 	import { fade, fly } from 'svelte/transition';
 	import Toc from './Toc.svelte';
@@ -11,11 +11,12 @@
 	import Bookmarks from './Bookmarks.svelte';
 	import { window as tauriWindow } from '@tauri-apps/api';
 	import { TauriEvent } from '@tauri-apps/api/event';
+	import ReaderSidebar from './ReaderSidebar.svelte';
 
-	tauriWindow.getCurrent().listen(TauriEvent.WINDOW_CLOSE_REQUESTED, async () => {
-		console.log('alsdkjalsd');
-		await tauriWindow.getCurrent().close();
-	});
+	// tauriWindow.getCurrent().listen(TauriEvent.WINDOW_CLOSE_REQUESTED, async () => {
+	// 	console.log('alsdkjalsd');
+	// 	await tauriWindow.getCurrent().close();
+	// });
 
 	const {
 		elements: { trigger, overlay, content, title, description, close, portalled },
@@ -80,8 +81,6 @@
 	const COLUMN_GAP = 16;
 
 	let swipeScroll = false;
-
-	let path: string;
 	let readerWidth: number;
 	let readerNode: HTMLDivElement;
 
@@ -233,6 +232,42 @@
 		updateCurrentPage();
 	}
 
+	let disabledNextPageSmooth = false;
+	function smoothScrollTo(scrollLeft: number) {
+		if (disabledNextPageSmooth) return;
+		if (scrollLeft < 0 || scrollLeft > readerNode.scrollWidth) return;
+		disabledNextPageSmooth = true;
+		const targetScrollLeft =
+			scrollLeft > readerNode.scrollLeft
+				? Math.ceil(scrollLeft / (readerWidth + COLUMN_GAP)) * (readerWidth + COLUMN_GAP)
+				: Math.floor(scrollLeft / (readerWidth + COLUMN_GAP)) * (readerWidth + COLUMN_GAP);
+		const currentScrollLeft = readerNode.scrollLeft;
+
+		const duration = 300;
+		function easeOutQuint(t: number) {
+			return 1 + --t * t * t * t * t;
+		}
+
+		const startTime = performance.now();
+		function scroll(timestamp: number) {
+			const elapsed = timestamp - startTime;
+			const progress = Math.min(elapsed / duration, 1);
+			const easedProgress = easeOutQuint(progress);
+
+			const newScrollLeft =
+				currentScrollLeft + (targetScrollLeft - currentScrollLeft) * easedProgress;
+			readerNode.scrollLeft = newScrollLeft;
+
+			if (progress < 1) {
+				requestAnimationFrame(scroll);
+			}
+		}
+
+		requestAnimationFrame(scroll);
+		updateCurrentPage();
+		disabledNextPageSmooth = false;
+	}
+
 	function updateDisplayedPage(pageNumber: number) {
 		readerNode.scrollLeft = (pageNumber - 1) * (readerWidth + COLUMN_GAP);
 	}
@@ -317,6 +352,8 @@
 			Math.floor(el.offsetLeft / (readerWidth + COLUMN_GAP)) * (readerWidth + COLUMN_GAP);
 		updateCurrentPage();
 		history.pushState(currentPage, '');
+
+		open.set(false);
 	}
 
 	$: history.replaceState({ page: currentPage }, '');
@@ -325,7 +362,8 @@
 	let currentPage = 1;
 	let totalPages = 1;
 
-	let fontSize = 20;
+	let fontSize = 16;
+	let columnCount = 1;
 
 	let startX = 0;
 
@@ -487,7 +525,7 @@
 		/>
 		<div
 			use:melt={$content}
-			class="fixed left-0 top-0 overflow-y-auto z-50 h-screen w-full max-w-[550px] bg-white p-6
+			class="fixed left-0 top-0 overflow-y-auto z-50 h-screen w-full max-w-[550px] bg-white p-6 pt-12
             shadow-lg focus:outline-none"
 			transition:fly={{
 				x: -550,
@@ -504,9 +542,27 @@
 			>
 				<IconX />
 			</button>
+			<ReaderSidebar />
 			<h2 use:melt={$title} class="mb-4 text-lg font-medium text-black">Table of Contents</h2>
 			<section>
 				<Toc {tocData} {currentPage} isRoot={true} />
+			</section>
+
+			<h2 use:melt={$title} class="mb-4 text-lg font-medium text-black">Bookmarks</h2>
+			<section class="flex flex-col gap-2">
+				{#each bookmarks as bookmark, index}
+					<div class="flex justify-between">
+						<button
+							class="text-left"
+							on:click={() => {
+								jumpToHTMLElement(bookmark.el);
+							}}
+						>
+							Bookmark #{index}
+						</button>
+						<span>{bookmark.page}</span>
+					</div>
+				{/each}
 			</section>
 		</div>
 	{/if}
@@ -538,7 +594,9 @@
 <main class="container px-12 py-8 mx-auto duration-150">
 	<div class="flex gap-2">
 		<p class="line-clamp-1">
-			p:{currentPage}/{totalPages}|{readerNode?.scrollLeft}|{readerNode?.scrollWidth}|{readerWidth}|{path}
+			p:{currentPage}/{totalPages}|
+			{readerNode?.scrollLeft.toFixed(2)}
+			|{readerNode?.scrollWidth}|{readerWidth}
 		</p>
 		<button on:click={getCurrentElementOnPage}>Get It</button>
 		<Bookmarks {bookmarks} onClick={jumpToHTMLElement} />
@@ -560,7 +618,7 @@
 
 	{#if html}
 		<div
-			style="--max-height: {maxHeight}px; font-size: {fontSize}px !important;"
+			style="--column-count: {columnCount}; --max-height: {maxHeight}px; font-size: {fontSize}px !important;"
 			class="text-epub text-lr"
 			bind:this={readerNode}
 			bind:clientHeight={maxHeight}
@@ -605,7 +663,28 @@
 				min={1}
 				max={totalPages}
 			/>
+			<section class="flex">
+				<button
+					class="hover:bg-slate-200 rounded-full text-slate-700 duration-300"
+					on:click={() => {
+						smoothScrollTo(readerNode.scrollLeft - readerWidth + COLUMN_GAP);
+					}}
+					aria-label="Prev page"><IconChevronLeft /></button
+				>
+				<button
+					class="hover:bg-slate-200 rounded-full text-slate-700 duration-300"
+					on:click={() => {
+						smoothScrollTo(readerNode.scrollLeft + readerWidth + COLUMN_GAP);
+					}}
+					aria-label="Next page"><IconChevronRight /></button
+				>
+			</section>
 			{currentPage !== totalPages ? (((currentPage - 1) / totalPages) * 100).toFixed(2) : 100}%
+			<button
+				on:click={() => {
+					columnCount = columnCount === 1 ? 2 : 1;
+				}}>ColCount</button
+			>
 		</div>
 	{/if}
 </main>
@@ -638,7 +717,7 @@
 		max-width: 100%;
 		overflow-y: hidden;
 		overflow-x: hidden;
-		column-count: 1;
+		column-count: var(--column-count);
 		column-fill: auto;
 		/* column-gap needs to match the variable `columnGap` above */
 		column-gap: 16px;
