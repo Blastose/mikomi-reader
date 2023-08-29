@@ -42,15 +42,19 @@ struct BookWithAuthors {
 
 #[derive(Serialize, Type)]
 pub struct BookWithAuthorsAndCover {
+    #[serde(flatten)]
     book: models::Book,
     authors: Vec<models::Author>,
     cover: Option<String>,
 }
 
 #[derive(Serialize, Type)]
-pub struct BookWithBookmarks {
+pub struct BookWithAuthorsAndCoverAndBookmarks {
+    #[serde(flatten)]
     book: models::Book,
+    authors: Vec<models::Author>,
     bookmarks: Vec<models::Bookmark>,
+    cover: Option<String>,
 }
 
 #[tauri::command]
@@ -69,28 +73,52 @@ pub fn add_bookmark(new_bookmark: models::Bookmark) -> Result<(), String> {
 
 #[tauri::command]
 #[specta::specta]
-pub fn get_book(id: String) -> Option<BookWithBookmarks> {
+pub fn get_book(id: String) -> Option<BookWithAuthorsAndCoverAndBookmarks> {
     let mut conn: SqliteConnection = establish_connection();
 
-    let book: Vec<models::Book> = schema::book::table
+    let books: Vec<models::Book> = schema::book::table
         .filter(schema::book::id.eq(id))
         .select(models::Book::as_select())
         .get_results(&mut conn)
         .unwrap();
 
-    let bookmarks: Vec<models::Bookmark> = models::Bookmark::belonging_to(&book)
+    let bookmarks: Vec<models::Bookmark> = models::Bookmark::belonging_to(&books)
         .select(models::Bookmark::as_select())
         .load(&mut conn)
         .unwrap();
 
-    let books_with_bookmarks = bookmarks
-        .grouped_by(&book)
-        .into_iter()
-        .zip(book)
-        .map(|(bookmarks, book)| BookWithBookmarks { book, bookmarks })
-        .collect::<Vec<BookWithBookmarks>>();
+    let authors_with_book_link: Vec<(models::BookAuthorLink, models::Author)> =
+        models::BookAuthorLink::belonging_to(&books)
+            .inner_join(schema::author::table)
+            .select((
+                models::BookAuthorLink::as_select(),
+                models::Author::as_select(),
+            ))
+            .load::<(models::BookAuthorLink, models::Author)>(&mut conn)
+            .unwrap();
 
-    books_with_bookmarks.into_iter().nth(0)
+    let book = match books.into_iter().nth(0) {
+        Some(v) => v,
+        None => return None,
+    };
+
+    let path = Path::new("mikomi-data/covers").join(book.id.clone());
+    let cover = fs::read(path);
+    let engine = general_purpose::STANDARD_NO_PAD;
+    let cover = match cover {
+        Ok(c) => {
+            let encoded = engine.encode(c);
+            Some(encoded)
+        }
+        Err(_) => None,
+    };
+
+    Some(BookWithAuthorsAndCoverAndBookmarks {
+        book,
+        authors: authors_with_book_link.into_iter().map(|(_, a)| a).collect(),
+        bookmarks,
+        cover,
+    })
 }
 
 #[tauri::command]
@@ -271,8 +299,8 @@ pub async fn add_book_from_file(path: String) -> Result<models::Book, String> {
         None => return Err(String::from("No cover found in epub")),
     }
 
-    let f = vec![];
-    let authors = doc.metadata.get("creator").unwrap_or(&f);
+    let empty_vec = vec![];
+    let authors = doc.metadata.get("creator").unwrap_or(&empty_vec);
     let mut author_ids: Vec<String> = vec![];
     for a in authors {
         let id = upsert_author(a.to_string());

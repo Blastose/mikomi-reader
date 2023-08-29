@@ -101,7 +101,7 @@
 		loading = true;
 
 		const t0 = performance.now();
-		const { html: str2, img: imgs, css: csses, toc } = await getEpub(data.book.book.path);
+		const { html: str2, img: imgs, css: csses, toc } = await getEpub(data.book.path);
 		const parser = new DOMParser();
 
 		console.log(toc);
@@ -499,7 +499,7 @@
 		console.log(bookmarks);
 
 		addBookmark({
-			book_id: data.book.book.id,
+			book_id: data.book.id,
 			css_selector: selector,
 			date_added: Math.floor(Date.now() / 1000),
 			display_text: 'Bookmark',
@@ -515,7 +515,8 @@
 		calculateTocPageNumbers(tocData);
 		bookmarks = data.book.bookmarks.map((e) => {
 			const el = document.querySelector(e.css_selector)! as HTMLElement;
-			const scrollLeft = Math.floor(el.offsetLeft / (readerWidth + COLUMN_GAP)) * (readerWidth + COLUMN_GAP);
+			const scrollLeft =
+				Math.floor(el.offsetLeft / (readerWidth + COLUMN_GAP)) * (readerWidth + COLUMN_GAP);
 			return {
 				el,
 				page: calculatePageFromScrollLeft(scrollLeft)
