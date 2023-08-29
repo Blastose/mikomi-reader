@@ -47,6 +47,52 @@ pub struct BookWithAuthorsAndCover {
     cover: Option<String>,
 }
 
+#[derive(Serialize, Type)]
+pub struct BookWithBookmarks {
+    book: models::Book,
+    bookmarks: Vec<models::Bookmark>,
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn add_bookmark(new_bookmark: models::Bookmark) -> Result<(), String> {
+    let mut conn: SqliteConnection = establish_connection();
+    let res = diesel::insert_into(schema::bookmark::table)
+        .values(&new_bookmark)
+        .execute(&mut conn);
+
+    match res {
+        Ok(_) => return Ok(()),
+        Err(_) => return Err(String::from("Cannot add bookmark")),
+    }
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn get_book(id: String) -> Option<BookWithBookmarks> {
+    let mut conn: SqliteConnection = establish_connection();
+
+    let book: Vec<models::Book> = schema::book::table
+        .filter(schema::book::id.eq(id))
+        .select(models::Book::as_select())
+        .get_results(&mut conn)
+        .unwrap();
+
+    let bookmarks: Vec<models::Bookmark> = models::Bookmark::belonging_to(&book)
+        .select(models::Bookmark::as_select())
+        .load(&mut conn)
+        .unwrap();
+
+    let books_with_bookmarks = bookmarks
+        .grouped_by(&book)
+        .into_iter()
+        .zip(book)
+        .map(|(bookmarks, book)| BookWithBookmarks { book, bookmarks })
+        .collect::<Vec<BookWithBookmarks>>();
+
+    books_with_bookmarks.into_iter().nth(0)
+}
+
 #[tauri::command]
 #[specta::specta]
 pub fn get_books() -> Vec<BookWithAuthorsAndCover> {

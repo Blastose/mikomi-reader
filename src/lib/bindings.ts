@@ -10,6 +10,10 @@ declare global {
 // Function avoids 'window not defined' in SSR
 const invoke = () => window.__TAURI_INVOKE__;
 
+export function getBook(id: string) {
+    return invoke()<BookWithBookmarks | null>("get_book", { id })
+}
+
 export function getBooks() {
     return invoke()<BookWithAuthorsAndCover[]>("get_books")
 }
@@ -22,6 +26,10 @@ export function addMultipleBooksFromFiles(paths: string[]) {
     return invoke()<null>("add_multiple_books_from_files", { paths })
 }
 
+export function addBookmark(newBookmark: Bookmark) {
+    return invoke()<null>("add_bookmark", { newBookmark })
+}
+
 export function getEpub(path: string) {
     return invoke()<EpubData>("get_epub", { path })
 }
@@ -30,5 +38,7 @@ export type BookWithAuthorsAndCover = { book: Book; authors: Author[]; cover: st
 export type Toc = { kind: TocKind; content: string; path: string }
 export type EpubData = { html: ([string, string])[]; img: { [key: string]: [number[], number, number] }; css: { [key: string]: string }; toc: Toc | null }
 export type TocKind = "Ncx" | "Nav"
+export type BookWithBookmarks = { book: Book; bookmarks: Bookmark[] }
 export type Book = { id: string; title: string; path: string }
 export type Author = { id: string; name: string }
+export type Bookmark = { id: string; book_id: string; display_text: string; date_added: number; css_selector: string }

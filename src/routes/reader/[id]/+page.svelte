@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getEpub } from '$lib/bindings';
+	import { addBookmark, getEpub } from '$lib/bindings';
 	import { onDestroy, onMount, tick } from 'svelte';
 	import postcss from 'postcss';
 	import prefixer from 'postcss-prefix-selector';
@@ -497,6 +497,14 @@
 		bookmarks.push({ el, page: foundPage });
 		bookmarks = bookmarks;
 		console.log(bookmarks);
+
+		addBookmark({
+			book_id: data.book.book.id,
+			css_selector: selector,
+			date_added: Math.floor(Date.now() / 1000),
+			display_text: 'Bookmark',
+			id: crypto.randomUUID()
+		});
 	}
 
 	let bookmarks: { el: HTMLElement; page?: number }[] = [];
@@ -505,6 +513,14 @@
 		await openFile();
 
 		calculateTocPageNumbers(tocData);
+		bookmarks = data.book.bookmarks.map((e) => {
+			const el = document.querySelector(e.css_selector)! as HTMLElement;
+			const scrollLeft = Math.floor(el.offsetLeft / (readerWidth + COLUMN_GAP)) * (readerWidth + COLUMN_GAP);
+			return {
+				el,
+				page: calculatePageFromScrollLeft(scrollLeft)
+			};
+		});
 	});
 
 	onDestroy(() => {
@@ -718,7 +734,8 @@
 	:global(image),
 	:global(svg:has(image)) {
 		max-height: var(--max-height) !important;
-		max-width: var(--max-width) !important;
+		/* TODO Need to set max-height/max-width separately depending on writing-mode  */
+		/* max-width: var(--max-width) !important; */
 		height: auto;
 		object-fit: contain;
 	}

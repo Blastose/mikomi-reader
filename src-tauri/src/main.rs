@@ -13,9 +13,11 @@ fn main() {
     #[cfg(debug_assertions)]
     ts::export(
         collect_types![
+            db::get_book,
             db::get_books,
             db::add_book_from_file,
             db::add_multiple_books_from_files,
+            db::add_bookmark,
             epub::get_epub
         ],
         "../src/lib/bindings.ts",
@@ -27,9 +29,11 @@ fn main() {
 
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
+            db::get_book,
             db::get_books,
             db::add_book_from_file,
             db::add_multiple_books_from_files,
+            db::add_bookmark,
             epub::get_epub
         ])
         .run(tauri::generate_context!())

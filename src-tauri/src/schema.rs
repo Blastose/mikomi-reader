@@ -23,11 +23,23 @@ diesel::table! {
     }
 }
 
+diesel::table! {
+    bookmark (id) {
+        id -> Text,
+        book_id -> Text,
+        display_text -> Text,
+        date_added -> Integer,
+        css_selector -> Text,
+    }
+}
+
 diesel::joinable!(book_author_link -> author (author_id));
 diesel::joinable!(book_author_link -> book (book_id));
+diesel::joinable!(bookmark -> book (book_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     author,
     book,
     book_author_link,
+    bookmark,
 );
