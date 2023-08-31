@@ -19,7 +19,7 @@
 		"@playwright/test": "^1.28.1",
 		"@sveltejs/adapter-auto": "^2.0.0",
 		"@sveltejs/adapter-static": "^2.0.2",
-		"@sveltejs/kit": "^1.20.4",
+		"@sveltejs/kit": "^1.24.0",
 		"@tauri-apps/cli": "^1.4.0",
 		"@types/postcss-prefix-selector": "^1.15.0",
 		"@typescript-eslint/eslint-plugin": "^5.45.0",
@@ -36,7 +36,7 @@
 		"svelte-sequential-preprocessor": "^2.0.1",
 		"tailwindcss": "^3.3.3",
 		"tslib": "^2.4.1",
-		"typescript": "^5.0.0",
+		"typescript": "^5.2.2",
 		"vite": "^4.4.2",
 		"vitest": "^0.32.2"
 	},
