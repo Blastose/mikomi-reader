@@ -73,6 +73,35 @@ pub fn add_bookmark(new_bookmark: models::Bookmark) -> Result<(), String> {
 
 #[tauri::command]
 #[specta::specta]
+pub fn remove_bookmark(id: String) -> Result<(), String> {
+    let mut conn: SqliteConnection = establish_connection();
+
+    let res = diesel::delete(schema::bookmark::table.filter(schema::bookmark::id.eq(id)))
+        .execute(&mut conn);
+
+    match res {
+        Ok(_) => return Ok(()),
+        Err(_) => return Err(String::from("Cannot delete bookmark")),
+    }
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn update_bookmark(id: String, display_text: String) -> Result<(), String> {
+    let mut conn: SqliteConnection = establish_connection();
+
+    let res = diesel::update(schema::bookmark::table.filter(schema::bookmark::id.eq(id)))
+        .set(schema::bookmark::display_text.eq(display_text))
+        .execute(&mut conn);
+
+    match res {
+        Ok(_) => return Ok(()),
+        Err(_) => return Err(String::from("Cannot update bookmark")),
+    }
+}
+
+#[tauri::command]
+#[specta::specta]
 pub fn get_book(id: String) -> Option<BookWithAuthorsAndCoverAndBookmarks> {
     let mut conn: SqliteConnection = establish_connection();
 

@@ -30,6 +30,14 @@ export function addBookmark(newBookmark: Bookmark) {
     return invoke()<null>("add_bookmark", { newBookmark })
 }
 
+export function removeBookmark(id: string) {
+    return invoke()<null>("remove_bookmark", { id })
+}
+
+export function updateBookmark(id: string, displayText: string) {
+    return invoke()<null>("update_bookmark", { id,displayText })
+}
+
 export function getEpub(path: string) {
     return invoke()<EpubData>("get_epub", { path })
 }

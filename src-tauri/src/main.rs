@@ -18,6 +18,8 @@ fn main() {
             db::add_book_from_file,
             db::add_multiple_books_from_files,
             db::add_bookmark,
+            db::remove_bookmark,
+            db::update_bookmark,
             epub::get_epub
         ],
         "../src/lib/bindings.ts",
@@ -34,6 +36,8 @@ fn main() {
             db::add_book_from_file,
             db::add_multiple_books_from_files,
             db::add_bookmark,
+            db::remove_bookmark,
+            db::update_bookmark,
             epub::get_epub
         ])
         .run(tauri::generate_context!())

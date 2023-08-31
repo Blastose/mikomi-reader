@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { addBookmark, getEpub } from '$lib/bindings';
+	import { addBookmark, getEpub, removeBookmark } from '$lib/bindings';
 	import { onDestroy, onMount, tick } from 'svelte';
 	import postcss from 'postcss';
 	import prefixer from 'postcss-prefix-selector';
@@ -12,6 +12,7 @@
 	import { window as tauriWindow } from '@tauri-apps/api';
 	import { TauriEvent } from '@tauri-apps/api/event';
 	import ReaderSidebar from './ReaderSidebar.svelte';
+	import { addToast } from '$lib/components/toast/ToastContainer.svelte';
 
 	// tauriWindow.getCurrent().listen(TauriEvent.WINDOW_CLOSE_REQUESTED, async () => {
 	// 	console.log('alsdkjalsd');
@@ -78,7 +79,7 @@
 		return prefed;
 	}
 
-	const COLUMN_GAP = 16;
+	const COLUMN_GAP = 24;
 
 	let swipeScroll = false;
 	let readerWidth: number;
@@ -488,7 +489,10 @@
 			}
 		}
 
-		if (!el) return;
+		if (!el) {
+			addToast({ data: { title: 'Cannot add bookmark on this page', description: '', color: '' } });
+			return;
+		}
 
 		const selector = getSelector(el);
 		console.log(selector);
@@ -502,9 +506,10 @@
 			book_id: data.book.id,
 			css_selector: selector,
 			date_added: Math.floor(Date.now() / 1000),
-			display_text: 'Bookmark',
+			display_text: `Bookmark #${bookmarks.length}`,
 			id: crypto.randomUUID()
 		});
+		addToast({ data: { title: 'Added bookmark', description: '', color: '' } });
 	}
 
 	let bookmarks: { el: HTMLElement; page?: number }[] = [];
@@ -648,7 +653,7 @@
 
 	{#if html}
 		<div
-			style="--column-count: {columnCount}; --max-height: {readerHeight}px; --max-width: {readerWidth}px; font-size: {fontSize}px !important;"
+			style="--column-gap: {COLUMN_GAP}px; --column-count: {columnCount}; --max-height: {readerHeight}px; --max-width: {readerWidth}px; font-size: {fontSize}px !important;"
 			class="text-epub text-lr {writingMode === 'hori'
 				? 'writing-horizontal-tb'
 				: 'writing-vertical-rl'}"
@@ -759,7 +764,8 @@
 		column-count: var(--column-count);
 		column-fill: auto;
 		/* column-gap needs to match the variable `columnGap` above */
-		column-gap: 16px;
+		column-gap: var(--column-gap);
+		/* column-rule: 1px solid rgb(233, 234, 236); */
 		scroll-snap-type: x mandatory;
 		/* writing-mode: horizontal-tb !important;
 		-epub-writing-mode: horizontal-tb !important;
@@ -793,10 +799,6 @@
 		writing-mode: vertical-rl !important;
 		-epub-writing-mode: vertical-rl !important;
 		-webkit-writing-mode: vertical-rl !important;
-	}
-
-	.text-lr :global(*) {
-		text-indent: 0 !important;
 	}
 
 	.text-epub :global(img) {
