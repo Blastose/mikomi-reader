@@ -4,6 +4,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { loadEpub } from '$lib/components/reader/loadEpub.js';
 	import { clearEpubStyles } from '$lib/components/reader/utils.js';
+	import { fade } from 'svelte/transition';
 
 	export let data;
 
@@ -17,6 +18,8 @@
 	let readerHeight: number;
 	let readerWidth: number;
 	let columnGap = 24;
+	let page: number;
+	let totalPages: number;
 
 	let blobUrls: string[] = [];
 
@@ -41,15 +44,50 @@
 	{#if loading}
 		<p>Loading...</p>
 	{:else}
-		<Reader
-			bind:html
-			bind:columnCount
-			bind:fontSize
-			bind:writingMode
-			bind:readerNode
-			bind:readerHeight
-			bind:readerWidth
-			bind:columnGap
-		/>
+		<div class="relative mt-4">
+			<div class="absolute -top-8 left-1/2 -translate-x-1/2">
+				{#key page}
+					<p class="line-clamp-1 text-gray-500">
+						{data.book.title}
+					</p>
+				{/key}
+			</div>
+			<Reader
+				bind:html
+				bind:columnCount
+				bind:fontSize
+				bind:writingMode
+				bind:readerNode
+				bind:readerHeight
+				bind:readerWidth
+				bind:columnGap
+				bind:page
+				bind:totalPages
+			/>
+			{#if columnCount === 1}
+				<div class="absolute bottom-0 left-1/2 -translate-x-1/2">
+					{#key page}
+						<p class="text-gray-500">
+							{page} of {totalPages}
+						</p>
+					{/key}
+				</div>
+			{:else}
+				<div class="absolute bottom-0 left-1/4 -translate-x-1/4">
+					{#key page}
+						<p class="text-gray-500">
+							{page * 2 - 1} of {totalPages * 2}
+						</p>
+					{/key}
+				</div>
+				<div class="absolute bottom-0 left-3/4 -translate-x-3/4">
+					{#key page}
+						<p class="text-gray-500">
+							{page * 2} of {totalPages * 2}
+						</p>
+					{/key}
+				</div>
+			{/if}
+		</div>
 	{/if}
 </div>

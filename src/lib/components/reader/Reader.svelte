@@ -1,6 +1,8 @@
 <script lang="ts">
-	import { smoothScrollTo } from './utils';
+	import { onMount, tick } from 'svelte';
+	import { getPageFromScroll, getScrollAlignedToPageFloor, smoothScrollTo } from './utils';
 	import type { Orientation } from './utils';
+	import debounce from 'just-debounce-it';
 
 	export let html: string;
 
@@ -14,8 +16,8 @@
 	export let readerWidth: number;
 	export let columnGap = 24;
 
-	let page: number;
-	let totalPages: number;
+	export let page: number;
+	export let totalPages: number;
 
 	function nextPage() {
 		readerNode.scrollLeft += readerWidth + columnGap;
@@ -46,26 +48,78 @@
 		} else if (e.key === 'ArrowLeft') {
 			e.preventDefault();
 			prevPageSmoothHorizontal();
+		} else if (e.key === 'd') {
+			e.preventDefault();
+			nextPage();
+		} else if (e.key === 'a') {
+			e.preventDefault();
+			prevPage();
 		}
+		updateCurrentPage();
 	}
 
 	function onScroll(e: WheelEvent) {
-		e.preventDefault();
 		if (e.deltaY > 0) {
 			nextPage();
 		} else {
 			prevPage();
 		}
+		updateCurrentPage();
 	}
+
+	function updateCurrentPage(newPage?: number) {
+		if (newPage) {
+			page = newPage;
+		} else {
+			if (writingMode === 'horizontal') {
+				page = getPageFromScroll(readerNode?.scrollLeft, pageSize);
+			} else {
+				page = getPageFromScroll(readerNode?.scrollTop, pageSize);
+			}
+		}
+	}
+
+	function updateTotalPages() {
+		if (writingMode === 'horizontal') {
+			totalPages = getPageFromScroll(readerNode?.scrollWidth, pageSize) - 1;
+		} else {
+			totalPages = getPageFromScroll(readerNode?.scrollHeight, pageSize) - 1;
+		}
+	}
+
+	let fillerPageAtEnd = false;
+	function checkTwoColumnViewRequiresFillerPageAtEnd() {
+		if (columnCount !== 2) return false;
+		const totalPagesWithTwoColumns = Math.round(2 * (readerNode.scrollWidth / pageSize));
+		return totalPagesWithTwoColumns % 2 === 1;
+	}
+
+	async function onResize() {
+		await tick();
+		console.log('alsdjldj');
+		readerNode.scrollLeft = getScrollAlignedToPageFloor(readerNode.scrollLeft, pageSize);
+		readerNode.scrollTop = getScrollAlignedToPageFloor(readerNode.scrollTop, pageSize);
+		updateCurrentPage();
+		updateTotalPages();
+	}
+
+	const debouncedOnResize = debounce(onResize, 500);
+
+	$: pageSize = writingMode === 'horizontal' ? readerWidth + columnGap : readerHeight + columnGap;
+
+	onMount(() => {
+		updateCurrentPage();
+		updateTotalPages();
+	});
 </script>
 
-<svelte:window on:wheel={onScroll} on:keydown={onKeyDown} />
+<svelte:window on:wheel={onScroll} on:keydown={onKeyDown} on:resize={debouncedOnResize} />
 
 <div
 	style="--column-gap: {columnGap}px;
          --column-count: {columnCount}; 
          --max-height: {readerHeight * 0.95}px; 
-         --max-width: {readerWidth}px; 
+         --max-width: {readerWidth * 0.95}px; 
          font-size: {fontSize}px !important;"
 	class="text-epub
         {writingMode === 'horizontal' ? 'writing-horizontal-tb' : 'writing-vertical-rl'}"
@@ -74,6 +128,37 @@
 	bind:clientWidth={readerWidth}
 >
 	{@html html}
+	{#if fillerPageAtEnd}
+		<div id="filler-column" class="new-body">This page is left blank</div>
+	{/if}
+</div>
+<div class="">
+	<div>
+		<button
+			on:click={async () => {
+				columnCount = columnCount === 1 ? 2 : 1;
+				await tick();
+				updateTotalPages();
+			}}>Col</button
+		>
+		<button
+			on:click={() => {
+				writingMode = writingMode === 'horizontal' ? 'vertical' : 'horizontal';
+			}}>Dir</button
+		>
+		<button
+			on:click={() => {
+				console.log(checkTwoColumnViewRequiresFillerPageAtEnd());
+				fillerPageAtEnd = checkTwoColumnViewRequiresFillerPageAtEnd();
+			}}
+		>
+			Req 2
+		</button>
+	</div>
+	<p>{page}/{totalPages}</p>
+	<p>{readerWidth}</p>
+	<p>{pageSize}</p>
+	<p>{readerNode?.scrollWidth}</p>
 </div>
 
 <style>
@@ -92,11 +177,20 @@
 		column-gap: var(--column-gap);
 	}
 
-	.text-epub :global(img),
-	.text-epub :global(image),
-	.text-epub :global(svg:has(image)) {
+	.text-epub.writing-horizontal-tb :global(img),
+	.text-epub.writing-horizontal-tb :global(image),
+	.text-epub.writing-horizontal-tb :global(svg:has(image)) {
 		max-height: var(--max-height) !important;
 		max-width: 100%;
+		height: auto;
+		object-fit: contain;
+	}
+
+	.text-epub.writing-vertical-rl :global(img),
+	.text-epub.writing-vertical-rl :global(image),
+	.text-epub.writing-vertical-rl :global(svg:has(image)) {
+		max-height: 100%;
+		max-width: var(--max-width) !important;
 		height: auto;
 		object-fit: contain;
 	}

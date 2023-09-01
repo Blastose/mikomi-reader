@@ -45,6 +45,7 @@
 		"@melt-ui/svelte": "^0.32.1",
 		"@tabler/icons-svelte": "^2.29.0",
 		"@tauri-apps/api": "^1.4.0",
+		"just-debounce-it": "^3.2.0",
 		"postcss-prefix-selector": "^1.16.0"
 	}
 }
