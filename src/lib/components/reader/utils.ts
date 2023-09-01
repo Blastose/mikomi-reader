@@ -1,19 +1,35 @@
-export function smoothScrollTo(scrollTo: number, node: HTMLElement, onFinish?: () => void) {
+export function smoothScrollTo(
+	scrollTo: number,
+	node: HTMLElement,
+	pageSize: number,
+	onFinish?: () => void
+) {
+	const targetScrollLeft =
+		scrollTo > node.scrollLeft
+			? Math.ceil(scrollTo / pageSize) * pageSize
+			: Math.floor(scrollTo / pageSize) * pageSize;
+	const currentScrollLeft = node.scrollLeft;
+	const targetScrollTop =
+		scrollTo > node.scrollTop
+			? Math.ceil(scrollTo / pageSize) * pageSize
+			: Math.floor(scrollTo / pageSize) * pageSize;
+	const currentScrollTop = node.scrollTop;
+
 	const duration = 300;
 	function easeOutQuint(t: number) {
 		return 1 + --t * t * t * t * t;
 	}
-	const start = performance.now();
-	function scroll(t: number) {
-		const elapsed = t - start;
+
+	const startTime = performance.now();
+	function scroll(timestamp: number) {
+		const elapsed = timestamp - startTime;
 		const progress = Math.min(elapsed / duration, 1);
 		const easedProgress = easeOutQuint(progress);
 
-		const currentScrollLeft = node.scrollLeft;
-		const currentScrollTop = node.scrollTop;
-		const newScrollLeft = currentScrollLeft + easedProgress * (scrollTo - currentScrollLeft);
-		const newScrollTop = currentScrollTop + easedProgress * (scrollTo - currentScrollTop);
+		const newScrollLeft =
+			currentScrollLeft + (targetScrollLeft - currentScrollLeft) * easedProgress;
 		node.scrollLeft = newScrollLeft;
+		const newScrollTop = currentScrollTop + (targetScrollTop - currentScrollTop) * easedProgress;
 		node.scrollTop = newScrollTop;
 
 		if (progress < 1) {
@@ -64,7 +80,11 @@ export function getPageFromScroll(scroll: number, pageSize: number) {
 	return 1 + Math.ceil(scroll / pageSize);
 }
 
-export function getScrollAlignedToPage(scroll: number, pageSize: number) {
+export function getScrollAlignedToPageFloor(scroll: number, pageSize: number) {
+	return Math.floor(scroll / pageSize) * pageSize;
+}
+
+export function getScrollAlignedToPageCeil(scroll: number, pageSize: number) {
 	return Math.floor(scroll / pageSize) * pageSize;
 }
 
@@ -99,4 +119,11 @@ export function getVisibleElementInParentElement(containerElement: HTMLElement) 
 	}
 
 	return foundElement;
+}
+
+export function clearEpubStyles() {
+	const styleNodes = document.querySelectorAll('style.epub-css') ?? [];
+	for (const node of styleNodes) {
+		node.remove();
+	}
 }

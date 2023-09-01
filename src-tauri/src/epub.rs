@@ -6,9 +6,15 @@ use std::{collections::HashMap, fs::File, io::BufReader};
 use xml::reader::{ParserConfig, XmlEvent};
 
 #[derive(Serialize, Type)]
+pub struct HtmlData {
+    id: String,
+    html_content: String,
+}
+
+#[derive(Serialize, Type)]
 pub struct EpubData {
-    html: Vec<(String, String)>,
-    img: HashMap<String, (Vec<u8>, u32, u32)>,
+    html: Vec<HtmlData>,
+    img: HashMap<String, ImageData>,
     css: HashMap<String, String>,
     toc: Option<Toc>,
 }
@@ -31,14 +37,21 @@ pub struct PossibleTocId<'a> {
     pub id: &'a str,
 }
 
+#[derive(Serialize, Type)]
+pub struct ImageData {
+    data: Vec<u8>,
+    width: u32,
+    height: u32,
+}
+
 #[tauri::command]
 #[specta::specta]
 pub async fn get_epub(path: &str) -> Result<EpubData, ()> {
     let doc = EpubDoc::new(path);
     let mut doc = doc.unwrap();
-    let mut imgs: HashMap<String, (Vec<u8>, u32, u32)> = HashMap::new();
+    let mut imgs: HashMap<String, ImageData> = HashMap::new();
     let mut csses: HashMap<String, String> = HashMap::new();
-    let mut html_full: Vec<(String, String)> = vec![];
+    let mut html_full: Vec<HtmlData> = vec![];
 
     loop {
         let current_path = doc.get_current_path().unwrap();
@@ -63,7 +76,14 @@ pub async fn get_epub(path: &str) -> Result<EpubData, ()> {
                                     doc.get_resource_by_path(res_without_epub_prefix).unwrap();
                                 let (width, height) =
                                     image::load_from_memory(&img).unwrap().dimensions();
-                                imgs.insert(res.to_string(), (img, width, height));
+                                imgs.insert(
+                                    res.to_string(),
+                                    ImageData {
+                                        data: img,
+                                        width,
+                                        height,
+                                    },
+                                );
                             }
                         }
                     } else if name.local_name == "link" {
@@ -99,7 +119,10 @@ pub async fn get_epub(path: &str) -> Result<EpubData, ()> {
 
         let st_ht = String::from_utf8(ht).unwrap();
 
-        html_full.push((String::from(current_path.to_string_lossy()), st_ht));
+        html_full.push(HtmlData {
+            id: String::from(current_path.to_string_lossy()),
+            html_content: st_ht,
+        });
 
         if !doc.go_next() {
             break;

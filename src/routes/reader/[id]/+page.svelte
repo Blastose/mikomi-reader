@@ -13,6 +13,7 @@
 	import { TauriEvent } from '@tauri-apps/api/event';
 	import ReaderSidebar from './ReaderSidebar.svelte';
 	import { addToast } from '$lib/components/toast/ToastContainer.svelte';
+	import { WebviewWindow } from '@tauri-apps/api/window';
 
 	// tauriWindow.getCurrent().listen(TauriEvent.WINDOW_CLOSE_REQUESTED, async () => {
 	// 	console.log('alsdkjalsd');
@@ -145,7 +146,7 @@
 		}
 
 		for (const [index, s] of str2.entries()) {
-			const xmlDoc = parser.parseFromString(s[1], 'application/xhtml+xml');
+			const xmlDoc = parser.parseFromString(s.html_content, 'application/xhtml+xml');
 			// console.log(xmlDoc);
 			// console.log(s);
 
@@ -156,11 +157,11 @@
 			for (const node of imgNodes) {
 				const img = imgs[node.src];
 
-				const blob = new Blob([new Uint8Array(img[0])]);
+				const blob = new Blob([new Uint8Array(img.data)]);
 				const blobUrl = URL.createObjectURL(blob);
 				node.src = blobUrl;
-				node.setAttribute('width', String(img[1]));
-				node.setAttribute('height', String(img[2]));
+				node.setAttribute('width', String(img.width));
+				node.setAttribute('height', String(img.height));
 				objectUrls.push(blobUrl);
 			}
 
@@ -170,15 +171,15 @@
 				node.removeAttribute('preserveAspectRatio');
 			}
 
-			const imageNodes: any = xmlDoc.querySelector('body')?.querySelectorAll('image');
+			const imageNodes: any = xmlDoc.querySelectorAll('body image');
 			for (const node of imageNodes) {
 				const img = imgs[node.getAttribute('xlink:href')];
 
-				const blob = new Blob([new Uint8Array(img[0])]);
+				const blob = new Blob([new Uint8Array(img.data)]);
 				const blobUrl = URL.createObjectURL(blob);
 				node.setAttribute('xlink:href', blobUrl);
-				node.setAttribute('width', String(img[1]));
-				node.setAttribute('height', String(img[2]));
+				node.setAttribute('width', String(img.width));
+				node.setAttribute('height', String(img.height));
 				objectUrls.push(blobUrl);
 			}
 			// console.log(xmlDoc.body.outerHTML);
@@ -187,7 +188,7 @@
 			if (xmlDoc.body.id) {
 				bodyIdElement = `<span id="${xmlDoc.body.id}"></span>`;
 			}
-			newHtml += `<div id="${s[0]}" class="new-body ${xmlDoc.body.classList.toString()}">
+			newHtml += `<div id="${s.id}" class="new-body ${xmlDoc.body.classList.toString()}">
 					${index === 0 ? '<div id="text-epub-start"></div>' : ''}
 					${bodyIdElement}${xmlDoc.body.outerHTML}
 			</div>`;
@@ -628,6 +629,16 @@
 
 <main class="container px-12 py-8 mx-auto duration-150">
 	<div class="flex gap-2">
+		<button
+			on:click={() => {
+				new WebviewWindow(`${data.book.id}2`, {
+					url: `/reader2/${data.book.id}`,
+					height: 1070,
+					width: 720,
+					title: `${data.book.title} - Mikomi Reader`
+				});
+			}}>2</button
+		>
 		<p class="line-clamp-1">
 			p:{currentPage}/{totalPages}|
 			{readerNode?.scrollLeft.toFixed(2)}
@@ -653,7 +664,8 @@
 
 	{#if html}
 		<div
-			style="--column-gap: {COLUMN_GAP}px; --column-count: {columnCount}; --max-height: {readerHeight}px; --max-width: {readerWidth}px; font-size: {fontSize}px !important;"
+			style="--column-gap: {COLUMN_GAP}px; --column-count: {columnCount}; --max-height: {readerHeight *
+				0.95}px; --max-width: {readerWidth}px; font-size: {fontSize}px !important;"
 			class="text-epub text-lr {writingMode === 'hori'
 				? 'writing-horizontal-tb'
 				: 'writing-vertical-rl'}"
@@ -740,7 +752,9 @@
 	:global(image),
 	:global(svg:has(image)) {
 		max-height: var(--max-height) !important;
+		max-width: 100%;
 		/* TODO Need to set max-height/max-width separately depending on writing-mode  */
+		/* max-height: 100%??? */
 		/* max-width: var(--max-width) !important; */
 		height: auto;
 		object-fit: contain;
@@ -807,6 +821,7 @@
 
 	.text-epub > :global(div.new-body) {
 		break-before: column;
+		break-inside: auto;
 	}
 
 	.text-epub :global([epub\:type='pagebreak']) {

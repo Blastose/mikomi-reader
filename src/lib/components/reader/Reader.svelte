@@ -5,9 +5,9 @@
 	export let html: string;
 
 	// Settings
-	export let columnCount: number;
-	export let fontSize: number;
-	export let writingMode: Orientation;
+	export let columnCount: number = 1;
+	export let fontSize: number = 16;
+	export let writingMode: Orientation = 'horizontal';
 
 	export let readerNode: HTMLDivElement;
 	export let readerHeight: number;
@@ -16,12 +16,55 @@
 
 	let page: number;
 	let totalPages: number;
+
+	function nextPage() {
+		readerNode.scrollLeft += readerWidth + columnGap;
+		readerNode.scrollTop += readerHeight + columnGap;
+	}
+
+	function prevPage() {
+		readerNode.scrollLeft -= readerWidth + columnGap;
+		readerNode.scrollTop -= readerHeight + columnGap;
+	}
+
+	function nextPageSmoothHorizontal() {
+		const scrollLeft = readerNode.scrollLeft + readerWidth + columnGap;
+
+		smoothScrollTo(scrollLeft, readerNode, readerWidth + columnGap);
+	}
+
+	function prevPageSmoothHorizontal() {
+		const scrollLeft = readerNode.scrollLeft - readerWidth + columnGap;
+
+		smoothScrollTo(scrollLeft, readerNode, readerWidth + columnGap);
+	}
+
+	function onKeyDown(e: KeyboardEvent) {
+		if (e.key === 'ArrowRight') {
+			e.preventDefault();
+			nextPageSmoothHorizontal();
+		} else if (e.key === 'ArrowLeft') {
+			e.preventDefault();
+			prevPageSmoothHorizontal();
+		}
+	}
+
+	function onScroll(e: WheelEvent) {
+		e.preventDefault();
+		if (e.deltaY > 0) {
+			nextPage();
+		} else {
+			prevPage();
+		}
+	}
 </script>
+
+<svelte:window on:wheel={onScroll} on:keydown={onKeyDown} />
 
 <div
 	style="--column-gap: {columnGap}px;
          --column-count: {columnCount}; 
-         --max-height: {readerHeight}px; 
+         --max-height: {readerHeight * 0.95}px; 
          --max-width: {readerWidth}px; 
          font-size: {fontSize}px !important;"
 	class="text-epub
@@ -47,6 +90,20 @@
 		column-count: var(--column-count);
 		column-fill: auto;
 		column-gap: var(--column-gap);
+	}
+
+	.text-epub :global(img),
+	.text-epub :global(image),
+	.text-epub :global(svg:has(image)) {
+		max-height: var(--max-height) !important;
+		max-width: 100%;
+		height: auto;
+		object-fit: contain;
+	}
+
+	.text-epub :global(svg > image) {
+		height: 100%;
+		width: 100%;
 	}
 
 	.text-epub :global(img) {
