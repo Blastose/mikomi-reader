@@ -93,7 +93,7 @@ export function createSelectorFromEpubUri(uri: string): string {
 	uri = uri.replace(/^epub:\/\//, '');
 	const [chapterId, hash] = uri.split('#');
 
-	const selector = `#${CSS.escape(chapterId)}${hash ? `#${CSS.escape(hash)}` : ''}`;
+	const selector = `#${CSS.escape(chapterId)} ${hash ? `#${CSS.escape(hash)}` : ''}`;
 	return selector;
 }
 

@@ -18,7 +18,7 @@
 	let readerHeight: number;
 	let readerWidth: number;
 	let columnGap = 24;
-	let page: number;
+	let currentPage: number;
 	let totalPages: number;
 
 	let blobUrls: string[] = [];
@@ -46,7 +46,7 @@
 	{:else}
 		<div class="relative mt-4">
 			<div class="absolute -top-8 left-1/2 -translate-x-1/2">
-				{#key page}
+				{#key currentPage}
 					<p class="line-clamp-1 text-gray-500">
 						{data.book.title}
 					</p>
@@ -61,29 +61,29 @@
 				bind:readerHeight
 				bind:readerWidth
 				bind:columnGap
-				bind:page
+				bind:currentPage
 				bind:totalPages
 			/>
 			{#if columnCount === 1}
 				<div class="absolute bottom-0 left-1/2 -translate-x-1/2">
-					{#key page}
+					{#key currentPage}
 						<p class="text-gray-500">
-							{page} of {totalPages}
+							{currentPage} of {totalPages}
 						</p>
 					{/key}
 				</div>
 			{:else}
 				<div class="absolute bottom-0 left-1/4 -translate-x-1/4">
-					{#key page}
+					{#key currentPage}
 						<p class="text-gray-500">
-							{page * 2 - 1} of {totalPages * 2}
+							{currentPage * 2 - 1} of {totalPages * 2}
 						</p>
 					{/key}
 				</div>
 				<div class="absolute bottom-0 left-3/4 -translate-x-3/4">
-					{#key page}
+					{#key currentPage}
 						<p class="text-gray-500">
-							{page * 2} of {totalPages * 2}
+							{currentPage * 2} of {totalPages * 2}
 						</p>
 					{/key}
 				</div>

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
 	import {
+		createSelectorFromEpubUri,
 		getFirstVisibleElementInParentElement,
 		getPageFromScroll,
 		getScrollAlignedToPageFloor,
@@ -21,7 +22,7 @@
 	export let readerWidth: number;
 	export let columnGap = 24;
 
-	export let page: number;
+	export let currentPage: number;
 	export let totalPages: number;
 
 	function nextPage() {
@@ -74,12 +75,12 @@
 
 	function updateCurrentPage(newPage?: number) {
 		if (newPage) {
-			page = newPage;
+			currentPage = newPage;
 		} else {
 			if (writingMode === 'horizontal') {
-				page = getPageFromScroll(readerNode?.scrollLeft, pageSize);
+				currentPage = getPageFromScroll(readerNode?.scrollLeft, pageSize);
 			} else {
-				page = getPageFromScroll(readerNode?.scrollTop, pageSize);
+				currentPage = getPageFromScroll(readerNode?.scrollTop, pageSize);
 			}
 		}
 	}
@@ -120,6 +121,44 @@
 
 	const debouncedOnResize = debounce(onResize, 500);
 
+	function onDocumentClick(e: MouseEvent) {
+		const target = e.target as HTMLAnchorElement | null;
+		const a = target?.closest('a');
+
+		if (a?.tagName === 'A') {
+			e.preventDefault();
+			if (!a.href.startsWith('epub://')) return;
+			onAnchorClick(a);
+		}
+	}
+
+	function onAnchorClick(a: HTMLAnchorElement) {
+		const selector = createSelectorFromEpubUri(a.href);
+		const el = document.querySelector<HTMLElement>(selector);
+		if (!el) return;
+
+		const readerNodeRect = readerNode.getBoundingClientRect();
+		const elRect = el.getBoundingClientRect();
+		const scrollLeft = elRect.left - readerNodeRect.left + readerNode.scrollLeft;
+		const scrollTop = elRect.top - readerNodeRect.top + readerNode.scrollTop;
+
+		readerNode.scrollLeft = getScrollAlignedToPageFloor(scrollLeft, pageSize);
+		readerNode.scrollTop = getScrollAlignedToPageFloor(scrollTop, pageSize);
+
+		updateCurrentPage();
+		history.pushState(currentPage, '');
+	}
+
+	function onPopstate(e: PopStateEvent) {
+		e.preventDefault();
+		if (e.state?.page) {
+			currentPage = e.state.page;
+			readerNode.scrollLeft = (currentPage - 1) * pageSize;
+			readerNode.scrollTop = (currentPage - 1) * pageSize;
+		}
+	}
+
+	$: history.replaceState({ page: currentPage }, '');
 	$: pageSize = writingMode === 'horizontal' ? readerWidth + columnGap : readerHeight + columnGap;
 
 	onMount(() => {
@@ -128,7 +167,13 @@
 	});
 </script>
 
-<svelte:window on:wheel={onScroll} on:keydown={onKeyDown} on:resize={debouncedOnResize} />
+<svelte:window
+	on:popstate={onPopstate}
+	on:wheel={onScroll}
+	on:keydown={onKeyDown}
+	on:resize={debouncedOnResize}
+/>
+<svelte:document on:click={onDocumentClick} />
 
 <div
 	style="--column-gap: {columnGap}px;
@@ -180,7 +225,7 @@
 			Req 2
 		</button>
 	</div>
-	<p>{page}/{totalPages}</p>
+	<p>{currentPage}/{totalPages}</p>
 	<p>{readerWidth}</p>
 	<p>{pageSize}</p>
 	<p>{readerNode?.scrollWidth}</p>
