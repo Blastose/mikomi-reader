@@ -1,6 +1,11 @@
 <script lang="ts">
 	import { onMount, tick } from 'svelte';
-	import { getPageFromScroll, getScrollAlignedToPageFloor, smoothScrollTo } from './utils';
+	import {
+		getFirstVisibleElementInParentElement,
+		getPageFromScroll,
+		getScrollAlignedToPageFloor,
+		smoothScrollTo
+	} from './utils';
 	import type { Orientation } from './utils';
 	import debounce from 'just-debounce-it';
 
@@ -94,9 +99,19 @@
 		return totalPagesWithTwoColumns % 2 === 1;
 	}
 
+	async function jumpToLastVisibleElementAfterFunction(func: () => Promise<void>) {
+		const lastVisibleElement = getFirstVisibleElementInParentElement(readerNode);
+		console.log(lastVisibleElement);
+		await func();
+		await tick();
+		if (lastVisibleElement) {
+			readerNode.scrollLeft = getScrollAlignedToPageFloor(lastVisibleElement.offsetLeft, pageSize);
+			readerNode.scrollTop = getScrollAlignedToPageFloor(lastVisibleElement.offsetTop, pageSize);
+		}
+	}
+
 	async function onResize() {
 		await tick();
-		console.log('alsdjldj');
 		readerNode.scrollLeft = getScrollAlignedToPageFloor(readerNode.scrollLeft, pageSize);
 		readerNode.scrollTop = getScrollAlignedToPageFloor(readerNode.scrollTop, pageSize);
 		updateCurrentPage();
@@ -136,14 +151,24 @@
 	<div>
 		<button
 			on:click={async () => {
-				columnCount = columnCount === 1 ? 2 : 1;
+				jumpToLastVisibleElementAfterFunction(async () => {
+					columnCount = columnCount === 1 ? 2 : 1;
+					await tick();
+					fillerPageAtEnd = checkTwoColumnViewRequiresFillerPageAtEnd();
+				});
 				await tick();
+				updateCurrentPage();
 				updateTotalPages();
 			}}>Col</button
 		>
 		<button
-			on:click={() => {
-				writingMode = writingMode === 'horizontal' ? 'vertical' : 'horizontal';
+			on:click={async () => {
+				jumpToLastVisibleElementAfterFunction(async () => {
+					writingMode = writingMode === 'horizontal' ? 'vertical' : 'horizontal';
+				});
+				await tick();
+				updateCurrentPage();
+				updateTotalPages();
 			}}>Dir</button
 		>
 		<button
@@ -175,6 +200,10 @@
 		column-count: var(--column-count);
 		column-fill: auto;
 		column-gap: var(--column-gap);
+	}
+
+	:global(html) {
+		scrollbar-gutter: auto !important;
 	}
 
 	.text-epub.writing-horizontal-tb :global(img),

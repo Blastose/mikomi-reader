@@ -97,7 +97,7 @@ export function createSelectorFromEpubUri(uri: string): string {
 	return selector;
 }
 
-export function getVisibleElementInParentElement(containerElement: HTMLElement) {
+export function getFirstVisibleElementInParentElement(containerElement: HTMLElement) {
 	let foundElement: HTMLElement | null = null;
 	const validTagNames = ['P', 'SPAN', 'DIV', 'IMG', 'IMAGE', 'SECTION'];
 	const containerRect = containerElement.getBoundingClientRect();
