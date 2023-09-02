@@ -4,7 +4,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import { loadEpub } from '$lib/components/reader/loadEpub.js';
 	import { clearEpubStyles } from '$lib/components/reader/utils.js';
-	import { fade } from 'svelte/transition';
+	import { IconBookmark, IconList, IconSearch, IconLetterCase } from '@tabler/icons-svelte';
 
 	export let data;
 
@@ -20,6 +20,7 @@
 	let columnGap = 24;
 	let currentPage: number;
 	let totalPages: number;
+	let pageSize: number;
 
 	let blobUrls: string[] = [];
 
@@ -45,12 +46,22 @@
 		<p>Loading...</p>
 	{:else}
 		<div class="relative mt-4">
-			<div class="absolute -top-8 left-1/2 -translate-x-1/2">
-				{#key currentPage}
-					<p class="line-clamp-1 text-gray-500">
+			<div
+				class="absolute -top-8 w-full gap-6 left-0 text-gray-500 flex justify-between items-center"
+			>
+				<div class="flex gap-1 items-center">
+					<IconList />
+				</div>
+				<div>
+					<p class="line-clamp-1">
 						{data.book.title}
 					</p>
-				{/key}
+				</div>
+				<div class="flex gap-1 items-center">
+					<IconLetterCase />
+					<IconSearch />
+					<IconBookmark />
+				</div>
 			</div>
 			<Reader
 				bind:html
@@ -63,31 +74,30 @@
 				bind:columnGap
 				bind:currentPage
 				bind:totalPages
+				bind:pageSize
 			/>
-			{#if columnCount === 1}
-				<div class="absolute bottom-0 left-1/2 -translate-x-1/2">
-					{#key currentPage}
-						<p class="text-gray-500">
-							{currentPage} of {totalPages}
-						</p>
-					{/key}
-				</div>
-			{:else}
-				<div class="absolute bottom-0 left-1/4 -translate-x-1/4">
-					{#key currentPage}
-						<p class="text-gray-500">
-							{currentPage * 2 - 1} of {totalPages * 2}
-						</p>
-					{/key}
-				</div>
-				<div class="absolute bottom-0 left-3/4 -translate-x-3/4">
-					{#key currentPage}
-						<p class="text-gray-500">
-							{currentPage * 2} of {totalPages * 2}
-						</p>
-					{/key}
-				</div>
-			{/if}
+			<div
+				class="absolute bottom-0 w-full flex -z-50
+				{columnCount === 1 ? 'justify-center' : 'justify-around'}"
+			>
+				{#if columnCount === 1}
+					<p class="text-gray-500">
+						{currentPage} of {totalPages}
+					</p>
+				{:else}
+					<p class="text-gray-500">
+						{currentPage * 2 - 1} of {totalPages * 2}
+					</p>
+					<p class="text-gray-500">
+						{currentPage * 2} of {totalPages * 2}
+					</p>
+				{/if}
+			</div>
+			<div class="text-gray-500 absolute bottom-0 w-full flex justify-end -z-50">
+				<p>
+					{currentPage !== totalPages ? (((currentPage - 1) / totalPages) * 100).toFixed(0) : 100}%
+				</p>
+			</div>
 		</div>
 	{/if}
 </div>

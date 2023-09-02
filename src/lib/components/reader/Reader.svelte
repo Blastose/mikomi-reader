@@ -9,6 +9,7 @@
 	} from './utils';
 	import type { Orientation } from './utils';
 	import debounce from 'just-debounce-it';
+	import SideButtons from './SideButtons.svelte';
 
 	export let html: string;
 
@@ -24,15 +25,17 @@
 
 	export let currentPage: number;
 	export let totalPages: number;
+	export let pageSize: number;
+	$: pageSize = writingMode === 'horizontal' ? readerWidth + columnGap : readerHeight + columnGap;
 
 	function nextPage() {
-		readerNode.scrollLeft += readerWidth + columnGap;
-		readerNode.scrollTop += readerHeight + columnGap;
+		readerNode.scrollLeft += pageSize;
+		readerNode.scrollTop += pageSize;
 	}
 
 	function prevPage() {
-		readerNode.scrollLeft -= readerWidth + columnGap;
-		readerNode.scrollTop -= readerHeight + columnGap;
+		readerNode.scrollLeft -= pageSize;
+		readerNode.scrollTop -= pageSize;
 	}
 
 	function nextPageSmoothHorizontal() {
@@ -149,17 +152,20 @@
 		history.pushState(currentPage, '');
 	}
 
+	function updateScrollFromPageNumber(pageNumber: number) {
+		readerNode.scrollLeft = (pageNumber - 1) * pageSize;
+		readerNode.scrollTop = (pageNumber - 1) * pageSize;
+	}
+
 	function onPopstate(e: PopStateEvent) {
 		e.preventDefault();
 		if (e.state?.page) {
 			currentPage = e.state.page;
-			readerNode.scrollLeft = (currentPage - 1) * pageSize;
-			readerNode.scrollTop = (currentPage - 1) * pageSize;
+			updateScrollFromPageNumber(currentPage);
 		}
 	}
 
 	$: history.replaceState({ page: currentPage }, '');
-	$: pageSize = writingMode === 'horizontal' ? readerWidth + columnGap : readerHeight + columnGap;
 
 	onMount(() => {
 		updateCurrentPage();
@@ -174,6 +180,17 @@
 	on:resize={debouncedOnResize}
 />
 <svelte:document on:click={onDocumentClick} />
+
+<SideButtons
+	nextPage={() => {
+		nextPage();
+		updateCurrentPage();
+	}}
+	prevPage={() => {
+		prevPage();
+		updateCurrentPage();
+	}}
+/>
 
 <div
 	style="--column-gap: {columnGap}px;
@@ -194,9 +211,21 @@
 </div>
 <div class="">
 	<div>
+		<input
+			class="w-full"
+			type="range"
+			min="1"
+			max={totalPages}
+			bind:value={currentPage}
+			on:input={(e) => {
+				updateScrollFromPageNumber(Number(e.currentTarget.value));
+			}}
+		/>
+	</div>
+	<div>
 		<button
 			on:click={async () => {
-				jumpToLastVisibleElementAfterFunction(async () => {
+				await jumpToLastVisibleElementAfterFunction(async () => {
 					columnCount = columnCount === 1 ? 2 : 1;
 					await tick();
 					fillerPageAtEnd = checkTwoColumnViewRequiresFillerPageAtEnd();
@@ -208,8 +237,11 @@
 		>
 		<button
 			on:click={async () => {
-				jumpToLastVisibleElementAfterFunction(async () => {
+				await jumpToLastVisibleElementAfterFunction(async () => {
 					writingMode = writingMode === 'horizontal' ? 'vertical' : 'horizontal';
+					if (writingMode === 'vertical') {
+						fillerPageAtEnd = false;
+					}
 				});
 				await tick();
 				updateCurrentPage();
@@ -225,10 +257,10 @@
 			Req 2
 		</button>
 	</div>
-	<p>{currentPage}/{totalPages}</p>
+	<!-- <p>{currentPage}/{totalPages}</p>
 	<p>{readerWidth}</p>
 	<p>{pageSize}</p>
-	<p>{readerNode?.scrollWidth}</p>
+	<p>{readerNode?.scrollWidth}</p> -->
 </div>
 
 <style>
@@ -236,7 +268,7 @@
 		font-family: 'ヒラギノ角ゴ Pro W3', 'Hiragino Kaku Gothic Pro', 'メイリオ', Meiryo,
 			'ＭＳ Ｐゴシック', sans-serif;
 		user-select: text;
-		max-height: calc(100dvh - 200px);
+		max-height: calc(100dvh - 128px);
 		height: 100vh;
 		width: 100vw;
 		max-width: 100%;
