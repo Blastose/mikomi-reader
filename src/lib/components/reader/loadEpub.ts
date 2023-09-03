@@ -46,7 +46,10 @@ function parseToc(toc: Toc | null) {
 async function addEpubCssToHead(csses: Record<string, string>) {
 	for (const [key, css] of Object.entries(csses)) {
 		let newCss = await prefixCss(css);
-		newCss = newCss.replaceAll(/font-size: *0/g, '');
+		newCss = newCss.replaceAll(/font-size: *0;/g, '');
+		newCss = newCss.replaceAll(/page-break-inside: *always;/g, 'break-inside: column;');
+		newCss = newCss.replaceAll(/page-break-after: *always;/g, 'break-after: column;');
+		newCss = newCss.replaceAll(/page-break-before: *always;/g, 'break-before: column;');
 
 		const styleNode = document.createElement('style');
 		styleNode.id = key;
