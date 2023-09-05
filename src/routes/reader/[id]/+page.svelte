@@ -6,8 +6,8 @@
 	import { IconChevronLeft, IconChevronRight, IconLoader2, IconX } from '@tabler/icons-svelte';
 	import { createDialog, melt } from '@melt-ui/svelte';
 	import { fade, fly } from 'svelte/transition';
-	import Toc from './Toc.svelte';
-	import { parseNavToc, parseNcxToc, type NavPoint } from './tocParser';
+	import Toc from '$lib/components/reader/toc/Toc.svelte';
+	import { parseNavToc, parseNcxToc, type NavPoint } from '$lib/components/reader/toc/tocParser';
 	import Bookmarks from './Bookmarks.svelte';
 	import { window as tauriWindow } from '@tauri-apps/api';
 	import { TauriEvent } from '@tauri-apps/api/event';
@@ -633,8 +633,8 @@
 			on:click={() => {
 				new WebviewWindow(`${data.book.id}2`, {
 					url: `/reader2/${data.book.id}`,
-					height: 1070,
-					width: 720,
+					height: 860,
+					width: 512,
 					title: `${data.book.title} - Mikomi Reader`
 				});
 			}}>2</button

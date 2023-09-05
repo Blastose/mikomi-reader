@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { NavPoint } from './tocParser';
-	import TocItem from './TocItem.svelte';
+	import type { NavPoint } from '$lib/components/reader/toc/tocParser';
+	import TocItem from '$lib/components/reader/toc/TocItem.svelte';
 
 	export let tocData: NavPoint[];
 	export let currentPage: number;

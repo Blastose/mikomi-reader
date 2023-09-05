@@ -10,7 +10,7 @@
 		? 'text-gray-300'
 		: ''}"
 >
-	<a href={toc.content} title={toc.content}>{toc.label}</a>
+	<a href={toc.content}>{toc.label}</a>
 	{#if toc.page}
 		<span
 			class="text-sm min-w-[64px] text-end {toc.page && currentPage > toc.page

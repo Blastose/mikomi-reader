@@ -1,3 +1,5 @@
+import type { NavPoint } from '$lib/components/reader/toc/tocParser';
+
 export function smoothScrollTo(
 	scrollTo: number,
 	node: HTMLElement,
@@ -125,5 +127,28 @@ export function clearEpubStyles() {
 	const styleNodes = document.querySelectorAll('style.epub-css') ?? [];
 	for (const node of styleNodes) {
 		node.remove();
+	}
+}
+
+function getPageFromElement(element: HTMLElement, readingDirection: Orientation, pageSize: number) {
+	const elementScroll = readingDirection === 'horizontal' ? element.offsetLeft : element.offsetTop;
+	const scroll = getScrollAlignedToPageFloor(elementScroll, pageSize);
+	return getPageFromScroll(scroll, pageSize);
+}
+
+export function calculateTocPageNumbers(
+	containerElement: HTMLDivElement,
+	readingDirection: Orientation,
+	pageSize: number,
+	tocData: NavPoint[]
+) {
+	for (const toc of tocData) {
+		const selector = createSelectorFromEpubUri(toc.content);
+		const el = containerElement.querySelector<HTMLElement>(selector);
+		if (!el) return;
+
+		toc.page = getPageFromElement(el, readingDirection, pageSize);
+
+		calculateTocPageNumbers(containerElement, readingDirection, pageSize, toc.children);
 	}
 }

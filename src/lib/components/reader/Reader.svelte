@@ -11,8 +11,11 @@
 	import debounce from 'just-debounce-it';
 	import SideButtons from './SideButtons.svelte';
 	import Ruler from './Ruler.svelte';
+	import { createEventDispatcher } from 'svelte';
+	import type { Writable } from 'svelte/store';
 
 	export let html: string;
+	export let drawerOpen: Writable<boolean>;
 
 	// Settings
 	export let columnCount: number = 1;
@@ -30,6 +33,12 @@
 	$: pageSize = writingMode === 'horizontal' ? readerWidth + columnGap : readerHeight + columnGap;
 
 	let showRuler = false;
+
+	const dispatch = createEventDispatcher();
+
+	function dispatchResize() {
+		dispatch('pageresize');
+	}
 
 	function nextPage() {
 		readerNode.scrollLeft += pageSize;
@@ -66,11 +75,16 @@
 		} else if (e.key === 'a') {
 			e.preventDefault();
 			prevPage();
+		} else if (e.key === 't') {
+			e.preventDefault();
+			drawerOpen.set(true);
 		}
 		updateCurrentPage();
 	}
 
 	function onScroll(e: WheelEvent) {
+		if ($drawerOpen) return;
+
 		if (e.deltaY > 0) {
 			nextPage();
 		} else {
@@ -123,6 +137,7 @@
 		readerNode.scrollTop = getScrollAlignedToPageFloor(readerNode.scrollTop, pageSize);
 		updateCurrentPage();
 		updateTotalPages();
+		dispatchResize();
 	}
 
 	const debouncedOnResize = debounce(onResize, 500);
@@ -153,6 +168,7 @@
 
 		updateCurrentPage();
 		history.pushState(currentPage, '');
+		drawerOpen.set(false);
 	}
 
 	function updateScrollFromPageNumber(pageNumber: number) {
@@ -216,7 +232,7 @@
 		<div id="filler-column" class="new-body">This page is left blank</div>
 	{/if}
 </div>
-<div class="">
+<div>
 	<div>
 		<input
 			class="w-full"

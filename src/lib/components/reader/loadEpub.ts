@@ -1,7 +1,7 @@
 import { getEpub, type HtmlData, type ImageData, type Toc } from '$lib/bindings';
 import postcss from 'postcss';
 import prefixer from 'postcss-prefix-selector';
-import { parseNavToc, parseNcxToc } from '../../../routes/reader/[id]/tocParser';
+import { parseNavToc, parseNcxToc } from '$lib/components/reader/toc/tocParser';
 
 async function prefixCss(css: string) {
 	const prefed = postcss()
