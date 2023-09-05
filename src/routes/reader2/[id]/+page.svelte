@@ -41,7 +41,7 @@
 	});
 </script>
 
-<div class="container px-12 py-8 mx-auto duration-150 flex flex-col">
+<div class="px-12 py-8 mx-auto duration-150 flex flex-col">
 	{#if loading}
 		<p>Loading...</p>
 	{:else}

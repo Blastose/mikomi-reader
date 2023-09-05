@@ -10,6 +10,7 @@
 	import type { Orientation } from './utils';
 	import debounce from 'just-debounce-it';
 	import SideButtons from './SideButtons.svelte';
+	import Ruler from './Ruler.svelte';
 
 	export let html: string;
 
@@ -28,6 +29,8 @@
 	export let pageSize: number;
 	$: pageSize = writingMode === 'horizontal' ? readerWidth + columnGap : readerHeight + columnGap;
 
+	let showRuler = false;
+
 	function nextPage() {
 		readerNode.scrollLeft += pageSize;
 		readerNode.scrollTop += pageSize;
@@ -39,15 +42,15 @@
 	}
 
 	function nextPageSmoothHorizontal() {
-		const scrollLeft = readerNode.scrollLeft + readerWidth + columnGap;
+		const scrollLeft = readerNode.scrollLeft + pageSize;
 
-		smoothScrollTo(scrollLeft, readerNode, readerWidth + columnGap);
+		smoothScrollTo(scrollLeft, readerNode, pageSize);
 	}
 
 	function prevPageSmoothHorizontal() {
-		const scrollLeft = readerNode.scrollLeft - readerWidth + columnGap;
+		const scrollLeft = readerNode.scrollLeft - pageSize;
 
-		smoothScrollTo(scrollLeft, readerNode, readerWidth + columnGap);
+		smoothScrollTo(scrollLeft, readerNode, pageSize);
 	}
 
 	function onKeyDown(e: KeyboardEvent) {
@@ -181,6 +184,10 @@
 />
 <svelte:document on:click={onDocumentClick} />
 
+{#if showRuler}
+	<Ruler />
+{/if}
+
 <SideButtons
 	nextPage={() => {
 		nextPage();
@@ -255,6 +262,13 @@
 			}}
 		>
 			Req 2
+		</button>
+		<button
+			on:click={() => {
+				showRuler = !showRuler;
+			}}
+		>
+			Ruler
 		</button>
 	</div>
 	<!-- <p>{currentPage}/{totalPages}</p>
