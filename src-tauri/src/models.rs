@@ -1,5 +1,5 @@
 use diesel::prelude::*;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use specta::Type;
 
 #[derive(
@@ -27,6 +27,29 @@ pub struct Book {
 pub struct Author {
     pub id: String,
     pub name: String,
+}
+
+#[derive(
+    Queryable,
+    Selectable,
+    Insertable,
+    Deserialize,
+    Serialize,
+    Associations,
+    Identifiable,
+    Type,
+    PartialEq,
+    Debug,
+)]
+#[diesel(belongs_to(Book))]
+#[diesel(table_name = crate::schema::bookmark)]
+#[diesel(check_for_backend(diesel::sqlite::Sqlite))]
+pub struct Bookmark {
+    pub id: String,
+    pub book_id: String,
+    pub display_text: String,
+    pub date_added: i32,
+    pub css_selector: String,
 }
 
 #[derive(

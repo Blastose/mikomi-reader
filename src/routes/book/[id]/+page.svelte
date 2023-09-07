@@ -57,7 +57,7 @@
 			url: newUrl,
 			height: 1070,
 			width: 720,
-			title: `${data.book.book.title} - Mikomi Reader`
+			title: `${data.book.title} - Mikomi Reader`
 		});
 	}
 </script>
@@ -87,7 +87,7 @@
 			style="font-size: 36px;"
 			class="max-w-3xl text-4xl font-bold"
 		>
-			{data.book.book.title}
+			{data.book.title}
 		</p>
 		<p class="text-xs line-clamp-1 sm:line-clamp-3 sm:text-sm">{data.book.authors[0]?.name}</p>
 	</div>
@@ -156,7 +156,7 @@
 
 		{#each { length: 34 } as _}
 			<p>
-				{data.book.book.id}
+				{data.book.id}
 			</p>
 		{/each}
 	</div>

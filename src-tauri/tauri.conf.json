@@ -24,7 +24,7 @@
 			"window": {
 				"all": false,
 				"center": false,
-				"close": false,
+				"close": true,
 				"create": true,
 				"hide": false,
 				"maximize": false,

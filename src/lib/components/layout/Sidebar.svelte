@@ -11,7 +11,9 @@
 	import { page } from '$app/stores';
 </script>
 
-<div class="sticky top-0 z-50 w-full h-screen overflow-y-auto bg-gray-500 scroll bg-opacity-20">
+<div
+	class="sidebar sticky top-0 z-50 w-full h-screen overflow-y-auto bg-gray-500 scroll bg-opacity-20"
+>
 	<div class="flex flex-col gap-1 py-4 pl-3 pr-1">
 		<div class="flex items-center gap-2">
 			<Logo />
@@ -39,6 +41,10 @@
 </div>
 
 <style>
+	.sidebar {
+		view-transition-name: sidebar;
+	}
+
 	.scroll {
 		scrollbar-gutter: stable;
 	}

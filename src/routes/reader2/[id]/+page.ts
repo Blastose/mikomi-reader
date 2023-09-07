@@ -1,7 +1,6 @@
 import type { PageLoad } from './$types';
 import { getBook } from '$lib/bindings';
 
-// TODO - placeholder for testing
 export const load = (async ({ params }) => {
 	const book = await getBook(params.id);
 

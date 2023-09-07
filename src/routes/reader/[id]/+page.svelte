@@ -1,13 +1,24 @@
 <script lang="ts">
-	import { getEpub } from '$lib/bindings';
+	import { addBookmark, getEpub, removeBookmark } from '$lib/bindings';
 	import { onDestroy, onMount, tick } from 'svelte';
 	import postcss from 'postcss';
 	import prefixer from 'postcss-prefix-selector';
-	import { IconLoader2, IconX } from '@tabler/icons-svelte';
+	import { IconChevronLeft, IconChevronRight, IconLoader2, IconX } from '@tabler/icons-svelte';
 	import { createDialog, melt } from '@melt-ui/svelte';
 	import { fade, fly } from 'svelte/transition';
-	import Toc from './Toc.svelte';
-	import { parseNavToc, parseNcxToc, type NavPoint } from './tocParser';
+	import Toc from '$lib/components/reader/toc/Toc.svelte';
+	import { parseNavToc, parseNcxToc, type NavPoint } from '$lib/components/reader/toc/tocParser';
+	import Bookmarks from './Bookmarks.svelte';
+	import { window as tauriWindow } from '@tauri-apps/api';
+	import { TauriEvent } from '@tauri-apps/api/event';
+	import ReaderSidebar from './ReaderSidebar.svelte';
+	import { addToast } from '$lib/components/toast/ToastContainer.svelte';
+	import { WebviewWindow } from '@tauri-apps/api/window';
+
+	// tauriWindow.getCurrent().listen(TauriEvent.WINDOW_CLOSE_REQUESTED, async () => {
+	// 	console.log('alsdkjalsd');
+	// 	await tauriWindow.getCurrent().close();
+	// });
 
 	const {
 		elements: { trigger, overlay, content, title, description, close, portalled },
@@ -69,11 +80,9 @@
 		return prefed;
 	}
 
-	const COLUMN_GAP = 16;
+	const COLUMN_GAP = 24;
 
 	let swipeScroll = false;
-
-	let path: string;
 	let readerWidth: number;
 	let readerNode: HTMLDivElement;
 
@@ -94,7 +103,7 @@
 		loading = true;
 
 		const t0 = performance.now();
-		const { html: str2, img: imgs, css: csses, toc } = await getEpub(data.book.book.path);
+		const { html: str2, img: imgs, css: csses, toc } = await getEpub(data.book.path);
 		const parser = new DOMParser();
 
 		console.log(toc);
@@ -137,7 +146,7 @@
 		}
 
 		for (const [index, s] of str2.entries()) {
-			const xmlDoc = parser.parseFromString(s[1], 'application/xhtml+xml');
+			const xmlDoc = parser.parseFromString(s.html_content, 'application/xhtml+xml');
 			// console.log(xmlDoc);
 			// console.log(s);
 
@@ -148,11 +157,11 @@
 			for (const node of imgNodes) {
 				const img = imgs[node.src];
 
-				const blob = new Blob([new Uint8Array(img[0])]);
+				const blob = new Blob([new Uint8Array(img.data)]);
 				const blobUrl = URL.createObjectURL(blob);
 				node.src = blobUrl;
-				node.setAttribute('width', String(img[1]));
-				node.setAttribute('height', String(img[2]));
+				node.setAttribute('width', String(img.width));
+				node.setAttribute('height', String(img.height));
 				objectUrls.push(blobUrl);
 			}
 
@@ -162,15 +171,15 @@
 				node.removeAttribute('preserveAspectRatio');
 			}
 
-			const imageNodes: any = xmlDoc.querySelector('body')?.querySelectorAll('image');
+			const imageNodes: any = xmlDoc.querySelectorAll('body image');
 			for (const node of imageNodes) {
 				const img = imgs[node.getAttribute('xlink:href')];
 
-				const blob = new Blob([new Uint8Array(img[0])]);
+				const blob = new Blob([new Uint8Array(img.data)]);
 				const blobUrl = URL.createObjectURL(blob);
 				node.setAttribute('xlink:href', blobUrl);
-				node.setAttribute('width', String(img[1]));
-				node.setAttribute('height', String(img[2]));
+				node.setAttribute('width', String(img.width));
+				node.setAttribute('height', String(img.height));
 				objectUrls.push(blobUrl);
 			}
 			// console.log(xmlDoc.body.outerHTML);
@@ -179,7 +188,7 @@
 			if (xmlDoc.body.id) {
 				bodyIdElement = `<span id="${xmlDoc.body.id}"></span>`;
 			}
-			newHtml += `<div id="${s[0]}" class="new-body ${xmlDoc.body.classList.toString()}">
+			newHtml += `<div id="${s.id}" class="new-body ${xmlDoc.body.classList.toString()}">
 					${index === 0 ? '<div id="text-epub-start"></div>' : ''}
 					${bodyIdElement}${xmlDoc.body.outerHTML}
 			</div>`;
@@ -214,15 +223,49 @@
 
 	function prevPage() {
 		readerNode.scrollLeft -= readerWidth + COLUMN_GAP;
+		readerNode.scrollTop -= readerHeight + COLUMN_GAP;
 		updateCurrentPage();
 	}
 	function nextPage() {
-		// readerNode.scrollTo({
-		// 	left: readerNode.scrollLeft + readerWidth + COLUMN_GAP,
-		// 	behavior: 'smooth'
-		// });
 		readerNode.scrollLeft += readerWidth + COLUMN_GAP;
+		readerNode.scrollTop += readerHeight + COLUMN_GAP;
 		updateCurrentPage();
+	}
+
+	let disabledNextPageSmooth = false;
+	function smoothScrollTo(scrollLeft: number) {
+		if (disabledNextPageSmooth) return;
+		if (scrollLeft < 0 || scrollLeft > readerNode.scrollWidth) return;
+		disabledNextPageSmooth = true;
+		const targetScrollLeft =
+			scrollLeft > readerNode.scrollLeft
+				? Math.ceil(scrollLeft / (readerWidth + COLUMN_GAP)) * (readerWidth + COLUMN_GAP)
+				: Math.floor(scrollLeft / (readerWidth + COLUMN_GAP)) * (readerWidth + COLUMN_GAP);
+		const currentScrollLeft = readerNode.scrollLeft;
+
+		const duration = 300;
+		function easeOutQuint(t: number) {
+			return 1 + --t * t * t * t * t;
+		}
+
+		const startTime = performance.now();
+		function scroll(timestamp: number) {
+			const elapsed = timestamp - startTime;
+			const progress = Math.min(elapsed / duration, 1);
+			const easedProgress = easeOutQuint(progress);
+
+			const newScrollLeft =
+				currentScrollLeft + (targetScrollLeft - currentScrollLeft) * easedProgress;
+			readerNode.scrollLeft = newScrollLeft;
+
+			if (progress < 1) {
+				requestAnimationFrame(scroll);
+			}
+		}
+
+		requestAnimationFrame(scroll);
+		updateCurrentPage();
+		disabledNextPageSmooth = false;
 	}
 
 	function updateDisplayedPage(pageNumber: number) {
@@ -241,8 +284,16 @@
 		return 1 + Math.ceil(scrollLeft / (readerWidth + COLUMN_GAP));
 	}
 
+	function calculatePageFromScrollTop(scrollTop: number) {
+		return 1 + Math.ceil(scrollTop / (readerHeight + COLUMN_GAP));
+	}
+
 	function updateCurrentPage() {
-		currentPage = calculatePageFromScrollLeft(readerNode.scrollLeft);
+		if (writingMode === 'hori') {
+			currentPage = calculatePageFromScrollLeft(readerNode.scrollLeft);
+		} else {
+			currentPage = calculatePageFromScrollTop(readerNode.scrollTop);
+		}
 	}
 
 	function onKeyDown(e: KeyboardEvent) {
@@ -307,8 +358,13 @@
 
 		readerNode.scrollLeft =
 			Math.floor(el.offsetLeft / (readerWidth + COLUMN_GAP)) * (readerWidth + COLUMN_GAP);
+
+		readerNode.scrollTop =
+			Math.floor(el.offsetTop / (readerHeight + COLUMN_GAP)) * (readerHeight + COLUMN_GAP);
 		updateCurrentPage();
 		history.pushState(currentPage, '');
+
+		open.set(false);
 	}
 
 	$: history.replaceState({ page: currentPage }, '');
@@ -317,13 +373,17 @@
 	let currentPage = 1;
 	let totalPages = 1;
 
-	let fontSize = 20;
+	let fontSize = 16;
+	let columnCount = 1;
+	let writingMode: 'vert' | 'hori' = 'hori';
 
 	let startX = 0;
 
-	let maxHeight = 0;
+	let readerHeight = 0;
 
-	$: console.log(readerNode?.scrollLeft);
+	$: console.log(`scrollLeft: ${readerNode?.scrollLeft}`);
+	$: console.log(`scrollWidth: ${readerNode?.scrollWidth}`);
+	$: console.log(`offsetWidth: ${readerNode?.offsetWidth}`);
 
 	function onPopstate(e: PopStateEvent) {
 		e.preventDefault();
@@ -368,10 +428,106 @@
 		}
 	}
 
+	function jumpToHTMLElement(el: HTMLElement) {
+		console.log(el);
+		readerNode.scrollLeft =
+			Math.floor(el.offsetLeft / (readerWidth + COLUMN_GAP)) * (readerWidth + COLUMN_GAP);
+		updateCurrentPage();
+		history.pushState(currentPage, '');
+	}
+
+	function getSelector(el: Element) {
+		if (el.classList.contains('text-epub')) return 'body';
+		const names = [];
+
+		while (el.parentElement && !el.classList.contains('text-epub')) {
+			if (el.id) {
+				names.push('#' + escapeSelectorCharacters(el.getAttribute('id')!));
+				break;
+			} else {
+				let count = 1;
+				let e = el;
+				while (e.previousElementSibling) {
+					e = e.previousElementSibling;
+					count++;
+				}
+				names.push(el.tagName.toLowerCase() + ':nth-child(' + count + ')');
+			}
+
+			el = el.parentElement;
+		}
+		return names.reverse().join(' > ');
+	}
+
+	function getCurrentElementOnPage() {
+		let el: HTMLElement | null = null;
+		let foundPage = -1;
+		const validTagNames = ['P', 'SPAN', 'DIV', 'IMG', 'IMAGE', 'SECTION'];
+		for (const e of document.querySelectorAll<HTMLElement>('.text-epub *')) {
+			if (!validTagNames.includes(e.tagName)) {
+				continue;
+			}
+
+			const rect = e.getBoundingClientRect();
+			let res =
+				rect.top >= 0 &&
+				rect.left >= 0 &&
+				rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+				rect.right <= (window.innerWidth || document.documentElement.clientWidth);
+			if (res) {
+				// TODO change this for vertical-rl
+				const scrollLeft =
+					Math.floor(e.offsetLeft / (readerWidth + COLUMN_GAP)) * (readerWidth + COLUMN_GAP);
+				const page = calculatePageFromScrollLeft(scrollLeft);
+
+				if (page !== currentPage) {
+					continue;
+				}
+
+				el = e;
+				foundPage = page;
+				break;
+			}
+		}
+
+		if (!el) {
+			addToast({ data: { title: 'Cannot add bookmark on this page', description: '', color: '' } });
+			return;
+		}
+
+		const selector = getSelector(el);
+		console.log(selector);
+		console.log(document.querySelector(selector));
+
+		bookmarks.push({ el, page: foundPage });
+		bookmarks = bookmarks;
+		console.log(bookmarks);
+
+		addBookmark({
+			book_id: data.book.id,
+			css_selector: selector,
+			date_added: Math.floor(Date.now() / 1000),
+			display_text: `Bookmark #${bookmarks.length}`,
+			id: crypto.randomUUID()
+		});
+		addToast({ data: { title: 'Added bookmark', description: '', color: '' } });
+	}
+
+	let bookmarks: { el: HTMLElement; page?: number }[] = [];
+
 	onMount(async () => {
 		await openFile();
 
 		calculateTocPageNumbers(tocData);
+		bookmarks = data.book.bookmarks.map((e) => {
+			const el = document.querySelector(e.css_selector)! as HTMLElement;
+			const scrollLeft =
+				Math.floor(el.offsetLeft / (readerWidth + COLUMN_GAP)) * (readerWidth + COLUMN_GAP);
+			return {
+				el,
+				page: calculatePageFromScrollLeft(scrollLeft)
+			};
+		});
 	});
 
 	onDestroy(() => {
@@ -405,12 +561,11 @@
 		/>
 		<div
 			use:melt={$content}
-			class="fixed left-0 top-0 overflow-y-auto z-50 h-screen w-full max-w-[350px] bg-white p-6
+			class="fixed left-0 top-0 overflow-y-auto z-50 h-screen w-full max-w-[550px] bg-white p-6 pt-12
             shadow-lg focus:outline-none"
 			transition:fly={{
-				x: -350,
-				duration: 300,
-				opacity: 1
+				x: -550,
+				duration: 300
 			}}
 		>
 			<button
@@ -423,9 +578,27 @@
 			>
 				<IconX />
 			</button>
+			<ReaderSidebar />
 			<h2 use:melt={$title} class="mb-4 text-lg font-medium text-black">Table of Contents</h2>
 			<section>
-				<Toc {tocData} {currentPage} isRoot={true} />
+				<Toc {tocData} {currentPage} {columnCount} />
+			</section>
+
+			<h2 use:melt={$title} class="mb-4 text-lg font-medium text-black">Bookmarks</h2>
+			<section class="flex flex-col gap-2">
+				{#each bookmarks as bookmark, index}
+					<div class="flex justify-between">
+						<button
+							class="text-left"
+							on:click={() => {
+								jumpToHTMLElement(bookmark.el);
+							}}
+						>
+							Bookmark #{index}
+						</button>
+						<span>{bookmark.page}</span>
+					</div>
+				{/each}
 			</section>
 		</div>
 	{/if}
@@ -456,10 +629,23 @@
 
 <main class="container px-12 py-8 mx-auto duration-150">
 	<div class="flex gap-2">
+		<button
+			on:click={() => {
+				new WebviewWindow(`${data.book.id}2`, {
+					url: `/reader2/${data.book.id}`,
+					height: 860,
+					width: 512,
+					title: `${data.book.title} - Mikomi Reader`
+				});
+			}}>2</button
+		>
 		<p class="line-clamp-1">
-			p:{currentPage}/{totalPages}|{readerNode?.scrollLeft}|{readerNode?.scrollWidth}|{readerWidth}|{path}
+			p:{currentPage}/{totalPages}|
+			{readerNode?.scrollLeft.toFixed(2)}
+			|{readerNode?.scrollWidth}|{readerWidth}
 		</p>
-		<a href="#toc-004" on:click={() => {}}>Jump Test</a>
+		<button on:click={getCurrentElementOnPage}>Get It</button>
+		<Bookmarks {bookmarks} onClick={jumpToHTMLElement} />
 		<button
 			on:click={() => {
 				console.log(history);
@@ -478,11 +664,14 @@
 
 	{#if html}
 		<div
-			style="--max-height: {maxHeight}px; font-size: {fontSize}px !important;"
-			class="text-epub text-lr"
+			style="--column-gap: {COLUMN_GAP}px; --column-count: {columnCount}; --max-height: {readerHeight *
+				0.95}px; --max-width: {readerWidth}px; font-size: {fontSize}px !important;"
+			class="text-epub text-lr {writingMode === 'hori'
+				? 'writing-horizontal-tb'
+				: 'writing-vertical-rl'}"
 			bind:this={readerNode}
-			bind:clientHeight={maxHeight}
-			bind:offsetWidth={readerWidth}
+			bind:clientHeight={readerHeight}
+			bind:clientWidth={readerWidth}
 		>
 			{@html html}
 		</div>
@@ -523,7 +712,33 @@
 				min={1}
 				max={totalPages}
 			/>
+			<section class="flex">
+				<button
+					class="hover:bg-slate-200 rounded-full text-slate-700 duration-300"
+					on:click={() => {
+						smoothScrollTo(readerNode.scrollLeft - readerWidth + COLUMN_GAP);
+					}}
+					aria-label="Prev page"><IconChevronLeft /></button
+				>
+				<button
+					class="hover:bg-slate-200 rounded-full text-slate-700 duration-300"
+					on:click={() => {
+						smoothScrollTo(readerNode.scrollLeft + readerWidth + COLUMN_GAP);
+					}}
+					aria-label="Next page"><IconChevronRight /></button
+				>
+			</section>
 			{currentPage !== totalPages ? (((currentPage - 1) / totalPages) * 100).toFixed(2) : 100}%
+			<button
+				on:click={() => {
+					columnCount = columnCount === 1 ? 2 : 1;
+				}}>ColCount</button
+			>
+			<button
+				on:click={() => {
+					writingMode = writingMode === 'hori' ? 'vert' : 'hori';
+				}}>Writing Dir</button
+			>
 		</div>
 	{/if}
 </main>
@@ -536,8 +751,11 @@
 	:global(img),
 	:global(image),
 	:global(svg:has(image)) {
-		max-height: var(--max-height);
+		max-height: var(--max-height) !important;
 		max-width: 100%;
+		/* TODO Need to set max-height/max-width separately depending on writing-mode  */
+		/* max-height: 100%??? */
+		/* max-width: var(--max-width) !important; */
 		height: auto;
 		object-fit: contain;
 	}
@@ -553,29 +771,48 @@
 		user-select: text;
 		max-height: calc(100dvh - 200px);
 		height: 100vh;
+		width: 100vw;
 		max-width: 100%;
 		overflow-y: hidden;
 		overflow-x: hidden;
-		column-count: 1;
+		column-count: var(--column-count);
 		column-fill: auto;
 		/* column-gap needs to match the variable `columnGap` above */
-		column-gap: 16px;
+		column-gap: var(--column-gap);
+		/* column-rule: 1px solid rgb(233, 234, 236); */
 		scroll-snap-type: x mandatory;
+		/* writing-mode: horizontal-tb !important;
+		-epub-writing-mode: horizontal-tb !important;
+		-webkit-writing-mode: horizontal-tb !important;
+		text-orientation: sideways !important; */
+	}
+
+	.text-epub.writing-vertical-rl {
+		column-count: 1 !important;
+	}
+
+	.writing-horizontal-tb :global(div.new-body) {
 		writing-mode: horizontal-tb !important;
 		-epub-writing-mode: horizontal-tb !important;
 		-webkit-writing-mode: horizontal-tb !important;
-		text-orientation: sideways !important;
 	}
 
-	:global(div.new-body) {
+	.writing-vertical-rl :global(div.new-body) {
+		writing-mode: vertical-rl !important;
+		-epub-writing-mode: vertical-rl !important;
+		-webkit-writing-mode: vertical-rl !important;
+	}
+
+	.writing-horizontal-tb {
 		writing-mode: horizontal-tb !important;
 		-epub-writing-mode: horizontal-tb !important;
 		-webkit-writing-mode: horizontal-tb !important;
-		text-orientation: sideways !important;
 	}
 
-	.text-lr :global(*) {
-		text-indent: 0 !important;
+	.writing-vertical-rl {
+		writing-mode: vertical-rl !important;
+		-epub-writing-mode: vertical-rl !important;
+		-webkit-writing-mode: vertical-rl !important;
 	}
 
 	.text-epub :global(img) {
@@ -584,6 +821,7 @@
 
 	.text-epub > :global(div.new-body) {
 		break-before: column;
+		break-inside: auto;
 	}
 
 	.text-epub :global([epub\:type='pagebreak']) {

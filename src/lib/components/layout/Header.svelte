@@ -13,9 +13,9 @@
 <svelte:window bind:scrollY />
 
 <div
-	class="sticky top-0 z-10 h-16
-	{isOnBookRoute ? 'header-transition' : 'bg-white bg-opacity-80 backdrop-blur-lg'} 
-	{scrollY > 0 ? 'bg-white bg-opacity-80 backdrop-blur-lg' : ''}"
+	class="header sticky top-0 z-10 h-16
+	{isOnBookRoute ? 'header-transition' : 'bg-white'} 
+	{scrollY > 0 ? 'bg-white' : ''}"
 >
 	<div class="flex items-center justify-between h-full container-mi">
 		<div class="text-4xl font-bold text-neutral-700">
@@ -48,6 +48,10 @@
 </div>
 
 <style>
+	.header {
+		view-transition-name: header;
+	}
+
 	.header-transition {
 		transition: background-color 500ms;
 	}

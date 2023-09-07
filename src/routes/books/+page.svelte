@@ -21,7 +21,7 @@
 				{/each}
 			{:then books}
 				{#each books as book}
-					<BookCard data={book} />
+					<BookCard {book} />
 				{/each}
 			{/await}
 		</div>
