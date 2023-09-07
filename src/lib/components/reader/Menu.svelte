@@ -53,9 +53,9 @@
 	</div>
 
 	<div use:melt={$content('tab-1')} class="grow px-6 py-4 overflow-y-auto">
-		<Toc {tocData} {currentPage} isRoot={false} />
+		<Toc {tocData} {currentPage} />
 	</div>
-	<div use:melt={$content('tab-2')} class="grow px-6 py-4 overflow-y-auto">
+	<div use:melt={$content('tab-2')} class="grow pl-6 pr-2 py-4 overflow-y-auto">
 		<Bookmarks {bookmarks} {onBookmarkItemClick} />
 	</div>
 	<div use:melt={$content('tab-3')} class="grow px-6 py-4 overflow-y-auto">Tab3</div>

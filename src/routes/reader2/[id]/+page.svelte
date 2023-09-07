@@ -119,7 +119,7 @@
 		const inMemoryBookmark = {
 			id: bookmarkData.id,
 			cssSelector: selector,
-			displayText: 'Bookmark',
+			displayText: bookmarkData.displayText,
 			element: foundElement,
 			page: currentPage,
 			dateAdded: bookmarkData.dateAdded
@@ -143,6 +143,7 @@
 		tocData = tocData;
 		calculateBookmarkPageNumbers(bookmarks, writingMode, pageSize);
 		bookmarks = bookmarks;
+		currentPageBookmarks = currentPageInBookmarks(currentPage);
 	}
 
 	onMount(async () => {
@@ -159,6 +160,14 @@
 		bookmarks.sort((a, b) => (a.page ?? 0) - (b.page ?? 0));
 		bookmarks = bookmarks;
 		calculateTocPageNumbers(readerNode, writingMode, pageSize, tocData);
+		if (tocData.length > 0) {
+			if (tocData[0].page !== 1) {
+				tocData = [
+					{ content: 'epub://text-epub-start', label: 'Start', page: 1, children: [] },
+					...tocData
+				];
+			}
+		}
 		tocData = tocData;
 		currentPageBookmarks = currentPageInBookmarks(currentPage);
 	});
@@ -192,7 +201,7 @@
 					<IconSearch />
 					<button class="relative" on:click={onBookmarkClick} aria-label="Bookmark page">
 						{#if currentPageBookmarks.length > 0}
-							<IconBookmarkFilled />
+							<IconBookmarkFilled class="text-pink-500" />
 							{#if currentPageBookmarks.length > 1}
 								<span class="absolute top-2 left-5 text-sm text-black"
 									>{currentPageBookmarks.length}</span
