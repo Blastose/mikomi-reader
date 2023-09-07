@@ -5,10 +5,13 @@
 	import Menu from './Menu.svelte';
 	import type { NavPoint } from '$lib/components/reader/toc/tocParser';
 	import type { Writable } from 'svelte/store';
+	import type { Bookmark } from './utils';
 
 	export let tocData: NavPoint[];
 	export let currentPage: number;
 	export let drawerOpen: Writable<boolean>;
+	export let bookmarks: Bookmark[];
+	export let onBookmarkItemClick: (page: number) => void;
 
 	const {
 		elements: { trigger, overlay, content, close, portalled }
@@ -45,7 +48,7 @@
 			>
 				<IconX />
 			</button>
-			<Menu {tocData} {currentPage} />
+			<Menu {tocData} {currentPage} {bookmarks} {onBookmarkItemClick} />
 		</div>
 	{/if}
 </div>

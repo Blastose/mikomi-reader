@@ -1,5 +1,14 @@
 import type { NavPoint } from '$lib/components/reader/toc/tocParser';
 
+export type Bookmark = {
+	id: string;
+	displayText: string;
+	element: HTMLElement;
+	cssSelector: string;
+	dateAdded: number;
+	page?: number;
+};
+
 export function smoothScrollTo(
 	scrollTo: number,
 	node: HTMLElement,
@@ -90,6 +99,11 @@ export function getScrollAlignedToPageCeil(scroll: number, pageSize: number) {
 	return Math.floor(scroll / pageSize) * pageSize;
 }
 
+export function goToPage(node: HTMLElement, page: number, pageSize: number) {
+	node.scrollLeft = (page - 1) * pageSize;
+	node.scrollTop = (page - 1) * pageSize;
+}
+
 export function createSelectorFromEpubUri(uri: string): string {
 	// epub://{chapterId}#{hash}
 	uri = uri.replace(/^epub:\/\//, '');
@@ -150,5 +164,15 @@ export function calculateTocPageNumbers(
 		toc.page = getPageFromElement(el, readingDirection, pageSize);
 
 		calculateTocPageNumbers(containerElement, readingDirection, pageSize, toc.children);
+	}
+}
+
+export function calculateBookmarkPageNumbers(
+	bookmarks: Bookmark[],
+	readingDirection: Orientation,
+	pageSize: number
+) {
+	for (const bookmark of bookmarks) {
+		bookmark.page = getPageFromElement(bookmark.element, readingDirection, pageSize);
 	}
 }

@@ -3,10 +3,14 @@
 	import { cubicInOut } from 'svelte/easing';
 	import { crossfade } from 'svelte/transition';
 	import Toc from './toc/Toc.svelte';
+	import Bookmarks from './bookmarks/Bookmarks.svelte';
 	import type { NavPoint } from '$lib/components/reader/toc/tocParser';
+	import type { Bookmark } from './utils';
 
 	export let tocData: NavPoint[];
 	export let currentPage: number;
+	export let bookmarks: Bookmark[];
+	export let onBookmarkItemClick: (page: number) => void;
 
 	const {
 		elements: { root, list, content, trigger },
@@ -51,7 +55,9 @@
 	<div use:melt={$content('tab-1')} class="grow px-6 py-4 overflow-y-auto">
 		<Toc {tocData} {currentPage} isRoot={false} />
 	</div>
-	<div use:melt={$content('tab-2')} class="grow px-6 py-4 overflow-y-auto">Tab2</div>
+	<div use:melt={$content('tab-2')} class="grow px-6 py-4 overflow-y-auto">
+		<Bookmarks {bookmarks} {onBookmarkItemClick} />
+	</div>
 	<div use:melt={$content('tab-3')} class="grow px-6 py-4 overflow-y-auto">Tab3</div>
 </div>
 
