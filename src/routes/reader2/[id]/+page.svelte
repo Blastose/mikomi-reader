@@ -81,8 +81,8 @@
 		} else {
 			const removedBookmark = currentPageBookmarks.pop();
 			if (removedBookmark) {
-				const i = bookmarks.findIndex((b) => b.id === removedBookmark.id);
-				bookmarks.splice(i, 1);
+				const foundIndex = bookmarks.findIndex((b) => b.id === removedBookmark.id);
+				bookmarks.splice(foundIndex, 1);
 				bookmarks = bookmarks;
 				await removeBookmark(removedBookmark.id);
 			}
@@ -94,12 +94,7 @@
 		const foundElement = getFirstVisibleElementInParentElement(readerNode);
 		if (!foundElement) return;
 
-		console.log(foundElement);
 		const selector = getSelector(foundElement);
-		console.log(selector);
-
-		const pageTextHint = foundElement.textContent?.trim().slice(0, 50);
-		console.log(pageTextHint);
 
 		const bookmarkData = {
 			id: crypto.randomUUID(),
@@ -135,6 +130,20 @@
 		goToPage(readerNode, page, pageSize);
 		currentPage = page;
 		drawerOpen.set(false);
+	}
+
+	function onBookmarkItemDelete(id: string) {
+		const foundIndexCurrentPageBookmarks = currentPageBookmarks.findIndex((b) => b.id === id);
+		if (foundIndexCurrentPageBookmarks !== -1) {
+			currentPageBookmarks.splice(foundIndexCurrentPageBookmarks, 1);
+			currentPageBookmarks = currentPageBookmarks;
+		}
+
+		const foundIndex = bookmarks.findIndex((b) => b.id === id);
+		bookmarks.splice(foundIndex, 1);
+		bookmarks = bookmarks;
+
+		removeBookmark(id);
 	}
 
 	async function onPageResize() {
@@ -189,7 +198,15 @@
 				class="absolute -top-8 w-full gap-6 left-0 text-gray-500 flex justify-between items-center"
 			>
 				<div class="flex gap-1 items-center">
-					<Drawer {currentPage} {tocData} {drawerOpen} {bookmarks} {onBookmarkItemClick} />
+					<Drawer
+						{currentPage}
+						{tocData}
+						{drawerOpen}
+						{bookmarks}
+						{columnCount}
+						{onBookmarkItemClick}
+						{onBookmarkItemDelete}
+					/>
 				</div>
 				<div>
 					<p class="line-clamp-1">

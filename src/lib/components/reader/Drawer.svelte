@@ -11,7 +11,9 @@
 	export let currentPage: number;
 	export let drawerOpen: Writable<boolean>;
 	export let bookmarks: Bookmark[];
+	export let columnCount: number;
 	export let onBookmarkItemClick: (page: number) => void;
+	export let onBookmarkItemDelete: (id: string) => void;
 
 	const {
 		elements: { trigger, overlay, content, close, portalled }
@@ -48,7 +50,14 @@
 			>
 				<IconX />
 			</button>
-			<Menu {tocData} {currentPage} {bookmarks} {onBookmarkItemClick} />
+			<Menu
+				{tocData}
+				{currentPage}
+				{bookmarks}
+				{columnCount}
+				{onBookmarkItemClick}
+				{onBookmarkItemDelete}
+			/>
 		</div>
 	{/if}
 </div>

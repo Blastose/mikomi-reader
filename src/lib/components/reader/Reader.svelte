@@ -256,6 +256,7 @@
 				await tick();
 				updateCurrentPage();
 				updateTotalPages();
+				dispatchResize();
 			}}>Col</button
 		>
 		<button
@@ -269,6 +270,7 @@
 				await tick();
 				updateCurrentPage();
 				updateTotalPages();
+				dispatchResize();
 			}}>Dir</button
 		>
 		<button

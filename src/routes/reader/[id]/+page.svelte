@@ -581,7 +581,7 @@
 			<ReaderSidebar />
 			<h2 use:melt={$title} class="mb-4 text-lg font-medium text-black">Table of Contents</h2>
 			<section>
-				<Toc {tocData} {currentPage} />
+				<Toc {tocData} {currentPage} {columnCount} />
 			</section>
 
 			<h2 use:melt={$title} class="mb-4 text-lg font-medium text-black">Bookmarks</h2>

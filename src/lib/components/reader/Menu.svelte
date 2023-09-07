@@ -10,7 +10,9 @@
 	export let tocData: NavPoint[];
 	export let currentPage: number;
 	export let bookmarks: Bookmark[];
+	export let columnCount: number;
 	export let onBookmarkItemClick: (page: number) => void;
+	export let onBookmarkItemDelete: (id: string) => void;
 
 	const {
 		elements: { root, list, content, trigger },
@@ -31,7 +33,7 @@
 	});
 </script>
 
-<div use:melt={$root} class="flex flex-col max-h-full">
+<div use:melt={$root} class="flex flex-col h-full">
 	<div
 		use:melt={$list}
 		class="flex shrink-0 overflow-x-auto pt-8 px-6
@@ -52,13 +54,13 @@
 		{/each}
 	</div>
 
-	<div use:melt={$content('tab-1')} class="grow px-6 py-4 overflow-y-auto">
-		<Toc {tocData} {currentPage} />
+	<div use:melt={$content('tab-1')} class="item-gutter grow px-6 py-4 overflow-y-auto">
+		<Toc {tocData} {currentPage} {columnCount} />
 	</div>
-	<div use:melt={$content('tab-2')} class="grow pl-6 pr-2 py-4 overflow-y-auto">
-		<Bookmarks {bookmarks} {onBookmarkItemClick} />
+	<div use:melt={$content('tab-2')} class="item-gutter grow pl-6 pr-2 py-4 overflow-y-auto">
+		<Bookmarks {bookmarks} {columnCount} {onBookmarkItemClick} {onBookmarkItemDelete} />
 	</div>
-	<div use:melt={$content('tab-3')} class="grow px-6 py-4 overflow-y-auto">Tab3</div>
+	<div use:melt={$content('tab-3')} class="item-gutter grow px-6 py-4 overflow-y-auto">Tab3</div>
 </div>
 
 <style>
@@ -75,5 +77,9 @@
 		flex: 1;
 		height: 3rem;
 		padding-inline: 0.5rem;
+	}
+
+	.item-gutter {
+		scrollbar-gutter: stable;
 	}
 </style>
