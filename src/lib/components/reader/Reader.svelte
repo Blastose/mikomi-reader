@@ -121,7 +121,7 @@
 	}
 
 	async function jumpToLastVisibleElementAfterFunction(func: () => Promise<void>) {
-		const lastVisibleElement = getFirstVisibleElementInParentElement(readerNode);
+		const lastVisibleElement = getFirstVisibleElementInParentElement(readerNode, writingMode);
 		console.log(lastVisibleElement);
 		await func();
 		await tick();

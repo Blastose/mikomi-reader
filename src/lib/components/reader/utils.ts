@@ -113,8 +113,12 @@ export function createSelectorFromEpubUri(uri: string): string {
 	return selector;
 }
 
-export function getFirstVisibleElementInParentElement(containerElement: HTMLElement) {
+export function getFirstVisibleElementInParentElement(
+	containerElement: HTMLElement,
+	orientation: Orientation
+) {
 	let foundElement: HTMLElement | null = null;
+	let partialElement: HTMLElement | null = null;
 	const validTagNames = ['P', 'SPAN', 'DIV', 'IMG', 'IMAGE', 'SECTION'];
 	const containerRect = containerElement.getBoundingClientRect();
 	for (const possibleElement of containerElement.querySelectorAll<HTMLElement>('*')) {
@@ -132,9 +136,28 @@ export function getFirstVisibleElementInParentElement(containerElement: HTMLElem
 			foundElement = possibleElement;
 			break;
 		}
+
+		// Element crosses over to a new page
+		if (orientation === 'horizontal') {
+			if (
+				rect.top >= containerRect.top &&
+				rect.bottom <= containerRect.bottom &&
+				rect.right <= containerRect.right
+			) {
+				partialElement = possibleElement;
+			}
+		} else {
+			if (
+				rect.top >= containerRect.top &&
+				rect.bottom <= containerRect.bottom &&
+				rect.left >= containerRect.left
+			) {
+				partialElement = possibleElement;
+			}
+		}
 	}
 
-	return foundElement;
+	return foundElement ?? partialElement;
 }
 
 export function clearEpubStyles() {

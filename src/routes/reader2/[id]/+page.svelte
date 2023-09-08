@@ -23,6 +23,7 @@
 	import type { Bookmark } from '$lib/components/reader/utils.js';
 	import { addBookmark, removeBookmark } from '$lib/bindings.js';
 	import type { Bookmark as BookmarkDB } from '$lib/bindings.js';
+	import Overlayer from '$lib/components/overlayer/Overlayer.svelte';
 
 	export let data;
 
@@ -90,8 +91,11 @@
 		currentPageBookmarks = currentPageBookmarks;
 	}
 
+	let bookmarkInProgress = false;
 	async function bookmarkPage() {
-		const foundElement = getFirstVisibleElementInParentElement(readerNode);
+		bookmarkInProgress = true;
+		let bookmarkPage = currentPage;
+		const foundElement = getFirstVisibleElementInParentElement(readerNode, writingMode);
 		if (!foundElement) return;
 
 		const selector = getSelector(foundElement);
@@ -116,7 +120,7 @@
 			cssSelector: selector,
 			displayText: bookmarkData.displayText,
 			element: foundElement,
-			page: currentPage,
+			page: bookmarkPage,
 			dateAdded: bookmarkData.dateAdded
 		};
 		bookmarks.push(inMemoryBookmark);
@@ -124,6 +128,7 @@
 		bookmarks = bookmarks;
 		currentPageBookmarks.push(inMemoryBookmark);
 		currentPageBookmarks = currentPageBookmarks;
+		bookmarkInProgress = false;
 	}
 
 	function onBookmarkItemClick(page: number) {
@@ -187,7 +192,11 @@
 		}
 		clearEpubStyles();
 	});
+
+	let highlightData: Array<DOMRectList> = [];
 </script>
+
+<Overlayer domRects={highlightData} />
 
 <div class="px-12 py-8 mx-auto duration-150 flex flex-col">
 	{#if loading}
@@ -207,6 +216,19 @@
 						{onBookmarkItemClick}
 						{onBookmarkItemDelete}
 					/>
+					<button
+						on:click={() => {
+							const range = window.getSelection()?.getRangeAt(0);
+							if (!range) {
+								return;
+							}
+
+							const rects = range.getClientRects();
+							highlightData.push(rects);
+							highlightData = highlightData;
+							console.log(highlightData);
+						}}>Hi</button
+					>
 				</div>
 				<div>
 					<p class="line-clamp-1">
@@ -216,7 +238,12 @@
 				<div class="flex gap-1 items-center">
 					<IconLetterCase />
 					<IconSearch />
-					<button class="relative" on:click={onBookmarkClick} aria-label="Bookmark page">
+					<button
+						class="relative"
+						disabled={bookmarkInProgress}
+						on:click={onBookmarkClick}
+						aria-label="Bookmark page"
+					>
 						{#if currentPageBookmarks.length > 0}
 							<IconBookmarkFilled class="text-pink-500" />
 							{#if currentPageBookmarks.length > 1}
