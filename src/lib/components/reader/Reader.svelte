@@ -73,10 +73,18 @@
 			prevPageSmoothHorizontal();
 		} else if (e.key === 'd') {
 			e.preventDefault();
-			nextPage();
+			if (writingMode === 'horizontal') {
+				nextPage();
+			} else {
+				prevPage();
+			}
 		} else if (e.key === 'a') {
 			e.preventDefault();
-			prevPage();
+			if (writingMode === 'horizontal') {
+				prevPage();
+			} else {
+				nextPage();
+			}
 		} else if (e.key === 't') {
 			e.preventDefault();
 			drawerOpen.set(true);
@@ -207,6 +215,7 @@
 {/if}
 
 <SideButtons
+	orientation={writingMode}
 	nextPage={() => {
 		nextPage();
 		updateCurrentPage();
@@ -240,7 +249,9 @@
 <div>
 	<div>
 		<input
-			class="w-full"
+			class="w-full {writingMode === 'horizontal'
+				? 'writing-horizontal-tb'
+				: 'writing-vertical-rl'}"
 			type="range"
 			min="1"
 			max={totalPages}
@@ -373,6 +384,10 @@
 		writing-mode: vertical-rl !important;
 		-epub-writing-mode: vertical-rl !important;
 		-webkit-writing-mode: vertical-rl !important;
+	}
+
+	input[type='range'].writing-vertical-rl {
+		direction: rtl;
 	}
 
 	.text-epub > :global(div.new-body) {
