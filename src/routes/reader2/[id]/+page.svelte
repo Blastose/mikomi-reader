@@ -255,7 +255,6 @@
 				bind:totalPages
 				bind:pageSize
 				{drawerOpen}
-				domRects={highlightData}
 			/>
 			<div
 				class="absolute bottom-0 w-full flex -z-50

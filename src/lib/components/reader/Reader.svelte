@@ -17,7 +17,6 @@
 
 	export let html: string;
 	export let drawerOpen: Writable<boolean>;
-	export let domRects: DOMRectList[];
 
 	// Settings
 	export let columnCount: number = 1;
@@ -226,7 +225,7 @@
 	}}
 />
 
-<Overlayer {readerNode} {currentPage} {domRects} {pageSize} />
+<Overlayer {readerNode} {currentPage} {pageSize} />
 
 <div
 	style="--column-gap: {columnGap}px;

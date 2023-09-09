@@ -5,29 +5,27 @@
 	import { IconSearch, IconCopy } from '@tabler/icons-svelte';
 	import { highlightsStore } from '$lib/components/reader/stores/highlightsStore';
 	import { get } from 'svelte/store';
-	import { getSelector } from '../reader/utils';
 
-	export let domRects: Array<DOMRectList>;
 	export let currentPage: number;
 	export let pageSize: number;
 	export let readerNode: HTMLDivElement;
 
 	const {
-		elements: { trigger, overlay, content, title, description, close, portalled },
+		elements: { content, portalled },
 		states: { open }
 	} = createDialog({
 		forceVisible: true
 	});
 
 	let selectionState: 'noneSelected' | 'selectedText' = 'noneSelected';
-	function onSelect(e: Event) {
-		console.log(document.getSelection()?.toString());
+	function onSelect() {
 		if (window.getSelection()?.toString()) {
 			selectionState = 'selectedText';
 		} else {
 			selectionState = 'noneSelected';
 		}
 	}
+
 	async function onMouseUp() {
 		if (selectionState === 'selectedText') {
 			const selection = window.getSelection();
@@ -45,7 +43,6 @@
 	}
 
 	function onHighlightButtonClick(e: MouseEvent) {
-		console.log('lasdjlsajdkdljs');
 		const target = e.target as HTMLElement;
 		const buttonNode = target.closest('button');
 		console.log(buttonNode);
@@ -89,21 +86,16 @@
 
 <svelte:document on:mouseup={onMouseUp} on:selectionchange={onSelect} />
 
-{#if $open}
-	<!-- svelte-ignore a11y-no-static-element-interactions -->
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<div
-		on:mousedown={(e) => {
-			e.preventDefault();
-		}}
-		class=""
-		use:melt={$portalled}
-	>
+<div use:melt={$portalled}>
+	{#if $open}
+		<!-- svelte-ignore a11y-no-static-element-interactions -->
+		<!-- svelte-ignore a11y-click-events-have-key-events -->
 		<div
+			on:mousedown={(e) => {
+				e.preventDefault();
+			}}
 			bind:this={overlayOptions}
-			class="fixed left-[50%] top-[50%] z-50
-		 rounded-xl
-		p-2 shadow-lg bg-gray-100"
+			class="fixed left-[50%] top-[50%] z-50 rounded-xl p-2 shadow-lg bg-gray-100"
 			use:melt={$content}
 		>
 			<div class="flex flex-col gap-2">
@@ -121,8 +113,8 @@
 				</div>
 			</div>
 		</div>
-	</div>
-{/if}
+	{/if}
+</div>
 
 <svg
 	class="fixed ml-12 z-10 pointer-events-none"
@@ -132,7 +124,4 @@
 	{#each $highlightsStore as highlight}
 		<Highlight rects={highlight.rects} color={highlight.color} />
 	{/each}
-	<!-- {#each domRects as domRect}
-		<Highlight rects={domRect} />
-	{/each} -->
 </svg>
