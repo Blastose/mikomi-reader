@@ -5,12 +5,12 @@
 	export let nextPage: () => void;
 </script>
 
-<div class="fixed w-full left-0 h-full flex justify-between text-gray-500 pointer-events-none">
+<div class="fixed z-20 w-full left-0 h-full flex justify-between text-gray-500 pointer-events-none">
 	<button
 		on:click={() => {
 			prevPage();
 		}}
-		class="w-8 flex items-center justify-center pointer-events-auto"
+		class="bg-white w-8 flex items-center justify-center pointer-events-auto"
 		aria-label="Previous page"
 	>
 		<IconChevronLeft />
@@ -19,7 +19,7 @@
 		on:click={() => {
 			nextPage();
 		}}
-		class="w-8 flex items-center justify-center pointer-events-auto"
+		class="bg-white w-8 flex items-center justify-center pointer-events-auto"
 		aria-label="Next page"
 	>
 		<IconChevronRight />

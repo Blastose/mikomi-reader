@@ -13,9 +13,11 @@
 	import Ruler from './Ruler.svelte';
 	import { createEventDispatcher } from 'svelte';
 	import type { Writable } from 'svelte/store';
+	import Overlayer from '$lib/components/overlayer/Overlayer.svelte';
 
 	export let html: string;
 	export let drawerOpen: Writable<boolean>;
+	export let domRects: DOMRectList[];
 
 	// Settings
 	export let columnCount: number = 1;
@@ -215,6 +217,8 @@
 	}}
 />
 
+<Overlayer {readerNode} {currentPage} {domRects} {pageSize} />
+
 <div
 	style="--column-gap: {columnGap}px;
          --column-count: {columnCount}; 
@@ -232,6 +236,7 @@
 		<div id="filler-column" class="new-body">This page is left blank</div>
 	{/if}
 </div>
+
 <div>
 	<div>
 		<input

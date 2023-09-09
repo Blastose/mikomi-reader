@@ -23,7 +23,6 @@
 	import type { Bookmark } from '$lib/components/reader/utils.js';
 	import { addBookmark, removeBookmark } from '$lib/bindings.js';
 	import type { Bookmark as BookmarkDB } from '$lib/bindings.js';
-	import Overlayer from '$lib/components/overlayer/Overlayer.svelte';
 
 	export let data;
 
@@ -196,8 +195,6 @@
 	let highlightData: Array<DOMRectList> = [];
 </script>
 
-<Overlayer domRects={highlightData} />
-
 <div class="px-12 py-8 mx-auto duration-150 flex flex-col">
 	{#if loading}
 		<p>Loading...</p>
@@ -216,19 +213,6 @@
 						{onBookmarkItemClick}
 						{onBookmarkItemDelete}
 					/>
-					<button
-						on:click={() => {
-							const range = window.getSelection()?.getRangeAt(0);
-							if (!range) {
-								return;
-							}
-
-							const rects = range.getClientRects();
-							highlightData.push(rects);
-							highlightData = highlightData;
-							console.log(highlightData);
-						}}>Hi</button
-					>
 				</div>
 				<div>
 					<p class="line-clamp-1">
@@ -271,6 +255,7 @@
 				bind:totalPages
 				bind:pageSize
 				{drawerOpen}
+				domRects={highlightData}
 			/>
 			<div
 				class="absolute bottom-0 w-full flex -z-50

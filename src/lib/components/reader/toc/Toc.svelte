@@ -13,7 +13,7 @@
 			<TocItem {toc} {currentPage} {columnCount} />
 			{#if toc.children.length > 0}
 				<div class="ml-4">
-					<svelte:self tocData={toc.children} {currentPage} />
+					<svelte:self tocData={toc.children} {currentPage} {columnCount} />
 				</div>
 			{/if}
 		{/each}
