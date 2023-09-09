@@ -23,6 +23,7 @@
 	import type { Bookmark } from '$lib/components/reader/utils.js';
 	import { addBookmark, removeBookmark } from '$lib/bindings.js';
 	import type { Bookmark as BookmarkDB } from '$lib/bindings.js';
+	import { readerStateStore } from '$lib/components/reader/stores/readerStateStore';
 
 	export let data;
 
@@ -88,6 +89,13 @@
 			}
 		}
 		currentPageBookmarks = currentPageBookmarks;
+	}
+
+	function onKeyDown(e: KeyboardEvent) {
+		if ($readerStateStore !== 'reading') return;
+		if (e.key === 'b') {
+			onBookmarkClick();
+		}
 	}
 
 	let bookmarkInProgress = false;
@@ -191,9 +199,9 @@
 		}
 		clearEpubStyles();
 	});
-
-	let highlightData: Array<DOMRectList> = [];
 </script>
+
+<svelte:document on:keydown={onKeyDown} />
 
 <div class="px-12 py-8 mx-auto duration-150 flex flex-col">
 	{#if loading}

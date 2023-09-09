@@ -2,9 +2,16 @@
 	import { createDialog, melt } from '@melt-ui/svelte';
 	import { tick } from 'svelte';
 	import { IconTrash, IconCheck } from '@tabler/icons-svelte';
+	import { readerStateStore } from '$lib/components/reader/stores/readerStateStore';
 
 	export let rects: DOMRectList;
 	export let color = '#cbe7fa80';
+
+	$: if ($open) {
+		readerStateStore.set('noteOpen');
+	} else {
+		readerStateStore.set('reading');
+	}
 
 	const {
 		elements: { content, portalled },

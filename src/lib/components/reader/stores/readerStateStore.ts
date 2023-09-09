@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
 
-export type ReaderState = '';
+export type ReaderState = 'reading' | 'noteOpen' | 'sidebarOpen';
 
-export const readerStateStore = writable<ReaderState>('');
+export const readerStateStore = writable<ReaderState>('reading');

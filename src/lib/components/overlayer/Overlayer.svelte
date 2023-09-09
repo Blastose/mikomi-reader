@@ -5,10 +5,17 @@
 	import { IconSearch, IconCopy } from '@tabler/icons-svelte';
 	import { highlightsStore } from '$lib/components/reader/stores/highlightsStore';
 	import { get } from 'svelte/store';
+	import { readerStateStore } from '../reader/stores/readerStateStore';
 
 	export let currentPage: number;
 	export let pageSize: number;
 	export let readerNode: HTMLDivElement;
+
+	$: if ($open) {
+		readerStateStore.set('noteOpen');
+	} else {
+		readerStateStore.set('reading');
+	}
 
 	const {
 		elements: { content, portalled },

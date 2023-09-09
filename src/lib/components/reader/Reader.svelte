@@ -13,6 +13,7 @@
 	import Ruler from './Ruler.svelte';
 	import { createEventDispatcher } from 'svelte';
 	import type { Writable } from 'svelte/store';
+	import { readerStateStore } from './stores/readerStateStore';
 	import Overlayer from '$lib/components/overlayer/Overlayer.svelte';
 
 	export let html: string;
@@ -32,6 +33,12 @@
 	export let totalPages: number;
 	export let pageSize: number;
 	$: pageSize = writingMode === 'horizontal' ? readerWidth + columnGap : readerHeight + columnGap;
+
+	$: if ($drawerOpen === false) {
+		readerStateStore.set('reading');
+	} else {
+		readerStateStore.set('sidebarOpen');
+	}
 
 	let showRuler = false;
 
@@ -64,6 +71,8 @@
 	}
 
 	function onKeyDown(e: KeyboardEvent) {
+		if ($readerStateStore !== 'reading') return;
+
 		if (e.key === 'ArrowRight') {
 			e.preventDefault();
 			nextPageSmoothHorizontal();
@@ -93,6 +102,7 @@
 
 	function onScroll(e: WheelEvent) {
 		if ($drawerOpen) return;
+		if ($readerStateStore !== 'reading') return;
 
 		if (e.deltaY > 0) {
 			nextPage();
