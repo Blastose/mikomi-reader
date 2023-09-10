@@ -7,10 +7,16 @@
 	import { get } from 'svelte/store';
 	import { readerStateStore } from '../reader/stores/readerStateStore';
 	import { fly } from 'svelte/transition';
+	import { getSelector } from '$lib/components/reader/utils';
+	import { addHighlight } from '$lib/bindings';
+	import { page } from '$app/stores';
+	import { filterCompletelyOverlappingRectangles } from './utils';
 
 	export let currentPage: number;
 	export let pageSize: number;
 	export let readerNode: HTMLDivElement;
+
+	$: book_id = $page.params.id;
 
 	$: if ($open) {
 		readerStateStore.set('noteOpen');
@@ -35,6 +41,8 @@
 	}
 
 	async function onMouseUp() {
+		if ($readerStateStore !== 'reading') return;
+
 		if (selectionState === 'selectedText') {
 			const selection = window.getSelection();
 			const range = selection?.getRangeAt(0);
@@ -83,54 +91,42 @@
 		if (!range) return;
 
 		const readerNodeRect = readerNode.getBoundingClientRect();
-		const rects2 = range.getClientRects();
-		for (const r of rects2) {
+		const clientRects = range.getClientRects();
+		for (const r of clientRects) {
 			r.x += pageSize * (currentPage - 1) - readerNodeRect.x;
 			r.y += -readerNodeRect.y;
 		}
-		const rects = Array.from(rects2);
+		const rects = Array.from(clientRects);
 
-		// Filter out rects that are within another rectangle
-		const filteredRects: DOMRect[] = [];
-		// Keep skip over rects we have marked as overlapping
-		// TODO Not the most efficient way, since we iterate over the array
-		// multiple times
-		const overlappingIndices: number[] = [];
-		for (let i = 0; i < rects.length; i++) {
-			let isOverlapping = false;
-			for (let j = 0; j < rects.length; j++) {
-				if (i === j) continue;
-				if (overlappingIndices.includes(i)) continue;
-				if (overlappingIndices.includes(j)) continue;
-				const rect1 = rects[i];
-				const rect2 = rects[j];
+		const filteredRects: DOMRect[] = filterCompletelyOverlappingRectangles(rects);
 
-				if (
-					rect1.x <= rect2.x &&
-					rect1.y <= rect2.y &&
-					rect1.x + rect1.width >= rect2.x + rect2.width &&
-					rect1.y + rect1.height >= rect2.y + rect2.height
-				) {
-					isOverlapping = true;
-					overlappingIndices.push(i);
-					break;
-				}
-			}
-			if (!isOverlapping) {
-				filteredRects.push(rects[i]);
-			}
-		}
-		console.log(filteredRects);
+		const newHighlightId = crypto.randomUUID();
+		const dateAdded = Math.floor(Date.now() / 1000);
 
 		highlightsStore.update((highlights) => {
 			highlights.push({
+				id: newHighlightId,
+				dateAdded: dateAdded,
+				note: '',
 				range,
 				color,
-				rects: filteredRects as unknown as DOMRectList //TODO change this
+				rects: filteredRects
 			});
 			return highlights;
 		});
 		console.log(get(highlightsStore));
+
+		addHighlight({
+			id: newHighlightId,
+			book_id,
+			color,
+			date_added: dateAdded,
+			start_container: getSelector(range.startContainer as Element | Text),
+			start_offset: range.startOffset,
+			end_container: getSelector(range.endContainer as Element | Text),
+			end_offset: range.endOffset,
+			note: ''
+		});
 
 		window.getSelection()?.empty();
 		open.set(false);
@@ -188,7 +184,7 @@
 	style="left: -{(currentPage - 1) *
 		pageSize}px; height: {readerNode?.scrollHeight}px; width: {readerNode?.scrollWidth}px"
 >
-	{#each $highlightsStore as highlight}
-		<Highlight rects={highlight.rects} color={highlight.color} />
+	{#each $highlightsStore as highlight (highlight.id)}
+		<Highlight {highlight} />
 	{/each}
 </svg>

@@ -8,6 +8,7 @@
 		calculateTocPageNumbers,
 		clearEpubStyles,
 		getFirstVisibleElementInParentElement,
+		getNodeBySelector,
 		getSelector,
 		goToPage
 	} from '$lib/components/reader/utils.js';
@@ -22,8 +23,11 @@
 	import { writable } from 'svelte/store';
 	import type { Bookmark } from '$lib/components/reader/utils.js';
 	import { addBookmark, removeBookmark } from '$lib/bindings.js';
-	import type { Bookmark as BookmarkDB } from '$lib/bindings.js';
+	import type { Bookmark as BookmarkDB, Highlight as HighlightDB } from '$lib/bindings.js';
 	import { readerStateStore } from '$lib/components/reader/stores/readerStateStore';
+	import { highlightsStore } from '$lib/components/reader/stores/highlightsStore.js';
+	import type { Highlight } from '$lib/components/reader/stores/highlightsStore.js';
+	import { filterCompletelyOverlappingRectangles } from '$lib/components/overlayer/utils.js';
 
 	export let data;
 
@@ -51,6 +55,39 @@
 	// Todo: Watch out for performance issues when quickly changing currentPage
 	$: currentPageBookmarks = currentPageInBookmarks(currentPage);
 
+	function initializeHighlightDataFromDB(highlights: HighlightDB[]): Highlight[] {
+		return highlights.flatMap((highlight) => {
+			const startContainer = getNodeBySelector(highlight.start_container);
+			const endContainer = getNodeBySelector(highlight.end_container);
+			if (!startContainer || !endContainer) {
+				return [];
+			}
+			const startOffset = highlight.start_offset;
+			const endOffset = highlight.end_offset;
+			const range = new Range();
+			range.setStart(startContainer, startOffset);
+			range.setEnd(endContainer, endOffset);
+
+			const clientRects = range.getClientRects();
+			const readerNodeRect = readerNode.getBoundingClientRect();
+			for (const r of clientRects) {
+				r.x += pageSize * (currentPage - 1) - readerNodeRect.x;
+				r.y += -readerNodeRect.y;
+			}
+			const rects = Array.from(clientRects);
+			const filteredRects: DOMRect[] = filterCompletelyOverlappingRectangles(rects);
+
+			return {
+				id: highlight.id,
+				note: highlight.note,
+				dateAdded: highlight.date_added,
+				range,
+				rects: filteredRects,
+				color: highlight.color
+			};
+		});
+	}
+
 	function currentPageInBookmarks(page: number) {
 		const pageBookmarks = [];
 		for (const bookmark of bookmarks) {
@@ -61,7 +98,7 @@
 		return pageBookmarks;
 	}
 
-	function intializeBookmarkDataFromDB(bookmarks: BookmarkDB[]): Bookmark[] {
+	function initializeBookmarkDataFromDB(bookmarks: BookmarkDB[]): Bookmark[] {
 		return bookmarks.flatMap((bookmark) => {
 			const element = readerNode.querySelector<HTMLElement>(bookmark.css_selector);
 			if (!element) return [];
@@ -83,6 +120,7 @@
 			const removedBookmark = currentPageBookmarks.pop();
 			if (removedBookmark) {
 				const foundIndex = bookmarks.findIndex((b) => b.id === removedBookmark.id);
+				if (foundIndex === -1) return;
 				bookmarks.splice(foundIndex, 1);
 				bookmarks = bookmarks;
 				await removeBookmark(removedBookmark.id);
@@ -176,7 +214,8 @@
 
 		loading = false;
 		await tick();
-		bookmarks = intializeBookmarkDataFromDB(data.book.bookmarks);
+		bookmarks = initializeBookmarkDataFromDB(data.book.bookmarks);
+		highlightsStore.set(initializeHighlightDataFromDB(data.book.highlights));
 		calculateBookmarkPageNumbers(bookmarks, writingMode, pageSize);
 		bookmarks.sort((a, b) => (a.page ?? 0) - (b.page ?? 0));
 		bookmarks = bookmarks;

@@ -53,6 +53,33 @@ pub struct Bookmark {
 }
 
 #[derive(
+    Queryable,
+    Selectable,
+    Insertable,
+    Deserialize,
+    Serialize,
+    Associations,
+    Identifiable,
+    Type,
+    PartialEq,
+    Debug,
+)]
+#[diesel(belongs_to(Book))]
+#[diesel(table_name = crate::schema::highlight)]
+#[diesel(check_for_backend(diesel::sqlite::Sqlite))]
+pub struct Highlight {
+    pub id: String,
+    pub book_id: String,
+    pub date_added: i32,
+    pub note: String,
+    pub start_container: String,
+    pub start_offset: i32,
+    pub end_container: String,
+    pub end_offset: i32,
+    pub color: String,
+}
+
+#[derive(
     Queryable, Selectable, Insertable, Serialize, Associations, Identifiable, Type, PartialEq, Debug,
 )]
 #[diesel(belongs_to(Book))]

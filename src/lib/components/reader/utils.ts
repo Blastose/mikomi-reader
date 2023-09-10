@@ -53,9 +53,24 @@ export function smoothScrollTo(
 	requestAnimationFrame(scroll);
 }
 
-export function getSelector(el: Element): string {
-	if (el.classList.contains('text-epub')) return 'body';
-	const names = [];
+/**
+ * Gets a selector to a Element or Text node
+ *
+ * If the element is a text node, it will be at the end of the selector
+ * and marked by a $text$`parentChildNodeIndex`
+ *
+ * Can be used with Range.startContainer if it is a text node
+ */
+export function getSelector(el: Element | Text): string {
+	const names: string[] = [];
+	if (el instanceof Text) {
+		if (!el.parentElement) return names.toString();
+		const textNodeIndex = Array.from(el.parentElement.childNodes).indexOf(el);
+		el = el.parentElement;
+		names.push(`$text$${textNodeIndex}`);
+	} else {
+		if (el.classList.contains('text-epub')) return 'body';
+	}
 
 	while (el.parentElement && !el.classList.contains('text-epub')) {
 		if (el.id) {
@@ -76,6 +91,35 @@ export function getSelector(el: Element): string {
 		el = el.parentElement;
 	}
 	return names.reverse().join(' > ');
+}
+
+/**
+ * Gets the element by a selector return from {@link getSelector}
+ *
+ * Similar to `document.querySelector`, but can get text nodes
+ *
+ * @param selector - a selector return from {@link getSelector}
+ * @returns
+ */
+export function getNodeBySelector(selector: string): Node | null {
+	let isTextNode = false;
+	let childIndex = -1;
+	const match = selector.match('\\$text\\$\\d$');
+	if (match) {
+		isTextNode = true;
+		const textNodeAndIndex = match[0];
+		childIndex = parseInt(textNodeAndIndex.split('$text$')[1]);
+	}
+	const [selectorSplit] = selector.split(' > $text');
+	const node = document.querySelector(selectorSplit);
+	if (!node) return null;
+
+	if (isTextNode) {
+		const textNode = Array.from(node.childNodes)[childIndex];
+		return textNode as Node | null;
+	} else {
+		return node;
+	}
 }
 
 export type Orientation = 'horizontal' | 'vertical';

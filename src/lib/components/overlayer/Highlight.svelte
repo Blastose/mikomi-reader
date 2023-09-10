@@ -4,9 +4,10 @@
 	import { IconTrash, IconCheck } from '@tabler/icons-svelte';
 	import { readerStateStore } from '$lib/components/reader/stores/readerStateStore';
 	import { fly } from 'svelte/transition';
+	import { removeHighlight } from '$lib/bindings';
+	import { highlightsStore, type Highlight } from '$lib/components/reader/stores/highlightsStore';
 
-	export let rects: DOMRectList;
-	export let color = '#cbe7fa80';
+	export let highlight: Highlight;
 
 	$: if ($open) {
 		readerStateStore.set('noteOpen');
@@ -123,6 +124,18 @@
 
 	let g: SVGElement;
 	let overlayOptions: HTMLDivElement;
+
+	async function onTrashClick() {
+		readerStateStore.set('reading');
+		open.set(false);
+		await removeHighlight(highlight.id);
+		highlightsStore.update((highlights) => {
+			const foundIndex = highlights.findIndex((hi) => hi.id === highlight.id);
+			if (foundIndex === -1) return highlights;
+			highlights.splice(foundIndex, 1);
+			return highlights;
+		});
+	}
 </script>
 
 <div use:melt={$portalled}>
@@ -151,7 +164,7 @@
 				</div>
 
 				<div class="flex justify-between">
-					<button class="flex flex-col items-center">
+					<button class="flex flex-col items-center" on:click={onTrashClick}>
 						<IconTrash />
 						<span class="text-sm text-gray-500">Delete</span>
 					</button>
@@ -167,8 +180,14 @@
 
 <!-- svelte-ignore a11y-interactive-supports-focus -->
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<g bind:this={g} role="button" on:click={onClick} fill={color} class="pointer-events-auto">
-	{#each rects as rect}
+<g
+	bind:this={g}
+	role="button"
+	on:click={onClick}
+	fill={highlight.color}
+	class="pointer-events-auto"
+>
+	{#each highlight.rects as rect}
 		<rect class="" x={rect.left} y={rect.top} height={rect.height} width={rect.width} />
 	{/each}
 </g>

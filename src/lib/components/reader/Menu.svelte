@@ -6,6 +6,7 @@
 	import Bookmarks from './bookmarks/Bookmarks.svelte';
 	import type { NavPoint } from '$lib/components/reader/toc/tocParser';
 	import type { Bookmark } from './utils';
+	import Highlights from './highlights/Highlights.svelte';
 
 	export let tocData: NavPoint[];
 	export let currentPage: number;
@@ -60,7 +61,9 @@
 	<div use:melt={$content('tab-2')} class="item-gutter grow pl-6 pr-2 py-4 overflow-y-auto">
 		<Bookmarks {bookmarks} {columnCount} {onBookmarkItemClick} {onBookmarkItemDelete} />
 	</div>
-	<div use:melt={$content('tab-3')} class="item-gutter grow px-6 py-4 overflow-y-auto">Tab3</div>
+	<div use:melt={$content('tab-3')} class="item-gutter grow px-6 py-4 overflow-y-auto">
+		<Highlights />
+	</div>
 </div>
 
 <style>

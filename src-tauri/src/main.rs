@@ -20,6 +20,9 @@ fn main() {
             db::add_bookmark,
             db::remove_bookmark,
             db::update_bookmark,
+            db::add_highlight,
+            db::remove_highlight,
+            db::update_highlight,
             epub::get_epub
         ],
         "../src/lib/bindings.ts",
@@ -38,6 +41,9 @@ fn main() {
             db::add_bookmark,
             db::remove_bookmark,
             db::update_bookmark,
+            db::add_highlight,
+            db::remove_highlight,
+            db::update_highlight,
             epub::get_epub
         ])
         .run(tauri::generate_context!())
