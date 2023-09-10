@@ -235,7 +235,7 @@
 	}}
 />
 
-<Overlayer {readerNode} {currentPage} {pageSize} />
+<Overlayer {readerNode} {currentPage} {pageSize} orientation={writingMode} />
 
 <div
 	style="--column-gap: {columnGap}px;

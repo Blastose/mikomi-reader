@@ -9,6 +9,8 @@
 		clearEpubStyles,
 		getFirstVisibleElementInParentElement,
 		getNodeBySelector,
+		getPageFromScroll,
+		getScrollAlignedToPageFloor,
 		getSelector,
 		goToPage
 	} from '$lib/components/reader/utils.js';
@@ -77,14 +79,43 @@
 			const rects = Array.from(clientRects);
 			const filteredRects: DOMRect[] = filterCompletelyOverlappingRectangles(rects);
 
+			const scroll = getScrollAlignedToPageFloor(
+				writingMode === 'horizontal' ? filteredRects[0].x : filteredRects[0].y,
+				pageSize
+			);
 			return {
 				id: highlight.id,
 				note: highlight.note,
 				dateAdded: highlight.date_added,
+				displayText: range.toString(),
+				page: getPageFromScroll(scroll, pageSize),
 				range,
 				rects: filteredRects,
 				color: highlight.color
 			};
+		});
+	}
+
+	function updateHighlightRectsAndPages() {
+		highlightsStore.update((highlights) => {
+			for (const highlight of highlights) {
+				const clientRects = highlight.range.getClientRects();
+				const readerNodeRect = readerNode.getBoundingClientRect();
+				for (const r of clientRects) {
+					r.x += pageSize * (currentPage - 1) - readerNodeRect.x;
+					r.y += -readerNodeRect.y;
+				}
+				const rects = Array.from(clientRects);
+				const filteredRects: DOMRect[] = filterCompletelyOverlappingRectangles(rects);
+				highlight.rects = filteredRects;
+				const scroll = getScrollAlignedToPageFloor(
+					writingMode === 'horizontal' ? filteredRects[0].x : filteredRects[0].y,
+					pageSize
+				);
+				highlight.page = getPageFromScroll(scroll, pageSize);
+			}
+
+			return highlights;
 		});
 	}
 
@@ -198,6 +229,7 @@
 
 	async function onPageResize() {
 		await tick();
+		updateHighlightRectsAndPages();
 		calculateTocPageNumbers(readerNode, writingMode, pageSize, tocData);
 		tocData = tocData;
 		calculateBookmarkPageNumbers(bookmarks, writingMode, pageSize);

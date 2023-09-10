@@ -211,7 +211,11 @@ export function clearEpubStyles() {
 	}
 }
 
-function getPageFromElement(element: HTMLElement, readingDirection: Orientation, pageSize: number) {
+export function getPageFromElement(
+	element: HTMLElement,
+	readingDirection: Orientation,
+	pageSize: number
+) {
 	const elementScroll = readingDirection === 'horizontal' ? element.offsetLeft : element.offsetTop;
 	const scroll = getScrollAlignedToPageFloor(elementScroll, pageSize);
 	return getPageFromScroll(scroll, pageSize);

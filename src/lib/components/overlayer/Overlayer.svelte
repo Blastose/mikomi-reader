@@ -7,7 +7,12 @@
 	import { get } from 'svelte/store';
 	import { readerStateStore } from '../reader/stores/readerStateStore';
 	import { fly } from 'svelte/transition';
-	import { getSelector } from '$lib/components/reader/utils';
+	import {
+		getPageFromScroll,
+		getScrollAlignedToPageFloor,
+		getSelector,
+		type Orientation
+	} from '$lib/components/reader/utils';
 	import { addHighlight } from '$lib/bindings';
 	import { page } from '$app/stores';
 	import { filterCompletelyOverlappingRectangles } from './utils';
@@ -15,6 +20,7 @@
 	export let currentPage: number;
 	export let pageSize: number;
 	export let readerNode: HTMLDivElement;
+	export let orientation: Orientation;
 
 	$: book_id = $page.params.id;
 
@@ -103,10 +109,16 @@
 		const newHighlightId = crypto.randomUUID();
 		const dateAdded = Math.floor(Date.now() / 1000);
 
+		const scroll = getScrollAlignedToPageFloor(
+			orientation === 'horizontal' ? filteredRects[0].x : filteredRects[0].y,
+			pageSize
+		);
 		highlightsStore.update((highlights) => {
 			highlights.push({
 				id: newHighlightId,
 				dateAdded: dateAdded,
+				page: getPageFromScroll(scroll, pageSize),
+				displayText: range.toString(),
 				note: '',
 				range,
 				color,
