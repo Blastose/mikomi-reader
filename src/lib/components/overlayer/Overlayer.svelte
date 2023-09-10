@@ -6,6 +6,7 @@
 	import { highlightsStore } from '$lib/components/reader/stores/highlightsStore';
 	import { get } from 'svelte/store';
 	import { readerStateStore } from '../reader/stores/readerStateStore';
+	import { fly } from 'svelte/transition';
 
 	export let currentPage: number;
 	export let pageSize: number;
@@ -42,8 +43,29 @@
 
 			open.set(true);
 			await tick();
-			overlayOptions.style.left = `${rangeRect.left + rangeRect.width / 2}px`;
-			overlayOptions.style.top = `${rangeRect.top}px`;
+
+			let left = rangeRect.left + rangeRect.width / 2;
+			let top = rangeRect.top;
+			if (left + overlayOptions.offsetWidth > window.innerWidth) {
+				left = left - overlayOptions.offsetWidth;
+				if (left < 0) {
+					overlayOptions.style.left = `${window.innerWidth - overlayOptions.offsetWidth}px`;
+				} else {
+					overlayOptions.style.left = `${left}px`;
+				}
+			} else {
+				overlayOptions.style.left = `${left}px`;
+			}
+			if (top + overlayOptions.offsetHeight > window.innerHeight) {
+				top = top - overlayOptions.offsetHeight;
+				if (top < 0) {
+					overlayOptions.style.top = `${window.innerHeight - overlayOptions.offsetHeight}px`;
+				} else {
+					overlayOptions.style.top = `${top}px`;
+				}
+			} else {
+				overlayOptions.style.top = `${top}px`;
+			}
 
 			selectionState = 'noneSelected';
 		}
@@ -61,17 +83,50 @@
 		if (!range) return;
 
 		const readerNodeRect = readerNode.getBoundingClientRect();
-		const rects = range.getClientRects();
-		for (const r of rects) {
+		const rects2 = range.getClientRects();
+		for (const r of rects2) {
 			r.x += pageSize * (currentPage - 1) - readerNodeRect.x;
 			r.y += -readerNodeRect.y;
 		}
+		const rects = Array.from(rects2);
+
+		// Filter out rects that are within another rectangle
+		const filteredRects: DOMRect[] = [];
+		// Keep skip over rects we have marked as overlapping
+		// TODO Not the most efficient way, since we iterate over the array
+		// multiple times
+		const overlappingIndices: number[] = [];
+		for (let i = 0; i < rects.length; i++) {
+			let isOverlapping = false;
+			for (let j = 0; j < rects.length; j++) {
+				if (i === j) continue;
+				if (overlappingIndices.includes(i)) continue;
+				if (overlappingIndices.includes(j)) continue;
+				const rect1 = rects[i];
+				const rect2 = rects[j];
+
+				if (
+					rect1.x <= rect2.x &&
+					rect1.y <= rect2.y &&
+					rect1.x + rect1.width >= rect2.x + rect2.width &&
+					rect1.y + rect1.height >= rect2.y + rect2.height
+				) {
+					isOverlapping = true;
+					overlappingIndices.push(i);
+					break;
+				}
+			}
+			if (!isOverlapping) {
+				filteredRects.push(rects[i]);
+			}
+		}
+		console.log(filteredRects);
 
 		highlightsStore.update((highlights) => {
 			highlights.push({
 				range,
 				color,
-				rects
+				rects: filteredRects as unknown as DOMRectList //TODO change this
 			});
 			return highlights;
 		});
@@ -104,6 +159,11 @@
 			bind:this={overlayOptions}
 			class="fixed left-[50%] top-[50%] z-50 rounded-xl p-2 shadow-lg bg-gray-100"
 			use:melt={$content}
+			transition:fly={{
+				duration: 150,
+				y: -10,
+				opacity: 0
+			}}
 		>
 			<div class="flex flex-col gap-2">
 				<div class="flex justify-around gap-1">

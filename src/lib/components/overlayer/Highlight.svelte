@@ -3,6 +3,7 @@
 	import { tick } from 'svelte';
 	import { IconTrash, IconCheck } from '@tabler/icons-svelte';
 	import { readerStateStore } from '$lib/components/reader/stores/readerStateStore';
+	import { fly } from 'svelte/transition';
 
 	export let rects: DOMRectList;
 	export let color = '#cbe7fa80';
@@ -131,9 +132,14 @@
 			bind:this={overlayOptions}
 			class="fixed z-50 rounded-xl select-none p-2 shadow-lg bg-gray-100 max-w-[calc(100vw_-_20px)]"
 			use:melt={$content}
+			transition:fly={{
+				duration: 200,
+				y: -10,
+				opacity: 0
+			}}
 		>
 			<div class="flex flex-col gap-4 p-2">
-				<textarea class="p-2 resize-none bg-gray-50" cols="30" rows="5" placeholder="Add note" />
+				<textarea class="p-2 resize-none" cols="30" rows="5" placeholder="Add note" />
 
 				<!-- svelte-ignore a11y-no-static-element-interactions -->
 				<!-- svelte-ignore a11y-click-events-have-key-events -->
