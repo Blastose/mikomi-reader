@@ -4,13 +4,47 @@
 	import { IconTrash, IconCheck } from '@tabler/icons-svelte';
 	import { readerStateStore } from '$lib/components/reader/stores/readerStateStore';
 	import { fly } from 'svelte/transition';
-	import { removeHighlight } from '$lib/bindings';
+	import { removeHighlight, updateHighlight } from '$lib/bindings';
 	import { highlightsStore, type Highlight } from '$lib/components/reader/stores/highlightsStore';
 
 	export let highlight: Highlight;
 
+	$: color = highlight.color;
+	$: activeColor = increaseHexAlpha(highlight.color);
+
+	let noteText = highlight.note;
+	let newColor = highlight.color;
+
+	const colorButtons = [
+		{
+			name: 'red',
+			color: '#ff000020',
+			colorClass: 'bg-red-500'
+		},
+		{
+			name: 'yellow',
+			color: '#ffff0020',
+			colorClass: 'bg-yellow-300'
+		},
+		{
+			name: 'blue',
+			color: '#0000ff20',
+			colorClass: 'bg-blue-500'
+		},
+		{
+			name: 'green',
+			color: '#00ff0020',
+			colorClass: 'bg-green-500'
+		}
+	] as const;
+
+	function increaseHexAlpha(hex: string) {
+		return `${hex.substring(0, hex.length - 2)}${50}`;
+	}
+
 	$: if ($open) {
 		readerStateStore.set('noteOpen');
+		newColor = highlight.color;
 	} else {
 		readerStateStore.set('reading');
 	}
@@ -28,6 +62,7 @@
 		let offsetY: number;
 
 		function onPointerDown(e: PointerEvent) {
+			if (e.target && (e.target as HTMLElement).tagName === 'TEXTAREA') return;
 			isDragging = true;
 			const nodeRect = node.getBoundingClientRect();
 			offsetX = e.clientX - nodeRect.left;
@@ -118,8 +153,12 @@
 		}
 	}
 
-	function onHighlightButtonClick() {
-		return;
+	function onHighlightButtonClick(e: MouseEvent) {
+		const target = e.target as HTMLElement;
+		const buttonTarget = target.closest<HTMLButtonElement>('button[data-color]');
+		if (!buttonTarget) return;
+
+		newColor = buttonTarget.dataset.color ?? '#ff000020';
 	}
 
 	let g: SVGElement;
@@ -135,6 +174,15 @@
 			highlights.splice(foundIndex, 1);
 			return highlights;
 		});
+	}
+
+	async function onSaveClick() {
+		readerStateStore.set('reading');
+		open.set(false);
+		await updateHighlight(highlight.id, noteText, newColor);
+		highlight.note = noteText;
+		highlight.color = newColor;
+		highlightsStore.update((hi) => hi);
 	}
 </script>
 
@@ -152,15 +200,27 @@
 			}}
 		>
 			<div class="flex flex-col gap-4 p-2">
-				<textarea class="p-2 resize-none" cols="30" rows="5" placeholder="Add note" />
+				<textarea
+					bind:value={noteText}
+					class="p-2 resize-none"
+					cols="30"
+					rows="5"
+					placeholder="Add note"
+				/>
 
 				<!-- svelte-ignore a11y-no-static-element-interactions -->
 				<!-- svelte-ignore a11y-click-events-have-key-events -->
 				<div on:click={onHighlightButtonClick} class="flex gap-1 justify-around">
-					<button data-color="#ff000020" class="h-6 w-6 rounded-full bg-red-500" />
-					<button data-color="#ffff0020" class="h-6 w-6 rounded-full bg-yellow-500" />
-					<button data-color="#0000ff20" class="h-6 w-6 rounded-full bg-blue-400" />
-					<button data-color="#00ff0020" class="h-6 w-6 rounded-full bg-green-500" />
+					{#each colorButtons as colorButton}
+						<button
+							style={colorButton.color === newColor
+								? `box-shadow: 0 0 0 3px ${increaseHexAlpha(colorButton.color)};`
+								: ''}
+							class="h-6 w-6 rounded-full {colorButton.colorClass}"
+							data-color={colorButton.color}
+							aria-label="Change to {colorButton.color}"
+						/>
+					{/each}
 				</div>
 
 				<div class="flex justify-between">
@@ -168,7 +228,7 @@
 						<IconTrash />
 						<span class="text-sm text-gray-500">Delete</span>
 					</button>
-					<button class="flex flex-col items-center">
+					<button class="flex flex-col items-center" on:click={onSaveClick}>
 						<IconCheck />
 						<span class="text-sm text-gray-500">Save</span>
 					</button>
@@ -184,7 +244,7 @@
 	bind:this={g}
 	role="button"
 	on:click={onClick}
-	fill={highlight.color}
+	fill={$open ? activeColor : color}
 	class="pointer-events-auto"
 >
 	{#each highlight.rects as rect}

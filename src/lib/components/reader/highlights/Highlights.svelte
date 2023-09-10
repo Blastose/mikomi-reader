@@ -5,7 +5,7 @@
 <div>
 	{#each $highlightsStore as highlight}
 		<div>
-			p.{highlight.page}|-{highlight.displayText}
+			p.{highlight.page}|note:{highlight.note}|-{highlight.displayText}
 		</div>
 	{/each}
 </div>
