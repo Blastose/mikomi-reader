@@ -5,6 +5,7 @@
 	import { IconTrash } from '@tabler/icons-svelte';
 
 	export let highlight: Highlight;
+	export let columnCount: number;
 	export let onSidebarItemClickWithPage: (page: number) => void;
 
 	async function onTrashClick() {
@@ -21,7 +22,10 @@
 <div class="flex flex-col gap-2">
 	<div class="flex justify-between text-gray-500">
 		<p class="text-sm">
-			Page {highlight.page} - {relativeTime(new Date(), highlight.dateAdded)}
+			Page {columnCount === 1 ? `${highlight.page}` : `${(highlight.page ?? 1) * 2 - 1}`} - {relativeTime(
+				new Date(),
+				highlight.dateAdded
+			)}
 		</p>
 		<button on:click={onTrashClick} aria-label="Delete highlight">
 			<IconTrash stroke={1} />
@@ -34,7 +38,7 @@
 		}}
 		class="flex flex-col gap-1 rounded-sm text-left"
 	>
-		<span class="p-1" style="background-color: {highlight.color};">
+		<span class="p-1 line-clamp-6" style="background-color: {highlight.color};">
 			{highlight.displayText}
 		</span>
 		<span class="text-sm text-gray-500">

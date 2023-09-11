@@ -251,7 +251,7 @@
 >
 	{@html html}
 	{#if fillerPageAtEnd}
-		<div id="filler-column" class="new-body">This page is left blank</div>
+		<div id="filler-column" class="new-body" />
 	{/if}
 </div>
 

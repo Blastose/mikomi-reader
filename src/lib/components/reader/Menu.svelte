@@ -62,7 +62,7 @@
 		<Bookmarks {bookmarks} {columnCount} {onSidebarItemClickWithPage} {onBookmarkItemDelete} />
 	</div>
 	<div use:melt={$content('tab-3')} class="item-gutter grow px-6 py-4 overflow-y-auto">
-		<Highlights {onSidebarItemClickWithPage} />
+		<Highlights {columnCount} {onSidebarItemClickWithPage} />
 	</div>
 </div>
 

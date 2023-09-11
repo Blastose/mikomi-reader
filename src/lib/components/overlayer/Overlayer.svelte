@@ -46,20 +46,23 @@
 		}
 	}
 
-	async function onMouseUp() {
+	async function onMouseUp(e: MouseEvent) {
 		if ($readerStateStore !== 'reading') return;
 
 		if (selectionState === 'selectedText') {
 			const selection = window.getSelection();
 			const range = selection?.getRangeAt(0);
 			if (!range) return;
-			const rangeRect = range.getBoundingClientRect();
+			if (!/\S/.test(range.toString())) return;
+			if (!readerNode.contains(range.startContainer) || !readerNode.contains(range.endContainer)) {
+				return;
+			}
 
 			open.set(true);
 			await tick();
 
-			let left = rangeRect.left + rangeRect.width / 2;
-			let top = rangeRect.top;
+			let left = e.x;
+			let top = e.y;
 			if (left + overlayOptions.offsetWidth > window.innerWidth) {
 				left = left - overlayOptions.offsetWidth;
 				if (left < 0) {
