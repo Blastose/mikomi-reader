@@ -5,14 +5,17 @@
 
 	export let bookmarks: Bookmark[];
 	export let columnCount: number;
-	export let onBookmarkItemClick: (page: number) => void;
+	export let onSidebarItemClickWithPage: (page: number) => void;
 	export let onBookmarkItemDelete: (id: string) => void;
 </script>
 
 <div class="flex flex-col gap-2">
-	{#each bookmarks as bookmark (bookmark.id)}
-		<div animate:flip={{ duration: 300 }}>
-			<BookmarkItem {bookmark} {columnCount} {onBookmarkItemClick} {onBookmarkItemDelete} />
+	{#each bookmarks as bookmark, index (bookmark.id)}
+		<div class="flex flex-col gap-2" animate:flip={{ duration: 300 }}>
+			<BookmarkItem {bookmark} {columnCount} {onSidebarItemClickWithPage} {onBookmarkItemDelete} />
+			{#if index !== bookmarks.length - 1}
+				<hr />
+			{/if}
 		</div>
 	{/each}
 	{#if bookmarks.length === 0}

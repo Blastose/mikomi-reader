@@ -73,6 +73,7 @@
 			const clientRects = range.getClientRects();
 			const readerNodeRect = readerNode.getBoundingClientRect();
 			for (const r of clientRects) {
+				// TODO fix for writingMode vertical
 				r.x += pageSize * (currentPage - 1) - readerNodeRect.x;
 				r.y += -readerNodeRect.y;
 			}
@@ -207,7 +208,7 @@
 		bookmarkInProgress = false;
 	}
 
-	function onBookmarkItemClick(page: number) {
+	function onSidebarItemClickWithPage(page: number) {
 		goToPage(readerNode, page, pageSize);
 		currentPage = page;
 		drawerOpen.set(false);
@@ -289,7 +290,7 @@
 						{drawerOpen}
 						{bookmarks}
 						{columnCount}
-						{onBookmarkItemClick}
+						{onSidebarItemClickWithPage}
 						{onBookmarkItemDelete}
 					/>
 				</div>

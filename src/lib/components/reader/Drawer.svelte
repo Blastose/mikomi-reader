@@ -12,7 +12,7 @@
 	export let drawerOpen: Writable<boolean>;
 	export let bookmarks: Bookmark[];
 	export let columnCount: number;
-	export let onBookmarkItemClick: (page: number) => void;
+	export let onSidebarItemClickWithPage: (page: number) => void;
 	export let onBookmarkItemDelete: (id: string) => void;
 
 	const {
@@ -55,7 +55,7 @@
 				{currentPage}
 				{bookmarks}
 				{columnCount}
-				{onBookmarkItemClick}
+				{onSidebarItemClickWithPage}
 				{onBookmarkItemDelete}
 			/>
 		</div>

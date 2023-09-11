@@ -12,7 +12,7 @@
 	export let currentPage: number;
 	export let bookmarks: Bookmark[];
 	export let columnCount: number;
-	export let onBookmarkItemClick: (page: number) => void;
+	export let onSidebarItemClickWithPage: (page: number) => void;
 	export let onBookmarkItemDelete: (id: string) => void;
 
 	const {
@@ -59,10 +59,10 @@
 		<Toc {tocData} {currentPage} {columnCount} />
 	</div>
 	<div use:melt={$content('tab-2')} class="item-gutter grow pl-6 pr-2 py-4 overflow-y-auto">
-		<Bookmarks {bookmarks} {columnCount} {onBookmarkItemClick} {onBookmarkItemDelete} />
+		<Bookmarks {bookmarks} {columnCount} {onSidebarItemClickWithPage} {onBookmarkItemDelete} />
 	</div>
 	<div use:melt={$content('tab-3')} class="item-gutter grow px-6 py-4 overflow-y-auto">
-		<Highlights />
+		<Highlights {onSidebarItemClickWithPage} />
 	</div>
 </div>
 
