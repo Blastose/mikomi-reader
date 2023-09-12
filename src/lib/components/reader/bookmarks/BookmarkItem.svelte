@@ -15,7 +15,7 @@
 
 	export let bookmark: Bookmark;
 	export let columnCount: number;
-	export let onBookmarkItemClick: (page: number) => void;
+	export let onSidebarItemClickWithPage: (page: number) => void;
 	export let onBookmarkItemDelete: (id: string) => void;
 </script>
 
@@ -23,7 +23,7 @@
 	<button
 		class="flex flex-col grow"
 		on:click={() => {
-			onBookmarkItemClick(bookmark.page ?? 1);
+			onSidebarItemClickWithPage(bookmark.page ?? 1);
 		}}
 	>
 		<span>Page {columnCount === 1 ? `${bookmark.page}` : `${(bookmark.page ?? 1) * 2 - 1}`}</span>

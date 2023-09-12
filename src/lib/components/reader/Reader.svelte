@@ -13,6 +13,8 @@
 	import Ruler from './Ruler.svelte';
 	import { createEventDispatcher } from 'svelte';
 	import type { Writable } from 'svelte/store';
+	import { readerStateStore } from './stores/readerStateStore';
+	import Overlayer from '$lib/components/overlayer/Overlayer.svelte';
 
 	export let html: string;
 	export let drawerOpen: Writable<boolean>;
@@ -32,12 +34,21 @@
 	export let pageSize: number;
 	$: pageSize = writingMode === 'horizontal' ? readerWidth + columnGap : readerHeight + columnGap;
 
+	$: if ($drawerOpen === false) {
+		readerStateStore.set('reading');
+	} else {
+		readerStateStore.set('sidebarOpen');
+	}
+
 	let showRuler = false;
+	let overlayContainer: HTMLDivElement;
 
 	const dispatch = createEventDispatcher();
 
 	function dispatchResize() {
 		dispatch('pageresize');
+		overlayContainer.scrollLeft = readerNode.scrollLeft;
+		overlayContainer.scrollTop = readerNode.scrollTop;
 	}
 
 	function nextPage() {
@@ -63,6 +74,8 @@
 	}
 
 	function onKeyDown(e: KeyboardEvent) {
+		if ($readerStateStore !== 'reading') return;
+
 		if (e.key === 'ArrowRight') {
 			e.preventDefault();
 			nextPageSmoothHorizontal();
@@ -71,10 +84,18 @@
 			prevPageSmoothHorizontal();
 		} else if (e.key === 'd') {
 			e.preventDefault();
-			nextPage();
+			if (writingMode === 'horizontal') {
+				nextPage();
+			} else {
+				prevPage();
+			}
 		} else if (e.key === 'a') {
 			e.preventDefault();
-			prevPage();
+			if (writingMode === 'horizontal') {
+				prevPage();
+			} else {
+				nextPage();
+			}
 		} else if (e.key === 't') {
 			e.preventDefault();
 			drawerOpen.set(true);
@@ -84,6 +105,7 @@
 
 	function onScroll(e: WheelEvent) {
 		if ($drawerOpen) return;
+		if ($readerStateStore !== 'reading') return;
 
 		if (e.deltaY > 0) {
 			nextPage();
@@ -121,7 +143,7 @@
 	}
 
 	async function jumpToLastVisibleElementAfterFunction(func: () => Promise<void>) {
-		const lastVisibleElement = getFirstVisibleElementInParentElement(readerNode);
+		const lastVisibleElement = getFirstVisibleElementInParentElement(readerNode, writingMode);
 		console.log(lastVisibleElement);
 		await func();
 		await tick();
@@ -205,6 +227,7 @@
 {/if}
 
 <SideButtons
+	orientation={writingMode}
 	nextPage={() => {
 		nextPage();
 		updateCurrentPage();
@@ -214,6 +237,8 @@
 		updateCurrentPage();
 	}}
 />
+
+<Overlayer bind:overlayContainer {readerNode} {currentPage} {pageSize} orientation={writingMode} />
 
 <div
 	style="--column-gap: {columnGap}px;
@@ -229,13 +254,16 @@
 >
 	{@html html}
 	{#if fillerPageAtEnd}
-		<div id="filler-column" class="new-body">This page is left blank</div>
+		<div id="filler-column" class="new-body" />
 	{/if}
 </div>
+
 <div>
 	<div>
 		<input
-			class="w-full"
+			class="w-full {writingMode === 'horizontal'
+				? 'writing-horizontal-tb'
+				: 'writing-vertical-rl'}"
 			type="range"
 			min="1"
 			max={totalPages}
@@ -368,6 +396,10 @@
 		writing-mode: vertical-rl !important;
 		-epub-writing-mode: vertical-rl !important;
 		-webkit-writing-mode: vertical-rl !important;
+	}
+
+	input[type='range'].writing-vertical-rl {
+		direction: rtl;
 	}
 
 	.text-epub > :global(div.new-body) {

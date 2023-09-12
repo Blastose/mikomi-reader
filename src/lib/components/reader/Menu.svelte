@@ -6,12 +6,13 @@
 	import Bookmarks from './bookmarks/Bookmarks.svelte';
 	import type { NavPoint } from '$lib/components/reader/toc/tocParser';
 	import type { Bookmark } from './utils';
+	import Highlights from './highlights/Highlights.svelte';
 
 	export let tocData: NavPoint[];
 	export let currentPage: number;
 	export let bookmarks: Bookmark[];
 	export let columnCount: number;
-	export let onBookmarkItemClick: (page: number) => void;
+	export let onSidebarItemClickWithPage: (page: number) => void;
 	export let onBookmarkItemDelete: (id: string) => void;
 
 	const {
@@ -58,9 +59,11 @@
 		<Toc {tocData} {currentPage} {columnCount} />
 	</div>
 	<div use:melt={$content('tab-2')} class="item-gutter grow pl-6 pr-2 py-4 overflow-y-auto">
-		<Bookmarks {bookmarks} {columnCount} {onBookmarkItemClick} {onBookmarkItemDelete} />
+		<Bookmarks {bookmarks} {columnCount} {onSidebarItemClickWithPage} {onBookmarkItemDelete} />
 	</div>
-	<div use:melt={$content('tab-3')} class="item-gutter grow px-6 py-4 overflow-y-auto">Tab3</div>
+	<div use:melt={$content('tab-3')} class="item-gutter grow px-6 py-4 overflow-y-auto">
+		<Highlights {columnCount} {onSidebarItemClickWithPage} />
+	</div>
 </div>
 
 <style>

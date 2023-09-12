@@ -8,6 +8,9 @@
 		calculateTocPageNumbers,
 		clearEpubStyles,
 		getFirstVisibleElementInParentElement,
+		getNodeBySelector,
+		getPageFromScroll,
+		getScrollAlignedToPageFloor,
 		getSelector,
 		goToPage
 	} from '$lib/components/reader/utils.js';
@@ -22,7 +25,14 @@
 	import { writable } from 'svelte/store';
 	import type { Bookmark } from '$lib/components/reader/utils.js';
 	import { addBookmark, removeBookmark } from '$lib/bindings.js';
-	import type { Bookmark as BookmarkDB } from '$lib/bindings.js';
+	import type { Bookmark as BookmarkDB, Highlight as HighlightDB } from '$lib/bindings.js';
+	import { readerStateStore } from '$lib/components/reader/stores/readerStateStore';
+	import { highlightsStore } from '$lib/components/reader/stores/highlightsStore.js';
+	import type { Highlight } from '$lib/components/reader/stores/highlightsStore.js';
+	import {
+		alignRectsToReaderPage,
+		filterCompletelyOverlappingRectangles
+	} from '$lib/components/overlayer/utils.js';
 
 	export let data;
 
@@ -50,6 +60,72 @@
 	// Todo: Watch out for performance issues when quickly changing currentPage
 	$: currentPageBookmarks = currentPageInBookmarks(currentPage);
 
+	function initializeHighlightDataFromDB(highlights: HighlightDB[]): Highlight[] {
+		return highlights.flatMap((highlight) => {
+			const startContainer = getNodeBySelector(highlight.start_container);
+			const endContainer = getNodeBySelector(highlight.end_container);
+			if (!startContainer || !endContainer) {
+				return [];
+			}
+			const startOffset = highlight.start_offset;
+			const endOffset = highlight.end_offset;
+			const range = new Range();
+			range.setStart(startContainer, startOffset);
+			range.setEnd(endContainer, endOffset);
+
+			const clientRects = range.getClientRects();
+			const readerNodeRect = readerNode.getBoundingClientRect();
+			const rects = alignRectsToReaderPage(
+				Array.from(clientRects),
+				writingMode,
+				readerNodeRect,
+				pageSize,
+				currentPage
+			);
+			const filteredRects: DOMRect[] = filterCompletelyOverlappingRectangles(rects);
+
+			const scroll = getScrollAlignedToPageFloor(
+				writingMode === 'horizontal' ? filteredRects[0].x : filteredRects[0].y,
+				pageSize
+			);
+			return {
+				id: highlight.id,
+				note: highlight.note,
+				dateAdded: highlight.date_added,
+				displayText: range.toString(),
+				page: getPageFromScroll(scroll, pageSize),
+				range,
+				rects: filteredRects,
+				color: highlight.color
+			};
+		});
+	}
+
+	function updateHighlightRectsAndPages() {
+		highlightsStore.update((highlights) => {
+			for (const highlight of highlights) {
+				const clientRects = highlight.range.getClientRects();
+				const readerNodeRect = readerNode.getBoundingClientRect();
+				const rects = alignRectsToReaderPage(
+					Array.from(clientRects),
+					writingMode,
+					readerNodeRect,
+					pageSize,
+					currentPage
+				);
+				const filteredRects: DOMRect[] = filterCompletelyOverlappingRectangles(rects);
+				highlight.rects = filteredRects;
+				const scroll = getScrollAlignedToPageFloor(
+					writingMode === 'horizontal' ? filteredRects[0].x : filteredRects[0].y,
+					pageSize
+				);
+				highlight.page = getPageFromScroll(scroll, pageSize);
+			}
+
+			return highlights;
+		});
+	}
+
 	function currentPageInBookmarks(page: number) {
 		const pageBookmarks = [];
 		for (const bookmark of bookmarks) {
@@ -60,7 +136,7 @@
 		return pageBookmarks;
 	}
 
-	function intializeBookmarkDataFromDB(bookmarks: BookmarkDB[]): Bookmark[] {
+	function initializeBookmarkDataFromDB(bookmarks: BookmarkDB[]): Bookmark[] {
 		return bookmarks.flatMap((bookmark) => {
 			const element = readerNode.querySelector<HTMLElement>(bookmark.css_selector);
 			if (!element) return [];
@@ -82,6 +158,7 @@
 			const removedBookmark = currentPageBookmarks.pop();
 			if (removedBookmark) {
 				const foundIndex = bookmarks.findIndex((b) => b.id === removedBookmark.id);
+				if (foundIndex === -1) return;
 				bookmarks.splice(foundIndex, 1);
 				bookmarks = bookmarks;
 				await removeBookmark(removedBookmark.id);
@@ -90,8 +167,18 @@
 		currentPageBookmarks = currentPageBookmarks;
 	}
 
+	function onKeyDown(e: KeyboardEvent) {
+		if ($readerStateStore !== 'reading') return;
+		if (e.key === 'b') {
+			onBookmarkClick();
+		}
+	}
+
+	let bookmarkInProgress = false;
 	async function bookmarkPage() {
-		const foundElement = getFirstVisibleElementInParentElement(readerNode);
+		bookmarkInProgress = true;
+		let bookmarkPage = currentPage;
+		const foundElement = getFirstVisibleElementInParentElement(readerNode, writingMode);
 		if (!foundElement) return;
 
 		const selector = getSelector(foundElement);
@@ -116,7 +203,7 @@
 			cssSelector: selector,
 			displayText: bookmarkData.displayText,
 			element: foundElement,
-			page: currentPage,
+			page: bookmarkPage,
 			dateAdded: bookmarkData.dateAdded
 		};
 		bookmarks.push(inMemoryBookmark);
@@ -124,9 +211,10 @@
 		bookmarks = bookmarks;
 		currentPageBookmarks.push(inMemoryBookmark);
 		currentPageBookmarks = currentPageBookmarks;
+		bookmarkInProgress = false;
 	}
 
-	function onBookmarkItemClick(page: number) {
+	function onSidebarItemClickWithPage(page: number) {
 		goToPage(readerNode, page, pageSize);
 		currentPage = page;
 		drawerOpen.set(false);
@@ -148,6 +236,7 @@
 
 	async function onPageResize() {
 		await tick();
+		updateHighlightRectsAndPages();
 		calculateTocPageNumbers(readerNode, writingMode, pageSize, tocData);
 		tocData = tocData;
 		calculateBookmarkPageNumbers(bookmarks, writingMode, pageSize);
@@ -164,7 +253,8 @@
 
 		loading = false;
 		await tick();
-		bookmarks = intializeBookmarkDataFromDB(data.book.bookmarks);
+		bookmarks = initializeBookmarkDataFromDB(data.book.bookmarks);
+		highlightsStore.set(initializeHighlightDataFromDB(data.book.highlights));
 		calculateBookmarkPageNumbers(bookmarks, writingMode, pageSize);
 		bookmarks.sort((a, b) => (a.page ?? 0) - (b.page ?? 0));
 		bookmarks = bookmarks;
@@ -189,6 +279,8 @@
 	});
 </script>
 
+<svelte:document on:keydown={onKeyDown} />
+
 <div class="px-12 py-8 mx-auto duration-150 flex flex-col">
 	{#if loading}
 		<p>Loading...</p>
@@ -204,7 +296,7 @@
 						{drawerOpen}
 						{bookmarks}
 						{columnCount}
-						{onBookmarkItemClick}
+						{onSidebarItemClickWithPage}
 						{onBookmarkItemDelete}
 					/>
 				</div>
@@ -216,7 +308,12 @@
 				<div class="flex gap-1 items-center">
 					<IconLetterCase />
 					<IconSearch />
-					<button class="relative" on:click={onBookmarkClick} aria-label="Bookmark page">
+					<button
+						class="relative"
+						disabled={bookmarkInProgress}
+						on:click={onBookmarkClick}
+						aria-label="Bookmark page"
+					>
 						{#if currentPageBookmarks.length > 0}
 							<IconBookmarkFilled class="text-pink-500" />
 							{#if currentPageBookmarks.length > 1}

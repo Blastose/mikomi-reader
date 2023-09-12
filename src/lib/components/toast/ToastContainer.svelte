@@ -10,6 +10,7 @@
 		title: string;
 		description: string;
 		color: string;
+		onUndo?: (() => void) | (() => Promise<void>);
 	};
 
 	export function addToast(addToastProps: Parameters<typeof addToastMelt>[0]) {

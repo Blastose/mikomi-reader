@@ -11,7 +11,7 @@ declare global {
 const invoke = () => window.__TAURI_INVOKE__;
 
 export function getBook(id: string) {
-    return invoke()<BookWithAuthorsAndCoverAndBookmarks | null>("get_book", { id })
+    return invoke()<BookWithAuthorsAndCoverAndBookmarksAndHighlights | null>("get_book", { id })
 }
 
 export function getBooks() {
@@ -38,17 +38,30 @@ export function updateBookmark(id: string, displayText: string) {
     return invoke()<null>("update_bookmark", { id,displayText })
 }
 
+export function addHighlight(newHighlight: Highlight) {
+    return invoke()<null>("add_highlight", { newHighlight })
+}
+
+export function removeHighlight(id: string) {
+    return invoke()<null>("remove_highlight", { id })
+}
+
+export function updateHighlight(id: string, note: string, color: string) {
+    return invoke()<null>("update_highlight", { id,note,color })
+}
+
 export function getEpub(path: string) {
     return invoke()<EpubData>("get_epub", { path })
 }
 
 export type ImageData = { data: number[]; width: number; height: number }
+export type BookWithAuthorsAndCoverAndBookmarksAndHighlights = ({ id: string; title: string; path: string }) & { authors: Author[]; bookmarks: Bookmark[]; highlights: Highlight[]; cover: string | null }
 export type BookWithAuthorsAndCover = ({ id: string; title: string; path: string }) & { authors: Author[]; cover: string | null }
 export type HtmlData = { id: string; html_content: string }
-export type BookWithAuthorsAndCoverAndBookmarks = ({ id: string; title: string; path: string }) & { authors: Author[]; bookmarks: Bookmark[]; cover: string | null }
 export type EpubData = { html: HtmlData[]; img: { [key: string]: ImageData }; css: { [key: string]: string }; toc: Toc | null }
 export type Book = { id: string; title: string; path: string }
 export type Toc = { kind: TocKind; content: string; path: string }
+export type Highlight = { id: string; book_id: string; date_added: number; note: string; start_container: string; start_offset: number; end_container: string; end_offset: number; color: string }
 export type TocKind = "Ncx" | "Nav"
 export type Author = { id: string; name: string }
 export type Bookmark = { id: string; book_id: string; display_text: string; date_added: number; css_selector: string }

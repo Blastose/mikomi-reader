@@ -49,11 +49,12 @@ pub struct BookWithAuthorsAndCover {
 }
 
 #[derive(Serialize, Type)]
-pub struct BookWithAuthorsAndCoverAndBookmarks {
+pub struct BookWithAuthorsAndCoverAndBookmarksAndHighlights {
     #[serde(flatten)]
     book: models::Book,
     authors: Vec<models::Author>,
     bookmarks: Vec<models::Bookmark>,
+    highlights: Vec<models::Highlight>,
     cover: Option<String>,
 }
 
@@ -102,7 +103,54 @@ pub fn update_bookmark(id: String, display_text: String) -> Result<(), String> {
 
 #[tauri::command]
 #[specta::specta]
-pub fn get_book(id: String) -> Option<BookWithAuthorsAndCoverAndBookmarks> {
+pub fn add_highlight(new_highlight: models::Highlight) -> Result<(), String> {
+    let mut conn: SqliteConnection = establish_connection();
+    let res = diesel::insert_into(schema::highlight::table)
+        .values(&new_highlight)
+        .on_conflict(schema::highlight::id)
+        .do_update()
+        .set(&new_highlight)
+        .execute(&mut conn);
+
+    match res {
+        Ok(_) => return Ok(()),
+        Err(_) => return Err(String::from("Cannot add highlight")),
+    }
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn remove_highlight(id: String) -> Result<(), String> {
+    let mut conn: SqliteConnection = establish_connection();
+    let res = diesel::delete(schema::highlight::table.filter(schema::highlight::id.eq(id)))
+        .execute(&mut conn);
+
+    match res {
+        Ok(_) => return Ok(()),
+        Err(_) => return Err(String::from("Cannot delete highlight")),
+    }
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn update_highlight(id: String, note: String, color: String) -> Result<(), String> {
+    let mut conn: SqliteConnection = establish_connection();
+    let res = diesel::update(schema::highlight::table.filter(schema::highlight::id.eq(id)))
+        .set((
+            schema::highlight::note.eq(note),
+            schema::highlight::color.eq(color),
+        ))
+        .execute(&mut conn);
+
+    match res {
+        Ok(_) => return Ok(()),
+        Err(_) => return Err(String::from("Cannot update highlight")),
+    }
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn get_book(id: String) -> Option<BookWithAuthorsAndCoverAndBookmarksAndHighlights> {
     let mut conn: SqliteConnection = establish_connection();
 
     let books: Vec<models::Book> = schema::book::table
@@ -113,6 +161,11 @@ pub fn get_book(id: String) -> Option<BookWithAuthorsAndCoverAndBookmarks> {
 
     let bookmarks: Vec<models::Bookmark> = models::Bookmark::belonging_to(&books)
         .select(models::Bookmark::as_select())
+        .load(&mut conn)
+        .unwrap();
+
+    let highlights: Vec<models::Highlight> = models::Highlight::belonging_to(&books)
+        .select(models::Highlight::as_select())
         .load(&mut conn)
         .unwrap();
 
@@ -142,10 +195,11 @@ pub fn get_book(id: String) -> Option<BookWithAuthorsAndCoverAndBookmarks> {
         Err(_) => None,
     };
 
-    Some(BookWithAuthorsAndCoverAndBookmarks {
+    Some(BookWithAuthorsAndCoverAndBookmarksAndHighlights {
         book,
         authors: authors_with_book_link.into_iter().map(|(_, a)| a).collect(),
         bookmarks,
+        highlights,
         cover,
     })
 }

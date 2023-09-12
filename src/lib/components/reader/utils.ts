@@ -53,9 +53,24 @@ export function smoothScrollTo(
 	requestAnimationFrame(scroll);
 }
 
-export function getSelector(el: Element): string {
-	if (el.classList.contains('text-epub')) return 'body';
-	const names = [];
+/**
+ * Gets a selector to a Element or Text node
+ *
+ * If the element is a text node, it will be at the end of the selector
+ * and marked by a $text$`parentChildNodeIndex`
+ *
+ * Can be used with Range.startContainer if it is a text node
+ */
+export function getSelector(el: Element | Text): string {
+	const names: string[] = [];
+	if (el instanceof Text) {
+		if (!el.parentElement) return names.toString();
+		const textNodeIndex = Array.from(el.parentElement.childNodes).indexOf(el);
+		el = el.parentElement;
+		names.push(`$text$${textNodeIndex}`);
+	} else {
+		if (el.classList.contains('text-epub')) return 'body';
+	}
 
 	while (el.parentElement && !el.classList.contains('text-epub')) {
 		if (el.id) {
@@ -76,6 +91,35 @@ export function getSelector(el: Element): string {
 		el = el.parentElement;
 	}
 	return names.reverse().join(' > ');
+}
+
+/**
+ * Gets the element by a selector return from {@link getSelector}
+ *
+ * Similar to `document.querySelector`, but can get text nodes
+ *
+ * @param selector - a selector return from {@link getSelector}
+ * @returns
+ */
+export function getNodeBySelector(selector: string): Node | null {
+	let isTextNode = false;
+	let childIndex = -1;
+	const match = selector.match('\\$text\\$\\d$');
+	if (match) {
+		isTextNode = true;
+		const textNodeAndIndex = match[0];
+		childIndex = parseInt(textNodeAndIndex.split('$text$')[1]);
+	}
+	const [selectorSplit] = selector.split(' > $text');
+	const node = document.querySelector(selectorSplit);
+	if (!node) return null;
+
+	if (isTextNode) {
+		const textNode = Array.from(node.childNodes)[childIndex];
+		return textNode as Node | null;
+	} else {
+		return node;
+	}
 }
 
 export type Orientation = 'horizontal' | 'vertical';
@@ -113,8 +157,12 @@ export function createSelectorFromEpubUri(uri: string): string {
 	return selector;
 }
 
-export function getFirstVisibleElementInParentElement(containerElement: HTMLElement) {
+export function getFirstVisibleElementInParentElement(
+	containerElement: HTMLElement,
+	orientation: Orientation
+) {
 	let foundElement: HTMLElement | null = null;
+	let partialElement: HTMLElement | null = null;
 	const validTagNames = ['P', 'SPAN', 'DIV', 'IMG', 'IMAGE', 'SECTION'];
 	const containerRect = containerElement.getBoundingClientRect();
 	for (const possibleElement of containerElement.querySelectorAll<HTMLElement>('*')) {
@@ -132,9 +180,28 @@ export function getFirstVisibleElementInParentElement(containerElement: HTMLElem
 			foundElement = possibleElement;
 			break;
 		}
+
+		// Element crosses over to a new page
+		if (orientation === 'horizontal') {
+			if (
+				rect.top >= containerRect.top &&
+				rect.bottom <= containerRect.bottom &&
+				rect.right <= containerRect.right
+			) {
+				partialElement = possibleElement;
+			}
+		} else {
+			if (
+				rect.top >= containerRect.top &&
+				rect.bottom <= containerRect.bottom &&
+				rect.left >= containerRect.left
+			) {
+				partialElement = possibleElement;
+			}
+		}
 	}
 
-	return foundElement;
+	return foundElement ?? partialElement;
 }
 
 export function clearEpubStyles() {
@@ -144,7 +211,11 @@ export function clearEpubStyles() {
 	}
 }
 
-function getPageFromElement(element: HTMLElement, readingDirection: Orientation, pageSize: number) {
+export function getPageFromElement(
+	element: HTMLElement,
+	readingDirection: Orientation,
+	pageSize: number
+) {
 	const elementScroll = readingDirection === 'horizontal' ? element.offsetLeft : element.offsetTop;
 	const scroll = getScrollAlignedToPageFloor(elementScroll, pageSize);
 	return getPageFromScroll(scroll, pageSize);
