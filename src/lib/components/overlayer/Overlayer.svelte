@@ -15,7 +15,11 @@
 	} from '$lib/components/reader/utils';
 	import { addHighlight } from '$lib/bindings';
 	import { page } from '$app/stores';
-	import { filterCompletelyOverlappingRectangles } from './utils';
+	import {
+		alignRectsToReaderPage,
+		filterCompletelyOverlappingRectangles,
+		setLeftTopOnScreen
+	} from './utils';
 	import { colorButtons } from './utils';
 
 	export let currentPage: number;
@@ -64,27 +68,7 @@
 
 			let left = e.x;
 			let top = e.y;
-			if (left + overlayOptions.offsetWidth > window.innerWidth) {
-				left = left - overlayOptions.offsetWidth;
-				if (left < 0) {
-					overlayOptions.style.left = `${window.innerWidth - overlayOptions.offsetWidth}px`;
-				} else {
-					overlayOptions.style.left = `${left}px`;
-				}
-			} else {
-				overlayOptions.style.left = `${left}px`;
-			}
-			if (top + overlayOptions.offsetHeight > window.innerHeight) {
-				top = top - overlayOptions.offsetHeight;
-				if (top < 0) {
-					overlayOptions.style.top = `${window.innerHeight - overlayOptions.offsetHeight}px`;
-				} else {
-					overlayOptions.style.top = `${top}px`;
-				}
-			} else {
-				overlayOptions.style.top = `${top}px`;
-			}
-
+			setLeftTopOnScreen(overlayOptions, left, top);
 			selectionState = 'noneSelected';
 		}
 	}
@@ -102,16 +86,13 @@
 
 		const readerNodeRect = readerNode.getBoundingClientRect();
 		const clientRects = range.getClientRects();
-		for (const r of clientRects) {
-			if (orientation === 'horizontal') {
-				r.x += pageSize * (currentPage - 1) - readerNodeRect.x;
-				r.y += -readerNodeRect.y;
-			} else {
-				r.x += -readerNodeRect.x;
-				r.y += pageSize * (currentPage - 1) - readerNodeRect.y;
-			}
-		}
-		const rects = Array.from(clientRects);
+		const rects = alignRectsToReaderPage(
+			Array.from(clientRects),
+			orientation,
+			readerNodeRect,
+			pageSize,
+			currentPage
+		);
 
 		const filteredRects: DOMRect[] = filterCompletelyOverlappingRectangles(rects);
 

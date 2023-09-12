@@ -16,7 +16,7 @@
 				nextPage();
 			}
 		}}
-		class="bg-white w-8 flex items-center justify-center pointer-events-auto"
+		class="w-8 flex items-center justify-center pointer-events-auto"
 		aria-label={orientation === 'horizontal' ? 'Previous page' : 'Next page'}
 	>
 		<IconChevronLeft />
@@ -29,7 +29,7 @@
 				prevPage();
 			}
 		}}
-		class="bg-white w-8 flex items-center justify-center pointer-events-auto"
+		class="w-8 flex items-center justify-center pointer-events-auto"
 		aria-label={orientation === 'horizontal' ? 'Next page' : 'Previous page'}
 	>
 		<IconChevronRight />

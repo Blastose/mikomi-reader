@@ -1,6 +1,6 @@
 import { addHighlight } from '$lib/bindings';
 import { highlightsStore, type Highlight } from '$lib/components/reader/stores/highlightsStore';
-import { getSelector } from '$lib/components/reader/utils';
+import { getSelector, type Orientation } from '$lib/components/reader/utils';
 
 type Rectangle = { x: number; y: number; width: number; height: number };
 
@@ -53,6 +53,48 @@ export async function addHighlightToDBAndStore(highlight: Highlight, bookId: str
 		highlights.push(highlight);
 		return highlights;
 	});
+}
+
+export function alignRectsToReaderPage<T extends Rectangle>(
+	rects: T[],
+	orientation: Orientation,
+	readerNodeRect: Rectangle,
+	pageSize: number,
+	currentPage: number
+): T[] {
+	return rects.map((rect) => {
+		if (orientation === 'horizontal') {
+			rect.x += pageSize * (currentPage - 1) - readerNodeRect.x;
+			rect.y += -readerNodeRect.y;
+		} else {
+			rect.x += -readerNodeRect.x;
+			rect.y += pageSize * (currentPage - 1) - readerNodeRect.y;
+		}
+		return rect;
+	});
+}
+
+export function setLeftTopOnScreen(node: HTMLElement, x: number, y: number) {
+	if (x + node.offsetWidth > window.innerWidth) {
+		x = x - node.offsetWidth;
+		if (x < 0) {
+			node.style.left = `${window.innerWidth - node.offsetWidth}px`;
+		} else {
+			node.style.left = `${x}px`;
+		}
+	} else {
+		node.style.left = `${x}px`;
+	}
+	if (y + node.offsetHeight > window.innerHeight) {
+		y = y - node.offsetHeight;
+		if (y < 0) {
+			node.style.top = `${window.innerHeight - node.offsetHeight}px`;
+		} else {
+			node.style.top = `${y}px`;
+		}
+	} else {
+		node.style.top = `${y}px`;
+	}
 }
 
 export const colorButtons = [

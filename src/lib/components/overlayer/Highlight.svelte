@@ -6,7 +6,7 @@
 	import { fly } from 'svelte/transition';
 	import { removeHighlight, updateHighlight } from '$lib/bindings';
 	import { highlightsStore, type Highlight } from '$lib/components/reader/stores/highlightsStore';
-	import { addHighlightToDBAndStore, colorButtons } from './utils';
+	import { addHighlightToDBAndStore, colorButtons, setLeftTopOnScreen } from './utils';
 	import { addToast } from '$lib/components/toast/ToastContainer.svelte';
 	import { page } from '$app/stores';
 
@@ -110,26 +110,7 @@
 		} else {
 			let left = e.x;
 			let top = e.y;
-			if (left + overlayOptions.offsetWidth > window.innerWidth) {
-				left = left - overlayOptions.offsetWidth;
-				if (left < 0) {
-					overlayOptions.style.left = `${window.innerWidth - overlayOptions.offsetWidth}px`;
-				} else {
-					overlayOptions.style.left = `${left}px`;
-				}
-			} else {
-				overlayOptions.style.left = `${left}px`;
-			}
-			if (top + overlayOptions.offsetHeight > window.innerHeight) {
-				top = top - overlayOptions.offsetHeight;
-				if (top < 0) {
-					overlayOptions.style.top = `${window.innerHeight - overlayOptions.offsetHeight}px`;
-				} else {
-					overlayOptions.style.top = `${top}px`;
-				}
-			} else {
-				overlayOptions.style.top = `${top}px`;
-			}
+			setLeftTopOnScreen(overlayOptions, left, top);
 
 			overlayOptions.style.transform = '';
 		}

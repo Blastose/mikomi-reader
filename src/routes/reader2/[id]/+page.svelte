@@ -29,7 +29,10 @@
 	import { readerStateStore } from '$lib/components/reader/stores/readerStateStore';
 	import { highlightsStore } from '$lib/components/reader/stores/highlightsStore.js';
 	import type { Highlight } from '$lib/components/reader/stores/highlightsStore.js';
-	import { filterCompletelyOverlappingRectangles } from '$lib/components/overlayer/utils.js';
+	import {
+		alignRectsToReaderPage,
+		filterCompletelyOverlappingRectangles
+	} from '$lib/components/overlayer/utils.js';
 
 	export let data;
 
@@ -72,16 +75,13 @@
 
 			const clientRects = range.getClientRects();
 			const readerNodeRect = readerNode.getBoundingClientRect();
-			for (const r of clientRects) {
-				if (writingMode === 'horizontal') {
-					r.x += pageSize * (currentPage - 1) - readerNodeRect.x;
-					r.y += -readerNodeRect.y;
-				} else {
-					r.x += -readerNodeRect.x;
-					r.y += pageSize * (currentPage - 1) - readerNodeRect.y;
-				}
-			}
-			const rects = Array.from(clientRects);
+			const rects = alignRectsToReaderPage(
+				Array.from(clientRects),
+				writingMode,
+				readerNodeRect,
+				pageSize,
+				currentPage
+			);
 			const filteredRects: DOMRect[] = filterCompletelyOverlappingRectangles(rects);
 
 			const scroll = getScrollAlignedToPageFloor(
@@ -106,16 +106,13 @@
 			for (const highlight of highlights) {
 				const clientRects = highlight.range.getClientRects();
 				const readerNodeRect = readerNode.getBoundingClientRect();
-				for (const r of clientRects) {
-					if (writingMode === 'horizontal') {
-						r.x += pageSize * (currentPage - 1) - readerNodeRect.x;
-						r.y += -readerNodeRect.y;
-					} else {
-						r.x += -readerNodeRect.x;
-						r.y += pageSize * (currentPage - 1) - readerNodeRect.y;
-					}
-				}
-				const rects = Array.from(clientRects);
+				const rects = alignRectsToReaderPage(
+					Array.from(clientRects),
+					writingMode,
+					readerNodeRect,
+					pageSize,
+					currentPage
+				);
 				const filteredRects: DOMRect[] = filterCompletelyOverlappingRectangles(rects);
 				highlight.rects = filteredRects;
 				const scroll = getScrollAlignedToPageFloor(
