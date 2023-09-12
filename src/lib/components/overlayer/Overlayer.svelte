@@ -103,8 +103,13 @@
 		const readerNodeRect = readerNode.getBoundingClientRect();
 		const clientRects = range.getClientRects();
 		for (const r of clientRects) {
-			r.x += pageSize * (currentPage - 1) - readerNodeRect.x;
-			r.y += -readerNodeRect.y;
+			if (orientation === 'horizontal') {
+				r.x += pageSize * (currentPage - 1) - readerNodeRect.x;
+				r.y += -readerNodeRect.y;
+			} else {
+				r.x += -readerNodeRect.x;
+				r.y += pageSize * (currentPage - 1) - readerNodeRect.y;
+			}
 		}
 		const rects = Array.from(clientRects);
 
@@ -156,6 +161,14 @@
 	}
 
 	let overlayOptions: HTMLDivElement;
+	export let overlayContainer: HTMLDivElement;
+
+	$: {
+		if (overlayContainer) {
+			overlayContainer.scrollLeft = (currentPage - 1) * pageSize;
+			overlayContainer.scrollTop = (currentPage - 1) * pageSize;
+		}
+	}
 </script>
 
 <svelte:document on:mouseup={onMouseUp} on:selectionchange={onSelect} />
@@ -199,12 +212,21 @@
 	{/if}
 </div>
 
-<svg
-	class="fixed ml-12 z-10 pointer-events-none"
-	style="left: -{(currentPage - 1) *
-		pageSize}px; height: {readerNode?.scrollHeight}px; width: {readerNode?.scrollWidth}px"
+<div
+	bind:this={overlayContainer}
+	class="fixed z-10 overflow-hidden pointer-events-none"
+	style=" 
+		height: {readerNode?.clientHeight}px; 
+		width: {readerNode?.clientWidth}px;"
 >
-	{#each $highlightsStore as highlight (highlight.id)}
-		<Highlight {highlight} />
-	{/each}
-</svg>
+	<svg
+		class="pointer-events-none"
+		style=" 
+			height: {readerNode?.scrollHeight}px; 
+			width: {readerNode?.scrollWidth}px;"
+	>
+		{#each $highlightsStore as highlight (highlight.id)}
+			<Highlight {highlight} />
+		{/each}
+	</svg>
+</div>

@@ -73,9 +73,13 @@
 			const clientRects = range.getClientRects();
 			const readerNodeRect = readerNode.getBoundingClientRect();
 			for (const r of clientRects) {
-				// TODO fix for writingMode vertical
-				r.x += pageSize * (currentPage - 1) - readerNodeRect.x;
-				r.y += -readerNodeRect.y;
+				if (writingMode === 'horizontal') {
+					r.x += pageSize * (currentPage - 1) - readerNodeRect.x;
+					r.y += -readerNodeRect.y;
+				} else {
+					r.x += -readerNodeRect.x;
+					r.y += pageSize * (currentPage - 1) - readerNodeRect.y;
+				}
 			}
 			const rects = Array.from(clientRects);
 			const filteredRects: DOMRect[] = filterCompletelyOverlappingRectangles(rects);
@@ -103,8 +107,13 @@
 				const clientRects = highlight.range.getClientRects();
 				const readerNodeRect = readerNode.getBoundingClientRect();
 				for (const r of clientRects) {
-					r.x += pageSize * (currentPage - 1) - readerNodeRect.x;
-					r.y += -readerNodeRect.y;
+					if (writingMode === 'horizontal') {
+						r.x += pageSize * (currentPage - 1) - readerNodeRect.x;
+						r.y += -readerNodeRect.y;
+					} else {
+						r.x += -readerNodeRect.x;
+						r.y += pageSize * (currentPage - 1) - readerNodeRect.y;
+					}
 				}
 				const rects = Array.from(clientRects);
 				const filteredRects: DOMRect[] = filterCompletelyOverlappingRectangles(rects);

@@ -41,11 +41,14 @@
 	}
 
 	let showRuler = false;
+	let overlayContainer: HTMLDivElement;
 
 	const dispatch = createEventDispatcher();
 
 	function dispatchResize() {
 		dispatch('pageresize');
+		overlayContainer.scrollLeft = readerNode.scrollLeft;
+		overlayContainer.scrollTop = readerNode.scrollTop;
 	}
 
 	function nextPage() {
@@ -235,7 +238,7 @@
 	}}
 />
 
-<Overlayer {readerNode} {currentPage} {pageSize} orientation={writingMode} />
+<Overlayer bind:overlayContainer {readerNode} {currentPage} {pageSize} orientation={writingMode} />
 
 <div
 	style="--column-gap: {columnGap}px;

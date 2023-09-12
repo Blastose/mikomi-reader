@@ -14,13 +14,13 @@
 	$: bookId = $page.params.id;
 
 	async function onTrashClick() {
-		await removeHighlight(highlight.id);
 		highlightsStore.update((highlights) => {
 			const foundIndex = highlights.findIndex((hi) => hi.id === highlight.id);
 			if (foundIndex === -1) return highlights;
 			highlights.splice(foundIndex, 1);
 			return highlights;
 		});
+		await removeHighlight(highlight.id);
 
 		const onUndo = () => {
 			addHighlightToDBAndStore(highlight, bookId);
