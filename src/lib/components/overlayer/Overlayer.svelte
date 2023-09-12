@@ -16,6 +16,7 @@
 	import { addHighlight } from '$lib/bindings';
 	import { page } from '$app/stores';
 	import { filterCompletelyOverlappingRectangles } from './utils';
+	import { colorButtons } from './utils';
 
 	export let currentPage: number;
 	export let pageSize: number;
@@ -184,10 +185,14 @@
 				<!-- svelte-ignore a11y-no-static-element-interactions -->
 				<!-- svelte-ignore a11y-click-events-have-key-events -->
 				<div on:click={onHighlightButtonClick} class="flex gap-1">
-					<button data-color="#ff000020" class="h-6 w-6 rounded-full bg-red-500" />
-					<button data-color="#ffff0020" class="h-6 w-6 rounded-full bg-yellow-500" />
-					<button data-color="#0000ff20" class="h-6 w-6 rounded-full bg-blue-400" />
-					<button data-color="#00ff0020" class="h-6 w-6 rounded-full bg-green-500" />
+					{#each colorButtons as colorButton}
+						<button
+							style="background-color: {colorButton.displayColor};"
+							class="h-6 w-6 rounded-full"
+							data-color={colorButton.color}
+							aria-label="Highlight text as {colorButton.color}"
+						/>
+					{/each}
 				</div>
 			</div>
 		</div>

@@ -56,6 +56,13 @@
 			<h3 use:melt={$title(id)} class="flex items-center gap-2 font-semibold">
 				{data.title}
 				<span class="rounded-full square-1.5 {data.color}" />
+				{#if data.onUndo}
+					<button
+						use:melt={$close(id)}
+						class="rounded-md hover:bg-gray-800 duration-150 text-blue-400 px-2 py-1"
+						on:click={data.onUndo}>Undo</button
+					>
+				{/if}
 			</h3>
 			<div use:melt={$description(id)}>
 				{data.description}

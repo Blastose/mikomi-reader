@@ -63,6 +63,7 @@ pub struct Bookmark {
     Type,
     PartialEq,
     Debug,
+    AsChangeset,
 )]
 #[diesel(belongs_to(Book))]
 #[diesel(table_name = crate::schema::highlight)]

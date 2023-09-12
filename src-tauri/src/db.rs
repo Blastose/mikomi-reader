@@ -107,6 +107,9 @@ pub fn add_highlight(new_highlight: models::Highlight) -> Result<(), String> {
     let mut conn: SqliteConnection = establish_connection();
     let res = diesel::insert_into(schema::highlight::table)
         .values(&new_highlight)
+        .on_conflict(schema::highlight::id)
+        .do_update()
+        .set(&new_highlight)
         .execute(&mut conn);
 
     match res {

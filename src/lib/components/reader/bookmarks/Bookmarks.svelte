@@ -17,8 +17,7 @@
 				<hr />
 			{/if}
 		</div>
-	{/each}
-	{#if bookmarks.length === 0}
+	{:else}
 		<p class="text-gray-500">No bookmarks</p>
-	{/if}
+	{/each}
 </div>

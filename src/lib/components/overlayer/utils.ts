@@ -1,3 +1,7 @@
+import { addHighlight } from '$lib/bindings';
+import { highlightsStore, type Highlight } from '$lib/components/reader/stores/highlightsStore';
+import { getSelector } from '$lib/components/reader/utils';
+
 type Rectangle = { x: number; y: number; width: number; height: number };
 
 export function filterCompletelyOverlappingRectangles<T extends Rectangle>(rects: T[]): T[] {
@@ -31,3 +35,45 @@ export function filterCompletelyOverlappingRectangles<T extends Rectangle>(rects
 
 	return filteredRects;
 }
+
+export async function addHighlightToDBAndStore(highlight: Highlight, bookId: string) {
+	addHighlight({
+		id: highlight.id,
+		book_id: bookId,
+		color: highlight.color,
+		date_added: highlight.dateAdded,
+		start_container: getSelector(highlight.range.startContainer as Element | Text),
+		start_offset: highlight.range.startOffset,
+		end_container: getSelector(highlight.range.endContainer as Element | Text),
+		end_offset: highlight.range.endOffset,
+		note: highlight.note
+	});
+
+	highlightsStore.update((highlights) => {
+		highlights.push(highlight);
+		return highlights;
+	});
+}
+
+export const colorButtons = [
+	{
+		name: 'red',
+		color: '#ff000020',
+		displayColor: '#ef4444'
+	},
+	{
+		name: 'yellow',
+		color: '#fbbc0430',
+		displayColor: '#eab308'
+	},
+	{
+		name: 'blue',
+		color: '#0000ff20',
+		displayColor: '#3b82f6'
+	},
+	{
+		name: 'green',
+		color: '#00ff0020',
+		displayColor: '#22c55e'
+	}
+] as const;

@@ -6,6 +6,9 @@
 	import { fly } from 'svelte/transition';
 	import { removeHighlight, updateHighlight } from '$lib/bindings';
 	import { highlightsStore, type Highlight } from '$lib/components/reader/stores/highlightsStore';
+	import { addHighlightToDBAndStore, colorButtons } from './utils';
+	import { addToast } from '$lib/components/toast/ToastContainer.svelte';
+	import { page } from '$app/stores';
 
 	export let highlight: Highlight;
 
@@ -14,29 +17,7 @@
 
 	let noteText = highlight.note;
 	let newColor = highlight.color;
-
-	const colorButtons = [
-		{
-			name: 'red',
-			color: '#ff000020',
-			colorClass: 'bg-red-500'
-		},
-		{
-			name: 'yellow',
-			color: '#ffff0020',
-			colorClass: 'bg-yellow-300'
-		},
-		{
-			name: 'blue',
-			color: '#0000ff20',
-			colorClass: 'bg-blue-500'
-		},
-		{
-			name: 'green',
-			color: '#00ff0020',
-			colorClass: 'bg-green-500'
-		}
-	] as const;
+	$: bookId = $page.params.id;
 
 	function increaseHexAlpha(hex: string) {
 		return `${hex.substring(0, hex.length - 2)}${50}`;
@@ -119,6 +100,7 @@
 
 	async function onClick(e: MouseEvent) {
 		open.set(true);
+		noteText = highlight.note;
 		await tick();
 
 		if (window.innerWidth <= 480) {
@@ -159,6 +141,10 @@
 		if (!buttonTarget) return;
 
 		newColor = buttonTarget.dataset.color ?? '#ff000020';
+		updateHighlight(highlight.id, noteText, newColor);
+		highlight.note = noteText;
+		highlight.color = newColor;
+		highlightsStore.update((hi) => hi);
 	}
 
 	let g: SVGElement;
@@ -173,6 +159,14 @@
 			if (foundIndex === -1) return highlights;
 			highlights.splice(foundIndex, 1);
 			return highlights;
+		});
+
+		const onUndo = () => {
+			addHighlightToDBAndStore(highlight, bookId);
+		};
+
+		addToast({
+			data: { title: 'Highlight deleted', color: '', description: '', onUndo: onUndo }
 		});
 	}
 
@@ -214,11 +208,13 @@
 					{#each colorButtons as colorButton}
 						<button
 							style={colorButton.color === newColor
-								? `box-shadow: 0 0 0 3px ${increaseHexAlpha(colorButton.color)};`
-								: ''}
-							class="h-6 w-6 rounded-full {colorButton.colorClass}"
+								? `background-color: ${
+										colorButton.displayColor
+								  }; box-shadow: 0 0 0 3px ${increaseHexAlpha(colorButton.color)};`
+								: `background-color: ${colorButton.displayColor};`}
+							class="h-6 w-6 rounded-full"
 							data-color={colorButton.color}
-							aria-label="Change to {colorButton.color}"
+							aria-label="Change to {colorButton.name}"
 						/>
 					{/each}
 				</div>

@@ -15,8 +15,7 @@
 				<hr />
 			{/if}
 		</div>
-	{/each}
-	{#if $highlightsStore.length === 0}
+	{:else}
 		<p class="text-gray-500">No highlights</p>
-	{/if}
+	{/each}
 </div>

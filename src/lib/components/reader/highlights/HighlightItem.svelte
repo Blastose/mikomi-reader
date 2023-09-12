@@ -1,12 +1,17 @@
 <script lang="ts">
 	import { removeHighlight } from '$lib/bindings';
+	import { addHighlightToDBAndStore } from '$lib/components/overlayer/utils';
 	import { highlightsStore, type Highlight } from '$lib/components/reader/stores/highlightsStore';
+	import { addToast } from '$lib/components/toast/ToastContainer.svelte';
 	import { relativeTime } from '$lib/util/util';
 	import { IconTrash } from '@tabler/icons-svelte';
+	import { page } from '$app/stores';
 
 	export let highlight: Highlight;
 	export let columnCount: number;
 	export let onSidebarItemClickWithPage: (page: number) => void;
+
+	$: bookId = $page.params.id;
 
 	async function onTrashClick() {
 		await removeHighlight(highlight.id);
@@ -15,6 +20,14 @@
 			if (foundIndex === -1) return highlights;
 			highlights.splice(foundIndex, 1);
 			return highlights;
+		});
+
+		const onUndo = () => {
+			addHighlightToDBAndStore(highlight, bookId);
+		};
+
+		addToast({
+			data: { title: 'Highlight deleted', color: '', description: '', onUndo: onUndo }
 		});
 	}
 </script>
