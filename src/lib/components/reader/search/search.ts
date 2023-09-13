@@ -5,6 +5,10 @@ export type SearchHighlight = {
 	showHighlights: boolean;
 };
 
+export const searchModalOpenStore = writable<boolean>(false);
+export const searchModalTermStore = writable<string>('');
+export const searchStateStore = writable<'blank' | 'searched'>('blank');
+
 export const searchHighlightsStore = writable<SearchHighlight>({
 	highlights: [],
 	showHighlights: false

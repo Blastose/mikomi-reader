@@ -6,7 +6,7 @@
 	import {
 		searchBook,
 		searchHighlightsStore,
-		type SearchBookResult,
+		searchStateStore,
 		type SearchHighlight
 	} from './search';
 	import SearchItem from './SearchItem.svelte';
@@ -19,17 +19,13 @@
 		getScrollAlignedToPageFloor,
 		type Orientation
 	} from '$lib/components/reader/utils';
+	import { searchModalOpenStore, searchModalTermStore } from './search';
 
 	export let readerNode: HTMLDivElement;
 	export let pageSize: number;
 	export let currentPage: number;
 	export let orientation: Orientation;
 	export let onSidebarItemClickWithPage: (page: number) => void;
-
-	let searchTerm: string;
-	let searchResults: SearchBookResult[] = [];
-
-	let searchState: 'blank' | 'searched' = 'blank';
 
 	const handleOpen: CreateDialogProps['onOpenChange'] = ({ curr, next }) => {
 		if (next === true) {
@@ -49,10 +45,10 @@
 	};
 
 	const {
-		elements: { trigger, content, title, close, portalled },
-		states: { open }
+		elements: { trigger, content, title, close, portalled }
 	} = createDialog({
 		forceVisible: true,
+		open: searchModalOpenStore,
 		onOpenChange: handleOpen
 	});
 
@@ -96,46 +92,55 @@
 		};
 	}
 
+	function searchBookForTerm() {
+		const searchResults = searchBook(readerNode, $searchModalTermStore);
+		searchStateStore.set('searched');
+
+		const searchHighlights: SearchHighlight['highlights'] = [];
+		for (const res of searchResults) {
+			const readerNodeRect = readerNode.getBoundingClientRect();
+			const clientRects = res.range.getClientRects();
+			const rects = alignRectsToReaderPage(
+				Array.from(clientRects),
+				orientation,
+				readerNodeRect,
+				pageSize,
+				currentPage
+			);
+
+			const filteredRects: DOMRect[] = filterCompletelyOverlappingRectangles(rects);
+			const scroll = getScrollAlignedToPageFloor(
+				orientation === 'horizontal' ? filteredRects[0].x : filteredRects[0].y,
+				pageSize
+			);
+			const page = getPageFromScroll(scroll, pageSize);
+			searchHighlights.push({
+				rects: filteredRects,
+				range: res.range,
+				page,
+				highlightedText: res.highlightedText
+			});
+		}
+		searchHighlightsStore.set({ highlights: searchHighlights, showHighlights: true });
+	}
+
 	function onInputKeyDown(e: KeyboardEvent & { currentTarget: EventTarget & HTMLInputElement }) {
 		if (e.key === 'Enter') {
 			e.preventDefault();
-			searchResults = searchBook(readerNode, searchTerm);
-			searchState = 'searched';
-
-			const searchHighlights: SearchHighlight['highlights'] = [];
-			for (const res of searchResults) {
-				const readerNodeRect = readerNode.getBoundingClientRect();
-				const clientRects = res.range.getClientRects();
-				const rects = alignRectsToReaderPage(
-					Array.from(clientRects),
-					orientation,
-					readerNodeRect,
-					pageSize,
-					currentPage
-				);
-
-				const filteredRects: DOMRect[] = filterCompletelyOverlappingRectangles(rects);
-				const scroll = getScrollAlignedToPageFloor(
-					orientation === 'horizontal' ? filteredRects[0].x : filteredRects[0].y,
-					pageSize
-				);
-				const page = getPageFromScroll(scroll, pageSize);
-				searchHighlights.push({
-					rects: filteredRects,
-					range: res.range,
-					page,
-					highlightedText: res.highlightedText
-				});
-			}
-			searchHighlightsStore.set({ highlights: searchHighlights, showHighlights: true });
+			searchBookForTerm();
 		}
+	}
+
+	$: if ($searchModalTermStore.length === 0) {
+		searchHighlightsStore.set({ highlights: [], showHighlights: true });
+		searchStateStore.set('blank');
 	}
 
 	let searchDialog: HTMLDivElement;
 </script>
 
 <div use:melt={$portalled}>
-	{#if $open}
+	{#if $searchModalOpenStore}
 		<div
 			id="search-"
 			bind:this={searchDialog}
@@ -156,26 +161,31 @@
 					>
 						Search
 					</h2>
-					<input
-						bind:value={searchTerm}
-						on:keydown={onInputKeyDown}
-						class="p-2"
-						type="text"
-						placeholder="Search in this book"
-					/>
-					{#if searchResults.length > 0 && searchState === 'searched'}
-						<p class="text-gray-500">{searchResults.length} results in book</p>
-					{:else if searchResults.length === 0 && searchState === 'searched'}
+					<div class="flex items-center gap-2 -ml-8">
+						<button class="relative left-8" on:click={searchBookForTerm} aria-label="Search book"
+							><IconSearch /></button
+						>
+						<input
+							bind:value={$searchModalTermStore}
+							on:keydown={onInputKeyDown}
+							class="search-input grow py-2 px-8 border-b border-black focus:outline-none focus:border-blue-600"
+							type="text"
+							placeholder="Search in this book"
+						/>
+					</div>
+					{#if $searchHighlightsStore.highlights.length > 0 && $searchStateStore === 'searched'}
+						<p class="text-gray-500">{$searchHighlightsStore.highlights.length} results in book</p>
+					{:else if $searchHighlightsStore.highlights.length === 0 && $searchStateStore === 'searched'}
 						<p class="text-gray-500">0 results in book</p>
 					{/if}
 				</div>
 
-				{#if searchResults.length > 0}
+				{#if $searchHighlightsStore.highlights.length > 0}
 					<div class="flex flex-col gap-2 grow overflow-y-auto">
 						<div class="flex flex-col gap-2">
 							{#each $searchHighlightsStore.highlights as searchResult, index}
 								<SearchItem {searchResult} {onSidebarItemClickWithPage} />
-								{#if index !== searchResults.length - 1}
+								{#if index !== $searchHighlightsStore.highlights.length - 1}
 									<hr />
 								{/if}
 							{/each}
@@ -199,3 +209,9 @@
 <button use:melt={$trigger} aria-label="Search book">
 	<IconSearch />
 </button>
+
+<style>
+	.search-input {
+		transition: border-bottom-color 300ms;
+	}
+</style>

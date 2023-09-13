@@ -21,7 +21,12 @@
 		setLeftTopOnScreen
 	} from './utils';
 	import { colorButtons } from './utils';
-	import { searchHighlightsStore } from '../reader/search/search';
+	import {
+		searchHighlightsStore,
+		searchModalOpenStore,
+		searchModalTermStore,
+		searchStateStore
+	} from '$lib/components/reader/search/search';
 
 	export let currentPage: number;
 	export let pageSize: number;
@@ -155,6 +160,16 @@
 			overlayContainer.scrollTop = (currentPage - 1) * pageSize;
 		}
 	}
+
+	function searchText() {
+		searchModalOpenStore.set(true);
+		searchModalTermStore.set(window.getSelection()?.toString() ?? '');
+		searchHighlightsStore.set({ highlights: [], showHighlights: false });
+		searchStateStore.set('blank');
+		window.getSelection()?.empty();
+		open.set(false);
+		readerStateStore.set('searchOpen');
+	}
 </script>
 
 <svelte:document on:mouseup={onMouseUp} on:selectionchange={onSelect} />
@@ -179,7 +194,7 @@
 			<div class="flex flex-col gap-2">
 				<div class="flex justify-around gap-1">
 					<button on:click={copyText} aria-label="Copy text"><IconCopy /></button>
-					<button aria-label="Search text"><IconSearch /></button>
+					<button on:click={searchText} aria-label="Search text"><IconSearch /></button>
 				</div>
 				<!-- svelte-ignore a11y-no-static-element-interactions -->
 				<!-- svelte-ignore a11y-click-events-have-key-events -->
