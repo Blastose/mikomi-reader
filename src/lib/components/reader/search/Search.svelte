@@ -3,17 +3,29 @@
 	import { IconSearch, IconX } from '@tabler/icons-svelte';
 	import { readerStateStore } from '$lib/components/reader/stores/readerStateStore';
 	import { fly } from 'svelte/transition';
-	import { searchBook, searchHighlightsStore, type SearchBookResult } from './search';
+	import {
+		searchBook,
+		searchHighlightsStore,
+		type SearchBookResult,
+		type SearchHighlight
+	} from './search';
+	import SearchItem from './SearchItem.svelte';
 	import {
 		alignRectsToReaderPage,
 		filterCompletelyOverlappingRectangles
 	} from '$lib/components/overlayer/utils';
-	import type { Orientation } from '../utils';
+	import {
+		getPageFromScroll,
+		getScrollAlignedToPageFloor,
+		type Orientation
+	} from '$lib/components/reader/utils';
 
 	export let readerNode: HTMLDivElement;
 	export let pageSize: number;
 	export let currentPage: number;
 	export let orientation: Orientation;
+	export let onSidebarItemClickWithPage: (page: number) => void;
+
 	let searchTerm: string;
 	let searchResults: SearchBookResult[] = [];
 
@@ -21,9 +33,16 @@
 
 	$: if ($open) {
 		readerStateStore.set('searchOpen');
+		searchHighlightsStore.update((searchHighlights) => {
+			searchHighlights.showHighlights = true;
+			return searchHighlights;
+		});
 	} else {
 		readerStateStore.set('reading');
-		searchHighlightsStore.set([]);
+		searchHighlightsStore.update((searchHighlights) => {
+			searchHighlights.showHighlights = false;
+			return searchHighlights;
+		});
 	}
 
 	const {
@@ -79,7 +98,7 @@
 			searchResults = searchBook(readerNode, searchTerm);
 			searchState = 'searched';
 
-			const searchHighlights: { rects: DOMRect[]; range: Range }[] = [];
+			const searchHighlights: SearchHighlight['highlights'] = [];
 			for (const res of searchResults) {
 				const readerNodeRect = readerNode.getBoundingClientRect();
 				const clientRects = res.range.getClientRects();
@@ -92,9 +111,19 @@
 				);
 
 				const filteredRects: DOMRect[] = filterCompletelyOverlappingRectangles(rects);
-				searchHighlights.push({ rects: filteredRects, range: res.range });
+				const scroll = getScrollAlignedToPageFloor(
+					orientation === 'horizontal' ? filteredRects[0].x : filteredRects[0].y,
+					pageSize
+				);
+				const page = getPageFromScroll(scroll, pageSize);
+				searchHighlights.push({
+					rects: filteredRects,
+					range: res.range,
+					page,
+					highlightedText: res.highlightedText
+				});
 			}
-			searchHighlightsStore.set(searchHighlights);
+			searchHighlightsStore.set({ highlights: searchHighlights, showHighlights: true });
 		}
 	}
 
@@ -140,10 +169,8 @@
 				{#if searchResults.length > 0}
 					<div class="flex flex-col gap-2 grow overflow-y-auto">
 						<div class="flex flex-col gap-2">
-							{#each searchResults as searchResult, index}
-								<div>
-									<p>{@html searchResult.highlightedText}</p>
-								</div>
+							{#each $searchHighlightsStore.highlights as searchResult, index}
+								<SearchItem {searchResult} {onSidebarItemClickWithPage} />
 								{#if index !== searchResults.length - 1}
 									<hr />
 								{/if}

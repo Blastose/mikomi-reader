@@ -123,7 +123,7 @@
 		});
 
 		searchHighlightsStore.update((searchHighlights) => {
-			for (const searchHighlight of searchHighlights) {
+			for (const searchHighlight of searchHighlights.highlights) {
 				const clientRects = searchHighlight.range.getClientRects();
 				const readerNodeRect = readerNode.getBoundingClientRect();
 				const rects = alignRectsToReaderPage(
@@ -134,6 +134,11 @@
 					currentPage
 				);
 				const filteredRects: DOMRect[] = filterCompletelyOverlappingRectangles(rects);
+				const scroll = getScrollAlignedToPageFloor(
+					writingMode === 'horizontal' ? filteredRects[0].x : filteredRects[0].y,
+					pageSize
+				);
+				searchHighlight.page = getPageFromScroll(scroll, pageSize);
 				searchHighlight.rects = filteredRects;
 			}
 
@@ -322,7 +327,13 @@
 				</div>
 				<div class="flex gap-1 items-center">
 					<IconLetterCase />
-					<Search {readerNode} {currentPage} orientation={writingMode} {pageSize} />
+					<Search
+						{readerNode}
+						{currentPage}
+						orientation={writingMode}
+						{pageSize}
+						{onSidebarItemClickWithPage}
+					/>
 					<button
 						class="relative"
 						disabled={bookmarkInProgress}

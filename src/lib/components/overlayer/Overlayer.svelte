@@ -210,12 +210,15 @@
 		{#each $highlightsStore as highlight (highlight.id)}
 			<Highlight {highlight} />
 		{/each}
-		{#each $searchHighlightsStore as searchHighlight}
-			<g role="button" fill="#0072ff33">
-				{#each searchHighlight.rects as rect}
-					<rect x={rect.left} y={rect.top} height={rect.height} width={rect.width} />
-				{/each}
-			</g>
-		{/each}
+
+		{#if $searchHighlightsStore.showHighlights}
+			{#each $searchHighlightsStore.highlights as searchHighlight}
+				<g role="button" fill="#0072ff33">
+					{#each searchHighlight.rects as rect}
+						<rect x={rect.left} y={rect.top} height={rect.height} width={rect.width} />
+					{/each}
+				</g>
+			{/each}
+		{/if}
 	</svg>
 </div>
