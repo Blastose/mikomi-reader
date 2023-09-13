@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createDialog, melt } from '@melt-ui/svelte';
+	import { createDialog, melt, type CreateDialogProps } from '@melt-ui/svelte';
 	import { IconSearch, IconX } from '@tabler/icons-svelte';
 	import { readerStateStore } from '$lib/components/reader/stores/readerStateStore';
 	import { fly } from 'svelte/transition';
@@ -31,25 +31,29 @@
 
 	let searchState: 'blank' | 'searched' = 'blank';
 
-	$: if ($open) {
-		readerStateStore.set('searchOpen');
-		searchHighlightsStore.update((searchHighlights) => {
-			searchHighlights.showHighlights = true;
-			return searchHighlights;
-		});
-	} else {
-		readerStateStore.set('reading');
-		searchHighlightsStore.update((searchHighlights) => {
-			searchHighlights.showHighlights = false;
-			return searchHighlights;
-		});
-	}
+	const handleOpen: CreateDialogProps['onOpenChange'] = ({ curr, next }) => {
+		if (next === true) {
+			readerStateStore.set('searchOpen');
+			searchHighlightsStore.update((searchHighlights) => {
+				searchHighlights.showHighlights = true;
+				return searchHighlights;
+			});
+		} else {
+			readerStateStore.set('reading');
+			searchHighlightsStore.update((searchHighlights) => {
+				searchHighlights.showHighlights = false;
+				return searchHighlights;
+			});
+		}
+		return next;
+	};
 
 	const {
 		elements: { trigger, content, title, close, portalled },
 		states: { open }
 	} = createDialog({
-		forceVisible: true
+		forceVisible: true,
+		onOpenChange: handleOpen
 	});
 
 	function dragging(draggableNode: HTMLElement) {

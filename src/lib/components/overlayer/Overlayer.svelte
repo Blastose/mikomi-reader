@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { tick } from 'svelte';
 	import Highlight from './Highlight.svelte';
-	import { createDialog, melt } from '@melt-ui/svelte';
+	import { createDialog, melt, type CreateDialogProps } from '@melt-ui/svelte';
 	import { IconSearch, IconCopy } from '@tabler/icons-svelte';
 	import { highlightsStore } from '$lib/components/reader/stores/highlightsStore';
 	import { get } from 'svelte/store';
@@ -30,17 +30,21 @@
 
 	$: book_id = $page.params.id;
 
-	$: if ($open) {
-		readerStateStore.set('noteOpen');
-	} else {
-		readerStateStore.set('reading');
-	}
+	const handleOpen: CreateDialogProps['onOpenChange'] = ({ curr, next }) => {
+		if (next === true) {
+			readerStateStore.set('noteOpen');
+		} else {
+			readerStateStore.set('reading');
+		}
+		return next;
+	};
 
 	const {
 		elements: { content, portalled },
 		states: { open }
 	} = createDialog({
-		forceVisible: true
+		forceVisible: true,
+		onOpenChange: handleOpen
 	});
 
 	let selectionState: 'noneSelected' | 'selectedText' = 'noneSelected';

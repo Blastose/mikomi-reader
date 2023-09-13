@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createDialog, melt } from '@melt-ui/svelte';
+	import { createDialog, melt, type CreateDialogProps } from '@melt-ui/svelte';
 	import { tick } from 'svelte';
 	import { IconTrash, IconCheck } from '@tabler/icons-svelte';
 	import { readerStateStore } from '$lib/components/reader/stores/readerStateStore';
@@ -23,18 +23,22 @@
 		return `${hex.substring(0, hex.length - 2)}${50}`;
 	}
 
-	$: if ($open) {
-		readerStateStore.set('noteOpen');
-		newColor = highlight.color;
-	} else {
-		readerStateStore.set('reading');
-	}
+	const handleOpen: CreateDialogProps['onOpenChange'] = ({ curr, next }) => {
+		if (next === true) {
+			readerStateStore.set('noteOpen');
+			newColor = highlight.color;
+		} else {
+			readerStateStore.set('reading');
+		}
+		return next;
+	};
 
 	const {
 		elements: { content, portalled },
 		states: { open }
 	} = createDialog({
-		forceVisible: true
+		forceVisible: true,
+		onOpenChange: handleOpen
 	});
 
 	function dragging(node: HTMLDivElement) {
