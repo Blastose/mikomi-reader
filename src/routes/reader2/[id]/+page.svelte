@@ -14,12 +14,7 @@
 		getSelector,
 		goToPage
 	} from '$lib/components/reader/utils.js';
-	import {
-		IconBookmark,
-		IconBookmarkFilled,
-		IconSearch,
-		IconLetterCase
-	} from '@tabler/icons-svelte';
+	import { IconBookmark, IconBookmarkFilled, IconLetterCase } from '@tabler/icons-svelte';
 	import Drawer from '$lib/components/reader/Drawer.svelte';
 	import type { NavPoint } from '$lib/components/reader/toc/tocParser';
 	import { writable } from 'svelte/store';
@@ -33,6 +28,7 @@
 		alignRectsToReaderPage,
 		filterCompletelyOverlappingRectangles
 	} from '$lib/components/overlayer/utils.js';
+	import Search from '$lib/components/reader/search/Search.svelte';
 
 	export let data;
 
@@ -307,7 +303,7 @@
 				</div>
 				<div class="flex gap-1 items-center">
 					<IconLetterCase />
-					<IconSearch />
+					<Search {readerNode} />
 					<button
 						class="relative"
 						disabled={bookmarkInProgress}
