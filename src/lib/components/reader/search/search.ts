@@ -1,3 +1,7 @@
+import { writable } from 'svelte/store';
+
+export const searchHighlightsStore = writable<{ range: Range; rects: DOMRect[] }[]>([]);
+
 function textNodesInElement(el: HTMLElement) {
 	const walk = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
 

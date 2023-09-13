@@ -29,6 +29,7 @@
 		filterCompletelyOverlappingRectangles
 	} from '$lib/components/overlayer/utils.js';
 	import Search from '$lib/components/reader/search/Search.svelte';
+	import { searchHighlightsStore } from '$lib/components/reader/search/search.js';
 
 	export let data;
 
@@ -119,6 +120,24 @@
 			}
 
 			return highlights;
+		});
+
+		searchHighlightsStore.update((searchHighlights) => {
+			for (const searchHighlight of searchHighlights) {
+				const clientRects = searchHighlight.range.getClientRects();
+				const readerNodeRect = readerNode.getBoundingClientRect();
+				const rects = alignRectsToReaderPage(
+					Array.from(clientRects),
+					writingMode,
+					readerNodeRect,
+					pageSize,
+					currentPage
+				);
+				const filteredRects: DOMRect[] = filterCompletelyOverlappingRectangles(rects);
+				searchHighlight.rects = filteredRects;
+			}
+
+			return searchHighlights;
 		});
 	}
 
@@ -303,7 +322,7 @@
 				</div>
 				<div class="flex gap-1 items-center">
 					<IconLetterCase />
-					<Search {readerNode} />
+					<Search {readerNode} {currentPage} orientation={writingMode} {pageSize} />
 					<button
 						class="relative"
 						disabled={bookmarkInProgress}

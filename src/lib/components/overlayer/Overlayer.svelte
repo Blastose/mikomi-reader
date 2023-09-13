@@ -21,6 +21,7 @@
 		setLeftTopOnScreen
 	} from './utils';
 	import { colorButtons } from './utils';
+	import { searchHighlightsStore } from '../reader/search/search';
 
 	export let currentPage: number;
 	export let pageSize: number;
@@ -208,6 +209,13 @@
 	>
 		{#each $highlightsStore as highlight (highlight.id)}
 			<Highlight {highlight} />
+		{/each}
+		{#each $searchHighlightsStore as searchHighlight}
+			<g role="button" fill="#0072ff33">
+				{#each searchHighlight.rects as rect}
+					<rect x={rect.left} y={rect.top} height={rect.height} width={rect.width} />
+				{/each}
+			</g>
 		{/each}
 	</svg>
 </div>
