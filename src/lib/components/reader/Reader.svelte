@@ -15,6 +15,7 @@
 	import type { Writable } from 'svelte/store';
 	import { readerStateStore } from './stores/readerStateStore';
 	import Overlayer from '$lib/components/overlayer/Overlayer.svelte';
+	import { searchModalOpenStore } from './search/search';
 
 	export let html: string;
 	export let drawerOpen: Writable<boolean>;
@@ -99,6 +100,10 @@
 		} else if (e.key === 't') {
 			e.preventDefault();
 			drawerOpen.set(true);
+		} else if (e.key === 's' || (e.ctrlKey && e.key === 'f')) {
+			e.preventDefault();
+			searchModalOpenStore.set(true);
+			readerStateStore.set('searchOpen');
 		}
 		updateCurrentPage();
 	}

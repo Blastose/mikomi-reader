@@ -14,12 +14,7 @@
 		getSelector,
 		goToPage
 	} from '$lib/components/reader/utils.js';
-	import {
-		IconBookmark,
-		IconBookmarkFilled,
-		IconSearch,
-		IconLetterCase
-	} from '@tabler/icons-svelte';
+	import { IconBookmark, IconBookmarkFilled, IconLetterCase } from '@tabler/icons-svelte';
 	import Drawer from '$lib/components/reader/Drawer.svelte';
 	import type { NavPoint } from '$lib/components/reader/toc/tocParser';
 	import { writable } from 'svelte/store';
@@ -33,6 +28,8 @@
 		alignRectsToReaderPage,
 		filterCompletelyOverlappingRectangles
 	} from '$lib/components/overlayer/utils.js';
+	import Search from '$lib/components/reader/search/Search.svelte';
+	import { searchHighlightsStore } from '$lib/components/reader/search/search.js';
 
 	export let data;
 
@@ -123,6 +120,29 @@
 			}
 
 			return highlights;
+		});
+
+		searchHighlightsStore.update((searchHighlights) => {
+			for (const searchHighlight of searchHighlights.highlights) {
+				const clientRects = searchHighlight.range.getClientRects();
+				const readerNodeRect = readerNode.getBoundingClientRect();
+				const rects = alignRectsToReaderPage(
+					Array.from(clientRects),
+					writingMode,
+					readerNodeRect,
+					pageSize,
+					currentPage
+				);
+				const filteredRects: DOMRect[] = filterCompletelyOverlappingRectangles(rects);
+				const scroll = getScrollAlignedToPageFloor(
+					writingMode === 'horizontal' ? filteredRects[0].x : filteredRects[0].y,
+					pageSize
+				);
+				searchHighlight.page = getPageFromScroll(scroll, pageSize);
+				searchHighlight.rects = filteredRects;
+			}
+
+			return searchHighlights;
 		});
 	}
 
@@ -307,7 +327,13 @@
 				</div>
 				<div class="flex gap-1 items-center">
 					<IconLetterCase />
-					<IconSearch />
+					<Search
+						{readerNode}
+						{currentPage}
+						orientation={writingMode}
+						{pageSize}
+						{onSidebarItemClickWithPage}
+					/>
 					<button
 						class="relative"
 						disabled={bookmarkInProgress}

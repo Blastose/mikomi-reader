@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { tick } from 'svelte';
 	import Highlight from './Highlight.svelte';
-	import { createDialog, melt } from '@melt-ui/svelte';
+	import { createDialog, melt, type CreateDialogProps } from '@melt-ui/svelte';
 	import { IconSearch, IconCopy } from '@tabler/icons-svelte';
 	import { highlightsStore } from '$lib/components/reader/stores/highlightsStore';
 	import { get } from 'svelte/store';
@@ -21,6 +21,12 @@
 		setLeftTopOnScreen
 	} from './utils';
 	import { colorButtons } from './utils';
+	import {
+		searchHighlightsStore,
+		searchModalOpenStore,
+		searchModalTermStore,
+		searchStateStore
+	} from '$lib/components/reader/search/search';
 
 	export let currentPage: number;
 	export let pageSize: number;
@@ -29,17 +35,21 @@
 
 	$: book_id = $page.params.id;
 
-	$: if ($open) {
-		readerStateStore.set('noteOpen');
-	} else {
-		readerStateStore.set('reading');
-	}
+	const handleOpen: CreateDialogProps['onOpenChange'] = ({ curr, next }) => {
+		if (next === true) {
+			readerStateStore.set('noteOpen');
+		} else {
+			readerStateStore.set('reading');
+		}
+		return next;
+	};
 
 	const {
 		elements: { content, portalled },
 		states: { open }
 	} = createDialog({
-		forceVisible: true
+		forceVisible: true,
+		onOpenChange: handleOpen
 	});
 
 	let selectionState: 'noneSelected' | 'selectedText' = 'noneSelected';
@@ -150,6 +160,16 @@
 			overlayContainer.scrollTop = (currentPage - 1) * pageSize;
 		}
 	}
+
+	function searchText() {
+		searchModalOpenStore.set(true);
+		searchModalTermStore.set(window.getSelection()?.toString() ?? '');
+		searchHighlightsStore.set({ highlights: [], showHighlights: false });
+		searchStateStore.set('blank');
+		window.getSelection()?.empty();
+		open.set(false);
+		readerStateStore.set('searchOpen');
+	}
 </script>
 
 <svelte:document on:mouseup={onMouseUp} on:selectionchange={onSelect} />
@@ -174,7 +194,7 @@
 			<div class="flex flex-col gap-2">
 				<div class="flex justify-around gap-1">
 					<button on:click={copyText} aria-label="Copy text"><IconCopy /></button>
-					<button aria-label="Search text"><IconSearch /></button>
+					<button on:click={searchText} aria-label="Search text"><IconSearch /></button>
 				</div>
 				<!-- svelte-ignore a11y-no-static-element-interactions -->
 				<!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -209,5 +229,15 @@
 		{#each $highlightsStore as highlight (highlight.id)}
 			<Highlight {highlight} />
 		{/each}
+
+		{#if $searchHighlightsStore.showHighlights}
+			{#each $searchHighlightsStore.highlights as searchHighlight}
+				<g role="button" fill="#0072ff33">
+					{#each searchHighlight.rects as rect}
+						<rect x={rect.left} y={rect.top} height={rect.height} width={rect.width} />
+					{/each}
+				</g>
+			{/each}
+		{/if}
 	</svg>
 </div>
