@@ -2,6 +2,7 @@
 	import type { SearchHighlight } from './search';
 
 	export let searchResult: SearchHighlight['highlights'][0];
+	export let columnCount: number;
 	export let onSidebarItemClickWithPage: (page: number) => void;
 
 	function onClick() {
@@ -12,6 +13,8 @@
 </script>
 
 <button on:click={onClick} class="flex flex-col gap-1 text-left">
-	<span class="text-gray-500 text-sm">Page {searchResult.page > 0 ? searchResult.page : 0}</span>
+	<span class="text-gray-500 text-sm"
+		>Page {columnCount === 1 ? `${searchResult.page}` : `${(searchResult.page ?? 1) * 2 - 1}`}</span
+	>
 	<span>{@html searchResult.highlightedText}</span>
 </button>

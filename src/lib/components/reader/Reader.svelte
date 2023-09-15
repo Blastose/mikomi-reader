@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount, tick } from 'svelte';
+	import { tick } from 'svelte';
 	import {
 		createSelectorFromEpubUri,
 		getFirstVisibleElementInParentElement,
@@ -170,13 +170,18 @@
 	const debouncedOnResize = debounce(onResize, 500);
 
 	function onDocumentClick(e: MouseEvent) {
-		const target = e.target as HTMLAnchorElement | null;
+		const target = e.target as HTMLElement | null;
 		const a = target?.closest('a');
 
 		if (a?.tagName === 'A') {
 			e.preventDefault();
 			if (!a.href.startsWith('epub://')) return;
 			onAnchorClick(a);
+		} else if (target?.tagName === 'IMG') {
+			e.preventDefault();
+			const imgNode = target as HTMLImageElement;
+			console.log('Open in viewer');
+			console.log(imgNode.src);
 		}
 	}
 
@@ -212,11 +217,6 @@
 	}
 
 	$: history.replaceState({ page: currentPage }, '');
-
-	onMount(() => {
-		updateCurrentPage();
-		updateTotalPages();
-	});
 </script>
 
 <svelte:window

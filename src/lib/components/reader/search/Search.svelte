@@ -24,6 +24,7 @@
 	export let readerNode: HTMLDivElement;
 	export let pageSize: number;
 	export let currentPage: number;
+	export let columnCount: number;
 	export let orientation: Orientation;
 	export let onSidebarItemClickWithPage: (page: number) => void;
 
@@ -184,7 +185,7 @@
 					<div class="flex flex-col gap-2 grow overflow-y-auto">
 						<div class="flex flex-col gap-2">
 							{#each $searchHighlightsStore.highlights as searchResult, index}
-								<SearchItem {searchResult} {onSidebarItemClickWithPage} />
+								<SearchItem {searchResult} {onSidebarItemClickWithPage} {columnCount} />
 								{#if index !== $searchHighlightsStore.highlights.length - 1}
 									<hr />
 								{/if}

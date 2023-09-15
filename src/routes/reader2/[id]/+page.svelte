@@ -264,15 +264,49 @@
 		currentPageBookmarks = currentPageInBookmarks(currentPage);
 	}
 
+	function updateCurrentPage(newPage?: number) {
+		if (newPage) {
+			currentPage = newPage;
+		} else {
+			if (writingMode === 'horizontal') {
+				currentPage = getPageFromScroll(readerNode?.scrollLeft, pageSize);
+			} else {
+				currentPage = getPageFromScroll(readerNode?.scrollTop, pageSize);
+			}
+		}
+	}
+
+	function updateTotalPages() {
+		if (writingMode === 'horizontal') {
+			totalPages = getPageFromScroll(readerNode?.scrollWidth, pageSize) - 1;
+		} else {
+			totalPages = getPageFromScroll(readerNode?.scrollHeight, pageSize) - 1;
+		}
+	}
+
+	function delay(ms: number) {
+		return new Promise((res) => setTimeout(res, ms));
+	}
+
 	onMount(async () => {
 		clearEpubStyles();
+		const t1 = performance.now();
 		const epubData = await loadEpub(data.book.path);
+		const t2 = performance.now();
+		console.log(`${(t2 - t1) / 1000} seconds`);
 		html = epubData.newHtml;
 		blobUrls = epubData.blobUrls;
 		tocData = epubData.tocNavs;
 
 		loading = false;
 		await tick();
+
+		// Needs a delay for the total page sizes to be correct;
+		// Not 100% sure why; probably because of images loading
+		await delay(100);
+		updateCurrentPage();
+		updateTotalPages();
+
 		bookmarks = initializeBookmarkDataFromDB(data.book.bookmarks);
 		highlightsStore.set(initializeHighlightDataFromDB(data.book.highlights));
 		calculateBookmarkPageNumbers(bookmarks, writingMode, pageSize);
@@ -332,6 +366,7 @@
 						{currentPage}
 						orientation={writingMode}
 						{pageSize}
+						{columnCount}
 						{onSidebarItemClickWithPage}
 					/>
 					<button
@@ -372,11 +407,11 @@
 				class="absolute bottom-0 w-full flex -z-50
 				{columnCount === 1 ? 'justify-center' : 'justify-around'}"
 			>
-				{#if columnCount === 1}
+				{#if columnCount === 1 || writingMode === 'vertical'}
 					<p class="text-gray-500">
 						{currentPage} of {totalPages}
 					</p>
-				{:else}
+				{:else if columnCount === 2 && writingMode === 'horizontal'}
 					<p class="text-gray-500">
 						{currentPage * 2 - 1} of {totalPages * 2}
 					</p>
