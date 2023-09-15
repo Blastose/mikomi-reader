@@ -31,6 +31,8 @@
 				</button>
 			{:else if $page.url.pathname.startsWith('/books')}
 				{'Library'}
+			{:else if $page.url.pathname.startsWith('/settings')}
+				{'Settings'}
 			{:else}
 				{currentHeaderText}
 			{/if}
