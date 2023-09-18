@@ -16,6 +16,7 @@
 	import { readerStateStore } from './stores/readerStateStore';
 	import Overlayer from '$lib/components/overlayer/Overlayer.svelte';
 	import { searchModalOpenStore } from './search/search';
+	import type { EnglishFont, LineHeight, TextAlign } from './settings/settings';
 
 	export let html: string;
 	export let drawerOpen: Writable<boolean>;
@@ -24,16 +25,28 @@
 	export let columnCount: number = 1;
 	export let fontSize: number = 16;
 	export let writingMode: Orientation = 'horizontal';
+	export let lineHeight: LineHeight;
+	export let textAlign: TextAlign;
+	export let fontFamily: EnglishFont;
+	export let margins: number;
 
 	export let readerNode: HTMLDivElement;
+	export let overlayContainer: HTMLDivElement;
 	export let readerHeight: number;
 	export let readerWidth: number;
 	export let columnGap = 24;
 
+	// TODO change to a new variable for only the column gap by itself?
+	// Might not need reader to change column gap?
+	$: columnGap = 24 + margins * 2;
+
 	export let currentPage: number;
 	export let totalPages: number;
 	export let pageSize: number;
-	$: pageSize = writingMode === 'horizontal' ? readerWidth + columnGap : readerHeight + columnGap;
+	$: pageSize =
+		writingMode === 'horizontal'
+			? readerWidth + columnGap - margins * 2
+			: readerHeight + columnGap - margins * 2;
 
 	$: if ($drawerOpen === false) {
 		readerStateStore.set('reading');
@@ -42,14 +55,11 @@
 	}
 
 	let showRuler = false;
-	let overlayContainer: HTMLDivElement;
 
 	const dispatch = createEventDispatcher();
 
 	function dispatchResize() {
 		dispatch('pageresize');
-		overlayContainer.scrollLeft = readerNode.scrollLeft;
-		overlayContainer.scrollTop = readerNode.scrollTop;
 	}
 
 	function nextPage() {
@@ -250,7 +260,11 @@
          --column-count: {columnCount}; 
          --max-height: {readerHeight * 0.95}px; 
          --max-width: {readerWidth * 0.95}px; 
-         font-size: {fontSize}px !important;"
+				 --text-align: {textAlign};
+				 --font-family: {fontFamily};
+				 --line-height: {lineHeight};
+         font-size: {fontSize}px !important;
+				 padding: 0 {margins}px;"
 	class="text-epub
         {writingMode === 'horizontal' ? 'writing-horizontal-tb' : 'writing-vertical-rl'}"
 	bind:this={readerNode}
@@ -330,8 +344,7 @@
 
 <style>
 	.text-epub {
-		font-family: 'ヒラギノ角ゴ Pro W3', 'Hiragino Kaku Gothic Pro', 'メイリオ', Meiryo,
-			'ＭＳ Ｐゴシック', sans-serif;
+		font-family: var(--font-family) !important;
 		user-select: text;
 		max-height: calc(100dvh - 128px);
 		height: 100vh;
@@ -373,6 +386,12 @@
 
 	.text-epub :global(img) {
 		display: inline;
+	}
+
+	.text-epub :global(p) {
+		text-align: var(--text-align) !important;
+		line-height: var(--line-height) !important;
+		font-family: var(--font-family) !important;
 	}
 
 	.text-epub.writing-vertical-rl {

@@ -1,5 +1,6 @@
 import type { PageLoad } from './$types';
 import { getBook } from '$lib/bindings';
+import { readerSettingsStore } from '$lib/components/reader/stores/readerSettingsStore';
 
 export const load = (async ({ params }) => {
 	const book = await getBook(params.id);
@@ -8,5 +9,16 @@ export const load = (async ({ params }) => {
 		throw Error('');
 	}
 	console.log(book);
+
+	readerSettingsStore.set({
+		columnCount: 1,
+		fontSize: 16,
+		lineHeight: 'normal',
+		textAlign: 'initial',
+		fontFamily: 'initial',
+		writingMode: 'horizontal',
+		margins: 0
+	});
+
 	return { book };
 }) satisfies PageLoad;

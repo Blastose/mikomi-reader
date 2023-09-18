@@ -27,14 +27,14 @@ function parseToc(toc: Toc | null) {
 	if (!toc) return [];
 
 	const parser = new DOMParser();
-	const tocDoc = parser.parseFromString(toc.content, 'text/html');
-
 	let tocNavs;
 	if (toc.kind === 'Nav') {
+		const tocDoc = parser.parseFromString(toc.content, 'text/html');
 		const navElement = tocDoc.querySelector('nav > ol');
 		if (!navElement) throw Error('Invalid NAV TOC');
 		tocNavs = parseNavToc(navElement, toc.path);
 	} else {
+		const tocDoc = parser.parseFromString(toc.content, 'text/xml');
 		const navMap = tocDoc.querySelector('navMap');
 		if (!navMap) throw Error('Invalid NCX TOC');
 		tocNavs = parseNcxToc(navMap, toc.path);

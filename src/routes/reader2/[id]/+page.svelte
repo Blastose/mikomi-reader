@@ -1,6 +1,5 @@
 <script lang="ts">
 	import Reader from '$lib/components/reader/Reader.svelte';
-	import type { Orientation } from '$lib/components/reader/utils.js';
 	import { onDestroy, onMount, tick } from 'svelte';
 	import { loadEpub } from '$lib/components/reader/loadEpub.js';
 	import {
@@ -14,7 +13,7 @@
 		getSelector,
 		goToPage
 	} from '$lib/components/reader/utils.js';
-	import { IconBookmark, IconBookmarkFilled, IconLetterCase } from '@tabler/icons-svelte';
+	import { IconBookmark, IconBookmarkFilled } from '@tabler/icons-svelte';
 	import Drawer from '$lib/components/reader/Drawer.svelte';
 	import type { NavPoint } from '$lib/components/reader/toc/tocParser';
 	import { writable } from 'svelte/store';
@@ -30,20 +29,20 @@
 	} from '$lib/components/overlayer/utils.js';
 	import Search from '$lib/components/reader/search/Search.svelte';
 	import { searchHighlightsStore } from '$lib/components/reader/search/search.js';
+	import Settings from '$lib/components/reader/settings/Settings.svelte';
+	import { readerSettingsStore } from '$lib/components/reader/stores/readerSettingsStore.js';
 
 	export let data;
 
 	let html: string;
 	let loading = true;
-	let columnCount: number;
-	let fontSize: number;
-	let writingMode: Orientation;
 
 	let readerNode: HTMLDivElement;
+	let overlayContainer: HTMLDivElement;
 	let readerHeight: number;
 	let readerWidth: number;
 	let columnGap = 24;
-	let currentPage: number;
+	let currentPage: number = 1;
 	let totalPages: number;
 	let pageSize: number;
 
@@ -74,7 +73,7 @@
 			const readerNodeRect = readerNode.getBoundingClientRect();
 			const rects = alignRectsToReaderPage(
 				Array.from(clientRects),
-				writingMode,
+				$readerSettingsStore.writingMode,
 				readerNodeRect,
 				pageSize,
 				currentPage
@@ -82,7 +81,7 @@
 			const filteredRects: DOMRect[] = filterCompletelyOverlappingRectangles(rects);
 
 			const scroll = getScrollAlignedToPageFloor(
-				writingMode === 'horizontal' ? filteredRects[0].x : filteredRects[0].y,
+				$readerSettingsStore.writingMode === 'horizontal' ? filteredRects[0].x : filteredRects[0].y,
 				pageSize
 			);
 			return {
@@ -105,7 +104,7 @@
 				const readerNodeRect = readerNode.getBoundingClientRect();
 				const rects = alignRectsToReaderPage(
 					Array.from(clientRects),
-					writingMode,
+					$readerSettingsStore.writingMode,
 					readerNodeRect,
 					pageSize,
 					currentPage
@@ -113,7 +112,9 @@
 				const filteredRects: DOMRect[] = filterCompletelyOverlappingRectangles(rects);
 				highlight.rects = filteredRects;
 				const scroll = getScrollAlignedToPageFloor(
-					writingMode === 'horizontal' ? filteredRects[0].x : filteredRects[0].y,
+					$readerSettingsStore.writingMode === 'horizontal'
+						? filteredRects[0].x
+						: filteredRects[0].y,
 					pageSize
 				);
 				highlight.page = getPageFromScroll(scroll, pageSize);
@@ -128,14 +129,16 @@
 				const readerNodeRect = readerNode.getBoundingClientRect();
 				const rects = alignRectsToReaderPage(
 					Array.from(clientRects),
-					writingMode,
+					$readerSettingsStore.writingMode,
 					readerNodeRect,
 					pageSize,
 					currentPage
 				);
 				const filteredRects: DOMRect[] = filterCompletelyOverlappingRectangles(rects);
 				const scroll = getScrollAlignedToPageFloor(
-					writingMode === 'horizontal' ? filteredRects[0].x : filteredRects[0].y,
+					$readerSettingsStore.writingMode === 'horizontal'
+						? filteredRects[0].x
+						: filteredRects[0].y,
 					pageSize
 				);
 				searchHighlight.page = getPageFromScroll(scroll, pageSize);
@@ -198,7 +201,10 @@
 	async function bookmarkPage() {
 		bookmarkInProgress = true;
 		let bookmarkPage = currentPage;
-		const foundElement = getFirstVisibleElementInParentElement(readerNode, writingMode);
+		const foundElement = getFirstVisibleElementInParentElement(
+			readerNode,
+			$readerSettingsStore.writingMode
+		);
 		if (!foundElement) return;
 
 		const selector = getSelector(foundElement);
@@ -257,18 +263,21 @@
 	async function onPageResize() {
 		await tick();
 		updateHighlightRectsAndPages();
-		calculateTocPageNumbers(readerNode, writingMode, pageSize, tocData);
+		calculateTocPageNumbers(readerNode, $readerSettingsStore.writingMode, pageSize, tocData);
 		tocData = tocData;
-		calculateBookmarkPageNumbers(bookmarks, writingMode, pageSize);
+		calculateBookmarkPageNumbers(bookmarks, $readerSettingsStore.writingMode, pageSize);
 		bookmarks = bookmarks;
 		currentPageBookmarks = currentPageInBookmarks(currentPage);
+
+		overlayContainer.scrollLeft = readerNode.scrollLeft;
+		overlayContainer.scrollTop = readerNode.scrollTop;
 	}
 
 	function updateCurrentPage(newPage?: number) {
 		if (newPage) {
 			currentPage = newPage;
 		} else {
-			if (writingMode === 'horizontal') {
+			if ($readerSettingsStore.writingMode === 'horizontal') {
 				currentPage = getPageFromScroll(readerNode?.scrollLeft, pageSize);
 			} else {
 				currentPage = getPageFromScroll(readerNode?.scrollTop, pageSize);
@@ -277,7 +286,7 @@
 	}
 
 	function updateTotalPages() {
-		if (writingMode === 'horizontal') {
+		if ($readerSettingsStore.writingMode === 'horizontal') {
 			totalPages = getPageFromScroll(readerNode?.scrollWidth, pageSize) - 1;
 		} else {
 			totalPages = getPageFromScroll(readerNode?.scrollHeight, pageSize) - 1;
@@ -309,10 +318,10 @@
 
 		bookmarks = initializeBookmarkDataFromDB(data.book.bookmarks);
 		highlightsStore.set(initializeHighlightDataFromDB(data.book.highlights));
-		calculateBookmarkPageNumbers(bookmarks, writingMode, pageSize);
+		calculateBookmarkPageNumbers(bookmarks, $readerSettingsStore.writingMode, pageSize);
 		bookmarks.sort((a, b) => (a.page ?? 0) - (b.page ?? 0));
 		bookmarks = bookmarks;
-		calculateTocPageNumbers(readerNode, writingMode, pageSize, tocData);
+		calculateTocPageNumbers(readerNode, $readerSettingsStore.writingMode, pageSize, tocData);
 		if (tocData.length > 0) {
 			if (tocData[0].page !== 1) {
 				tocData = [
@@ -349,7 +358,7 @@
 						{tocData}
 						{drawerOpen}
 						{bookmarks}
-						{columnCount}
+						columnCount={$readerSettingsStore.columnCount}
 						{onSidebarItemClickWithPage}
 						{onBookmarkItemDelete}
 					/>
@@ -360,13 +369,22 @@
 					</p>
 				</div>
 				<div class="flex gap-1 items-center">
-					<IconLetterCase />
+					<Settings
+						on:pageresize={onPageResize}
+						bind:fontSize={$readerSettingsStore.fontSize}
+						bind:lineHeight={$readerSettingsStore.lineHeight}
+						bind:textAlign={$readerSettingsStore.textAlign}
+						bind:columnCount={$readerSettingsStore.columnCount}
+						bind:fontFamily={$readerSettingsStore.fontFamily}
+						bind:writingMode={$readerSettingsStore.writingMode}
+						bind:margins={$readerSettingsStore.margins}
+					/>
 					<Search
 						{readerNode}
 						{currentPage}
-						orientation={writingMode}
+						orientation={$readerSettingsStore.writingMode}
 						{pageSize}
-						{columnCount}
+						columnCount={$readerSettingsStore.columnCount}
 						{onSidebarItemClickWithPage}
 					/>
 					<button
@@ -391,9 +409,10 @@
 			<Reader
 				on:pageresize={onPageResize}
 				bind:html
-				bind:columnCount
-				bind:fontSize
-				bind:writingMode
+				bind:overlayContainer
+				bind:columnCount={$readerSettingsStore.columnCount}
+				bind:fontSize={$readerSettingsStore.fontSize}
+				bind:writingMode={$readerSettingsStore.writingMode}
 				bind:readerNode
 				bind:readerHeight
 				bind:readerWidth
@@ -401,30 +420,38 @@
 				bind:currentPage
 				bind:totalPages
 				bind:pageSize
+				bind:lineHeight={$readerSettingsStore.lineHeight}
+				bind:textAlign={$readerSettingsStore.textAlign}
+				bind:fontFamily={$readerSettingsStore.fontFamily}
+				bind:margins={$readerSettingsStore.margins}
 				{drawerOpen}
 			/>
-			<div
-				class="absolute bottom-0 w-full flex -z-50
-				{columnCount === 1 ? 'justify-center' : 'justify-around'}"
-			>
-				{#if columnCount === 1 || writingMode === 'vertical'}
-					<p class="text-gray-500">
-						{currentPage} of {totalPages}
+			{#if currentPage && totalPages}
+				<div
+					class="absolute bottom-0 w-full flex -z-50
+				{$readerSettingsStore.columnCount === 1 ? 'justify-center' : 'justify-around'}"
+				>
+					{#if $readerSettingsStore.columnCount === 1 || $readerSettingsStore.writingMode === 'vertical'}
+						<p class="text-gray-500">
+							{currentPage} of {totalPages}
+						</p>
+					{:else if $readerSettingsStore.columnCount === 2 && $readerSettingsStore.writingMode === 'horizontal'}
+						<p class="text-gray-500">
+							{currentPage * 2 - 1} of {totalPages * 2}
+						</p>
+						<p class="text-gray-500">
+							{currentPage * 2} of {totalPages * 2}
+						</p>
+					{/if}
+				</div>
+				<div class="text-gray-500 absolute bottom-0 w-full flex justify-end -z-50">
+					<p>
+						{currentPage !== totalPages
+							? (((currentPage - 1) / totalPages) * 100).toFixed(0)
+							: 100}%
 					</p>
-				{:else if columnCount === 2 && writingMode === 'horizontal'}
-					<p class="text-gray-500">
-						{currentPage * 2 - 1} of {totalPages * 2}
-					</p>
-					<p class="text-gray-500">
-						{currentPage * 2} of {totalPages * 2}
-					</p>
-				{/if}
-			</div>
-			<div class="text-gray-500 absolute bottom-0 w-full flex justify-end -z-50">
-				<p>
-					{currentPage !== totalPages ? (((currentPage - 1) / totalPages) * 100).toFixed(0) : 100}%
-				</p>
-			</div>
+				</div>
+			{/if}
 		</div>
 	{/if}
 </div>
