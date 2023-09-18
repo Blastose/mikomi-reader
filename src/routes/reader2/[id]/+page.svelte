@@ -464,3 +464,9 @@
 		</div>
 	{/if}
 </div>
+
+<style>
+	:global(body) {
+		overflow: hidden;
+	}
+</style>

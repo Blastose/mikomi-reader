@@ -9,6 +9,7 @@
 	import SettingsButtonsItem from './SettingsButtonsItem.svelte';
 	import FontSettings from './FontSettings.svelte';
 	import { readerStateStore } from '../stores/readerStateStore';
+	import Menu from './Menu.svelte';
 
 	export let fontSize: number;
 	export let lineHeight: LineHeight;
@@ -101,7 +102,7 @@
 	{#if $open}
 		<div
 			bind:this={dialog}
-			class="fixed z-50 top-12 p-6 w-[66vw] sm:w-80 max-w-xl max-h-[calc(90vh_-_3rem)] right-6 rounded-xl shadow-2xl bg-white"
+			class="fixed z-50 flex flex-col top-12 p-6 w-[66vw] sm:w-80 max-w-xl h-[calc(90vh_-_3rem)] max-h-[calc(90vh_-_3rem)] right-6 rounded-xl shadow-2xl bg-white"
 			use:melt={$content}
 			transition:fly={{
 				duration: 200,
@@ -109,30 +110,22 @@
 				opacity: 0
 			}}
 		>
-			<div class="flex flex-col gap-2 h-full">
-				<div class="flex flex-col gap-2">
-					<h2
-						use:dragging
-						use:melt={$title}
-						class="select-none cursor-grab m-0 text-lg font-medium"
-					>
-						Display options
-					</h2>
-
-					<div class="flex flex-col gap-2">
-						<DisplaySettings bind:fontSize bind:lineHeight bind:margins {dispatchWrapper} />
-						<SettingsButtonsItem
-							bind:textAlign
-							bind:columnCount
-							bind:writingMode
-							{dispatchWrapper}
-							{onColumnCountChange}
-							{onWritingModeChange}
-						/>
-						<FontSettings bind:fontFamily {dispatchWrapper} />
-					</div>
-				</div>
-			</div>
+			<Menu
+				bind:columnCount
+				bind:fontFamily
+				bind:fontSize
+				bind:lineHeight
+				bind:margins
+				bind:textAlign
+				bind:writingMode
+				{onWritingModeChange}
+				{onColumnCountChange}
+				{dispatchWrapper}
+			>
+				<h2 use:dragging use:melt={$title} class="select-none cursor-grab m-0 text-lg font-medium">
+					Display options
+				</h2>
+			</Menu>
 			<button
 				use:melt={$close}
 				aria-label="close"
