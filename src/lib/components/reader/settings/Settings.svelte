@@ -1,27 +1,26 @@
 <script lang="ts">
-	import { createDialog, melt } from '@melt-ui/svelte';
-	import {
-		IconLetterCase,
-		IconX,
-		IconAlignJustified,
-		IconAlignLeft,
-		IconAlignCenter,
-		IconColumns1,
-		IconColumns2
-	} from '@tabler/icons-svelte';
+	import { createDialog, melt, type CreateDialogProps } from '@melt-ui/svelte';
+	import { IconLetterCase, IconX } from '@tabler/icons-svelte';
 	import { fly } from 'svelte/transition';
 	import type { EnglishFont, LineHeight, TextAlign } from './settings';
-	import { englishFontArray } from './settings';
 	import type { Orientation } from '../utils';
-	import { createEventDispatcher } from 'svelte';
+	import { createEventDispatcher, tick } from 'svelte';
+	import DisplaySettings from './DisplaySettings.svelte';
+	import SettingsButtonsItem from './SettingsButtonsItem.svelte';
+	import FontSettings from './FontSettings.svelte';
+	import { readerStateStore } from '../stores/readerStateStore';
 
 	export let fontSize: number;
 	export let lineHeight: LineHeight;
-	export let columnCount: number;
+	export let columnCount: 1 | 2;
 	export let textAlign: TextAlign;
 	export let fontFamily: EnglishFont;
 	export let writingMode: Orientation;
 	export let margins: number;
+	export let onColumnCountChange: (newColumnCount: 1 | 2) => Promise<void>;
+	export let onWritingModeChange: (newWritingMode: Orientation) => Promise<void>;
+	export let updateCurrentPage: () => void;
+	export let updateTotalPages: () => void;
 
 	const dispatch = createEventDispatcher();
 
@@ -29,11 +28,21 @@
 		dispatch('pageresize');
 	}
 
+	const handleOpen: CreateDialogProps['onOpenChange'] = ({ curr, next }) => {
+		if (next === true) {
+			readerStateStore.set('settingsOpen');
+		} else {
+			readerStateStore.set('reading');
+		}
+		return next;
+	};
+
 	const {
 		elements: { trigger, content, title, close, portalled },
 		states: { open }
 	} = createDialog({
-		forceVisible: true
+		forceVisible: true,
+		onOpenChange: handleOpen
 	});
 
 	// TODO refactor this (copied from Search.svelte)
@@ -79,14 +88,20 @@
 
 	let dialog: HTMLElement;
 
-	// TODO dispatch resize event
+	async function dispatchWrapper(f: () => void | (() => Promise<void>)) {
+		await f();
+		await tick();
+		updateCurrentPage();
+		updateTotalPages();
+		dispatchResize();
+	}
 </script>
 
 <div use:melt={$portalled}>
 	{#if $open}
 		<div
 			bind:this={dialog}
-			class="fixed z-50 top-12 p-6 w-[66vw] sm:w-80 max-w-xl h-[calc(90vh_-_3rem)] right-6 rounded-xl shadow-2xl bg-white"
+			class="fixed z-50 top-12 p-6 w-[66vw] sm:w-80 max-w-xl max-h-[calc(90vh_-_3rem)] right-6 rounded-xl shadow-2xl bg-white"
 			use:melt={$content}
 			transition:fly={{
 				duration: 200,
@@ -104,177 +119,17 @@
 						Display options
 					</h2>
 
-					<div class="">
-						<div>
-							<h3>Font size - {fontSize}px</h3>
-							<button
-								on:click={() => {
-									fontSize -= 4;
-									dispatchResize();
-								}}>-</button
-							>
-							<button
-								on:click={() => {
-									fontSize += 4;
-									console.log(fontSize);
-									dispatchResize();
-								}}>+</button
-							>
-						</div>
-
-						<div>
-							<h3>Page margins - {margins}px</h3>
-							<button
-								on:click={() => {
-									margins -= 4;
-									dispatchResize();
-								}}>-</button
-							>
-							<button
-								on:click={() => {
-									margins += 4;
-									dispatchResize();
-								}}>+</button
-							>
-						</div>
-
-						<div>
-							<h3>Line height - {lineHeight}</h3>
-							<button
-								on:click={() => {
-									if (typeof lineHeight === 'number') {
-										lineHeight -= 0.1;
-									} else {
-										lineHeight = 1.2;
-									}
-									dispatchResize();
-								}}>-</button
-							>
-							<button
-								on:click={() => {
-									if (typeof lineHeight === 'number') {
-										lineHeight += 0.1;
-									} else {
-										lineHeight = 1.2;
-									}
-									dispatchResize();
-								}}>+</button
-							>
-						</div>
-
-						<div>
-							<h3>Page layout</h3>
-						</div>
-
-						<div>
-							<h3 class="text-lg">Justify</h3>
-							<div class="flex gap-4">
-								<button
-									on:click={() => {
-										textAlign = 'initial';
-										console.log('int');
-										dispatchResize();
-									}}
-									class="flex flex-col items-center"
-								>
-									<IconAlignCenter />
-									<span class="text-sm text-gray-500">Initial</span>
-								</button>
-								<button
-									on:click={() => {
-										textAlign = 'justify';
-										console.log('justify');
-										dispatchResize();
-									}}
-									class="flex flex-col items-center"
-								>
-									<IconAlignJustified />
-									<span class="text-sm text-gray-500">Jusitfy</span>
-								</button>
-								<button
-									on:click={() => {
-										textAlign = 'left';
-										dispatchResize();
-										console.log('left');
-									}}
-									class="flex flex-col items-center"
-								>
-									<IconAlignLeft />
-									<span class="text-sm text-gray-500">Left</span>
-								</button>
-							</div>
-						</div>
-
-						<div>
-							<h3>Font</h3>
-							<!-- TODO switch with melt select for custom styling? -->
-							<select
-								class="px-2"
-								bind:value={fontFamily}
-								on:change={() => {
-									dispatchResize();
-								}}
-							>
-								{#each englishFontArray as font}
-									<option style="font-family: {font};" value={font} selected={fontFamily === font}
-										>{font}</option
-									>
-								{/each}
-							</select>
-						</div>
-
-						{#if writingMode === 'horizontal'}
-							<div>
-								<h3>Column</h3>
-								<div class="flex gap-2">
-									<button
-										class="flex flex-col items-center"
-										on:click={() => {
-											columnCount = 1;
-											dispatchResize();
-										}}
-										><IconColumns1 />
-										<span class="text-sm text-gray-500">1 column</span></button
-									>
-									<button
-										class="flex flex-col items-center"
-										on:click={() => {
-											columnCount = 2;
-											dispatchResize();
-										}}
-										><IconColumns2 />
-										<span class="text-sm text-gray-500">2 columns</span></button
-									>
-								</div>
-							</div>
-						{/if}
-
-						<!-- TODO Check if book lang === jp  -->
-						{#if true}
-							<div>
-								<h3>Writing mode</h3>
-								<div class="flex gap-2">
-									<button
-										class="rounded-md px-2 py-1 {writingMode === 'horizontal'
-											? 'bg-gray-500 text-white'
-											: 'bg-gray-200'}"
-										on:click={() => {
-											writingMode = 'horizontal';
-											dispatchResize();
-										}}>Horizontal</button
-									>
-									<button
-										class="rounded-md px-2 py-1 {writingMode === 'vertical'
-											? 'bg-gray-500 text-white'
-											: 'bg-gray-200'}"
-										on:click={() => {
-											writingMode = 'vertical';
-											dispatchResize();
-										}}>Vertical</button
-									>
-								</div>
-							</div>
-						{/if}
+					<div class="flex flex-col gap-2">
+						<DisplaySettings bind:fontSize bind:lineHeight bind:margins {dispatchWrapper} />
+						<SettingsButtonsItem
+							bind:textAlign
+							bind:columnCount
+							bind:writingMode
+							{dispatchWrapper}
+							{onColumnCountChange}
+							{onWritingModeChange}
+						/>
+						<FontSettings bind:fontFamily {dispatchWrapper} />
 					</div>
 				</div>
 			</div>

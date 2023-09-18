@@ -35,14 +35,38 @@
 	export let readerHeight: number;
 	export let readerWidth: number;
 	export let columnGap = 24;
-
-	// TODO change to a new variable for only the column gap by itself?
-	// Might not need reader to change column gap?
+	// TODO If we want to let the reader change the column gap
+	// when the reader is in 2 cols, we need to make a new variable
 	$: columnGap = 24 + margins * 2;
+
+	export const onColumnCountChange = async (newColumnCount: 1 | 2) => {
+		await jumpToLastVisibleElementAfterFunction(async () => {
+			columnCount = newColumnCount;
+			await tick();
+			fillerPageAtEnd = checkTwoColumnViewRequiresFillerPageAtEnd();
+		});
+		await tick();
+		updateCurrentPage();
+		updateTotalPages();
+		dispatchResize();
+	};
+	export const onWritingModeChange = async (newWritingMode: Orientation) => {
+		await jumpToLastVisibleElementAfterFunction(async () => {
+			writingMode = newWritingMode;
+			if (writingMode === 'vertical') {
+				fillerPageAtEnd = false;
+			}
+		});
+		await tick();
+		updateCurrentPage();
+		updateTotalPages();
+		dispatchResize();
+	};
 
 	export let currentPage: number;
 	export let totalPages: number;
 	export let pageSize: number;
+
 	$: pageSize =
 		writingMode === 'horizontal'
 			? readerWidth + columnGap - margins * 2
@@ -264,7 +288,7 @@
 				 --font-family: {fontFamily};
 				 --line-height: {lineHeight};
          font-size: {fontSize}px !important;
-				 padding: 0 {margins}px;"
+				 {writingMode === 'horizontal' ? `padding: 0 ${margins}px;` : `padding: ${margins}px 0;`}"
 	class="text-epub
         {writingMode === 'horizontal' ? 'writing-horizontal-tb' : 'writing-vertical-rl'}"
 	bind:this={readerNode}
@@ -293,41 +317,6 @@
 		/>
 	</div>
 	<div>
-		<button
-			on:click={async () => {
-				await jumpToLastVisibleElementAfterFunction(async () => {
-					columnCount = columnCount === 1 ? 2 : 1;
-					await tick();
-					fillerPageAtEnd = checkTwoColumnViewRequiresFillerPageAtEnd();
-				});
-				await tick();
-				updateCurrentPage();
-				updateTotalPages();
-				dispatchResize();
-			}}>Col</button
-		>
-		<button
-			on:click={async () => {
-				await jumpToLastVisibleElementAfterFunction(async () => {
-					writingMode = writingMode === 'horizontal' ? 'vertical' : 'horizontal';
-					if (writingMode === 'vertical') {
-						fillerPageAtEnd = false;
-					}
-				});
-				await tick();
-				updateCurrentPage();
-				updateTotalPages();
-				dispatchResize();
-			}}>Dir</button
-		>
-		<button
-			on:click={() => {
-				console.log(checkTwoColumnViewRequiresFillerPageAtEnd());
-				fillerPageAtEnd = checkTwoColumnViewRequiresFillerPageAtEnd();
-			}}
-		>
-			Req 2
-		</button>
 		<button
 			on:click={() => {
 				showRuler = !showRuler;

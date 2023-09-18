@@ -17,7 +17,7 @@
 	import Drawer from '$lib/components/reader/Drawer.svelte';
 	import type { NavPoint } from '$lib/components/reader/toc/tocParser';
 	import { writable } from 'svelte/store';
-	import type { Bookmark } from '$lib/components/reader/utils.js';
+	import type { Bookmark, Orientation } from '$lib/components/reader/utils.js';
 	import { addBookmark, removeBookmark } from '$lib/bindings.js';
 	import type { Bookmark as BookmarkDB, Highlight as HighlightDB } from '$lib/bindings.js';
 	import { readerStateStore } from '$lib/components/reader/stores/readerStateStore';
@@ -45,6 +45,9 @@
 	let currentPage: number = 1;
 	let totalPages: number;
 	let pageSize: number;
+
+	let onColumnCountChange: (newColumnCount: 1 | 2) => Promise<void>;
+	let onWritingModeChange: (newWritingMode: Orientation) => Promise<void>;
 
 	let blobUrls: string[] = [];
 
@@ -378,6 +381,10 @@
 						bind:fontFamily={$readerSettingsStore.fontFamily}
 						bind:writingMode={$readerSettingsStore.writingMode}
 						bind:margins={$readerSettingsStore.margins}
+						{onColumnCountChange}
+						{onWritingModeChange}
+						{updateCurrentPage}
+						{updateTotalPages}
 					/>
 					<Search
 						{readerNode}
@@ -424,6 +431,8 @@
 				bind:textAlign={$readerSettingsStore.textAlign}
 				bind:fontFamily={$readerSettingsStore.fontFamily}
 				bind:margins={$readerSettingsStore.margins}
+				bind:onColumnCountChange
+				bind:onWritingModeChange
 				{drawerOpen}
 			/>
 			{#if currentPage && totalPages}
