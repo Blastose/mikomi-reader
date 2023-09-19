@@ -13,7 +13,7 @@
 </script>
 
 <button on:click={onClick} class="flex flex-col gap-1 text-left">
-	<span class="text-gray-500 text-sm"
+	<span class="text-neutral-400 text-sm"
 		>Page {columnCount === 1 ? `${searchResult.page}` : `${(searchResult.page ?? 1) * 2 - 1}`}</span
 	>
 	<span>{@html searchResult.highlightedText}</span>

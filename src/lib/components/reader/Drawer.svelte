@@ -43,10 +43,10 @@
 			<button
 				use:melt={$close}
 				aria-label="Close"
-				class="absolute right-[10px] top-[10px] inline-flex h-6 w-6
-            appearance-none items-center justify-center rounded-full text-gray-800
-            hover:bg-gray-100 focus:shadow-gray-400 focus:outline-none focus:ring-2
-            focus:ring-gray-400"
+				class="absolute right-[10px] top-[10px] inline-flex p-1
+				appearance-none items-center justify-center rounded-full text-neutral-200
+				hover:bg-neutral-700 focus:shadow-neutral-400 focus:outline-none focus:ring-2
+				focus:ring-neutral-400"
 			>
 				<IconX />
 			</button>

@@ -18,6 +18,6 @@
 			{/if}
 		</div>
 	{:else}
-		<p class="text-gray-500">No bookmarks</p>
+		<p>No bookmarks</p>
 	{/each}
 </div>

@@ -12,7 +12,7 @@
 </script>
 
 <div
-	class="sidebar sticky top-0 z-50 w-full h-screen overflow-y-auto bg-gray-500 scroll bg-opacity-20"
+	class="sidebar sticky top-0 z-50 w-full h-screen overflow-y-auto bg-gray-500 custom-scroll bg-opacity-20"
 >
 	<div class="flex flex-col gap-1 py-4 pl-3 pr-1">
 		<div class="flex items-center gap-2">
@@ -43,28 +43,5 @@
 <style>
 	.sidebar {
 		view-transition-name: sidebar;
-	}
-
-	.scroll {
-		scrollbar-gutter: stable;
-	}
-
-	.scroll::-webkit-scrollbar {
-		width: 8px;
-	}
-
-	.scroll::-webkit-scrollbar-track {
-		background: transparent;
-	}
-
-	.scroll::-webkit-scrollbar-thumb {
-		background-color: rgba(107, 114, 128, 0.5);
-		border-radius: 20px;
-		border: transparent;
-		visibility: hidden;
-	}
-
-	.scroll:hover::-webkit-scrollbar-thumb {
-		visibility: visible;
 	}
 </style>

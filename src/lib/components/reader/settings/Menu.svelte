@@ -5,6 +5,7 @@
 	import AppearanceSettings from './AppearanceSettings.svelte';
 	import type { EnglishFont, LineHeight, TextAlign } from './settings';
 	import type { Orientation } from '../utils';
+	import ThemeSettings from './ThemeSettings.svelte';
 
 	export let fontSize: number;
 	export let lineHeight: LineHeight;
@@ -59,7 +60,7 @@
 		</div>
 	</div>
 
-	<div use:melt={$content('tab-1')} class="grow overflow-y-auto">
+	<div use:melt={$content('tab-1')} class="grow custom-scroll overflow-y-auto">
 		<AppearanceSettings
 			bind:columnCount
 			bind:fontFamily
@@ -73,7 +74,9 @@
 			{dispatchWrapper}
 		/>
 	</div>
-	<div use:melt={$content('tab-2')} class="grow overflow-y-auto">laksjdkladj</div>
+	<div use:melt={$content('tab-2')} class="grow custom-scroll overflow-y-auto">
+		<ThemeSettings />
+	</div>
 </div>
 
 <style>

@@ -13,3 +13,61 @@ export type ReaderSettings = {
 };
 
 export const readerSettingsStore = writable<ReaderSettings>();
+
+export const mixBlendModeArray = [
+	'normal',
+	'multiply',
+	'screen',
+	'overlay',
+	'darken',
+	'lighten'
+] as const;
+
+export type MixBlendMode = (typeof mixBlendModeArray)[number];
+
+export type ReaderThemeSettings = {
+	name: string;
+	backgroundColor: string;
+	color: string;
+	linkColor: string;
+	imageMixBlendMode: MixBlendMode;
+};
+
+export const readerThemeStore = writable<ReaderThemeSettings>({
+	name: 'Light',
+	backgroundColor: '#ffffff',
+	color: '#333333',
+	linkColor: '#007acc',
+	imageMixBlendMode: 'normal'
+});
+
+export const presetReaderThemes: ReaderThemeSettings[] = [
+	{
+		name: 'Light',
+		backgroundColor: '#ffffff',
+		color: '#333333',
+		linkColor: '#007acc',
+		imageMixBlendMode: 'normal'
+	},
+	{
+		name: 'Dark',
+		backgroundColor: '#121212',
+		color: '#d3d3d3',
+		linkColor: '#4ca6ff',
+		imageMixBlendMode: 'normal'
+	},
+	{
+		name: 'Sepia',
+		backgroundColor: '#fbf0d9',
+		color: '#5f4b32',
+		linkColor: '#9b674c',
+		imageMixBlendMode: 'multiply'
+	},
+	{
+		name: 'Green',
+		backgroundColor: '#c5e7ce',
+		color: '#3a4a43',
+		linkColor: '#4CA64C',
+		imageMixBlendMode: 'normal'
+	}
+];

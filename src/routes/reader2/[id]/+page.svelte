@@ -31,6 +31,7 @@
 	import { searchHighlightsStore } from '$lib/components/reader/search/search.js';
 	import Settings from '$lib/components/reader/settings/Settings.svelte';
 	import { readerSettingsStore } from '$lib/components/reader/stores/readerSettingsStore.js';
+	import { readerThemeStore } from '$lib/components/reader/stores/readerSettingsStore.js';
 
 	export let data;
 
@@ -343,6 +344,11 @@
 		}
 		clearEpubStyles();
 	});
+
+	$: {
+		document.body.style.setProperty('--background-color', $readerThemeStore.backgroundColor);
+		document.body.style.setProperty('--color', $readerThemeStore.color);
+	}
 </script>
 
 <svelte:document on:keydown={onKeyDown} />
@@ -352,9 +358,7 @@
 		<p>Loading...</p>
 	{:else}
 		<div class="relative mt-4">
-			<div
-				class="absolute -top-8 w-full gap-6 left-0 text-gray-500 flex justify-between items-center"
-			>
+			<div class="absolute -top-8 w-full gap-6 left-0 flex justify-between items-center">
 				<div class="flex gap-1 items-center">
 					<Drawer
 						{currentPage}
@@ -441,19 +445,19 @@
 				{$readerSettingsStore.columnCount === 1 ? 'justify-center' : 'justify-around'}"
 				>
 					{#if $readerSettingsStore.columnCount === 1 || $readerSettingsStore.writingMode === 'vertical'}
-						<p class="text-gray-500">
+						<p class="">
 							{currentPage} of {totalPages}
 						</p>
 					{:else if $readerSettingsStore.columnCount === 2 && $readerSettingsStore.writingMode === 'horizontal'}
-						<p class="text-gray-500">
+						<p class="">
 							{currentPage * 2 - 1} of {totalPages * 2}
 						</p>
-						<p class="text-gray-500">
+						<p class="">
 							{currentPage * 2} of {totalPages * 2}
 						</p>
 					{/if}
 				</div>
-				<div class="text-gray-500 absolute bottom-0 w-full flex justify-end -z-50">
+				<div class=" absolute bottom-0 w-full flex justify-end -z-50">
 					<p>
 						{currentPage !== totalPages
 							? (((currentPage - 1) / totalPages) * 100).toFixed(0)
@@ -468,5 +472,7 @@
 <style>
 	:global(body) {
 		overflow: hidden;
+		background-color: var(--background-color);
+		color: var(--color);
 	}
 </style>

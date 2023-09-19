@@ -183,7 +183,7 @@
 				e.preventDefault();
 			}}
 			bind:this={overlayOptions}
-			class="fixed left-[50%] top-[50%] z-50 rounded-xl p-2 shadow-lg bg-gray-100"
+			class="dialog-theme fixed left-[50%] top-[50%] z-50 rounded-xl p-2 shadow-lg"
 			use:melt={$content}
 			transition:fly={{
 				duration: 150,

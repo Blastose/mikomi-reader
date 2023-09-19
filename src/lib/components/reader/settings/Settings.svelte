@@ -43,7 +43,8 @@
 		states: { open }
 	} = createDialog({
 		forceVisible: true,
-		onOpenChange: handleOpen
+		onOpenChange: handleOpen,
+		preventScroll: false
 	});
 
 	// TODO refactor this (copied from Search.svelte)
@@ -102,7 +103,7 @@
 	{#if $open}
 		<div
 			bind:this={dialog}
-			class="fixed z-50 flex flex-col top-12 p-6 w-[66vw] sm:w-80 max-w-xl h-[calc(90vh_-_3rem)] max-h-[calc(90vh_-_3rem)] right-6 rounded-xl shadow-2xl bg-white"
+			class="dialog-theme fixed z-50 flex flex-col top-12 p-6 w-[66vw] sm:w-80 max-w-xl h-[calc(90vh_-_3rem)] max-h-[calc(90vh_-_3rem)] right-6 rounded-xl shadow-2xl"
 			use:melt={$content}
 			transition:fly={{
 				duration: 200,
@@ -128,10 +129,11 @@
 			</Menu>
 			<button
 				use:melt={$close}
-				aria-label="close"
-				class="absolute right-4 top-4 inline-flex h-6 w-6
-                items-center justify-center rounded-full p-1 text-gray-800
-                hover:bg-gray-100 focus:shadow-gray-400"
+				aria-label="Close"
+				class="absolute right-[10px] top-[10px] inline-flex p-1
+            appearance-none items-center justify-center rounded-full text-neutral-200
+            hover:bg-neutral-700 focus:shadow-neutral-400 focus:outline-none focus:ring-2
+            focus:ring-neutral-400"
 			>
 				<IconX />
 			</button>

@@ -7,7 +7,7 @@
 	export let orientation: Orientation;
 </script>
 
-<div class="fixed z-20 w-full left-0 h-full flex justify-between text-gray-500 pointer-events-none">
+<div class="fixed z-20 w-full left-0 h-full flex justify-between pointer-events-none">
 	<button
 		on:click={() => {
 			if (orientation === 'horizontal') {

@@ -34,8 +34,7 @@
 	<label class="block font-medium" use:melt={$label}>Font</label>
 
 	<button
-		class="flex h-10 min-w-[220px] items-center justify-between rounded-lg bg-white px-3 py-2
-text-gray-700 shadow transition-opacity hover:opacity-90"
+		class="flex h-10 min-w-[220px] items-center justify-between rounded-lg bg-neutral-700 px-3 py-2 shadow transition-opacity hover:opacity-90"
 		use:melt={$trigger}
 		aria-label="Food"
 	>
@@ -45,17 +44,17 @@ text-gray-700 shadow transition-opacity hover:opacity-90"
 	{#if $open}
 		<div
 			class="z-10 flex max-h-[300px] flex-col
-  overflow-y-auto rounded-lg bg-white p-1
+  overflow-y-auto rounded-lg bg-neutral-700 p-1
   shadow focus:!ring-0"
 			use:melt={$menu}
 			transition:fade={{ duration: 150 }}
 		>
 			{#each englishFontArray as font}
 				<div
-					class="relative cursor-pointer rounded-lg py-1 pl-8 pr-4 text-neutral-800
-            focus:z-10 focus:text-gray-700
-          data-[highlighted]:bg-gray-50 data-[selected]:bg-gray-100
-          data-[highlighted]:text-gray-900 data-[selected]:text-gray-900"
+					class="relative cursor-pointer rounded-lg py-1 pl-8 pr-4 text-neutral-200
+            focus:z-10 focus:text-neutral-700 duration-150
+          data-[highlighted]:bg-neutral-300 data-[selected]:bg-neutral-300
+          data-[highlighted]:text-neutral-900 data-[selected]:text-neutral-900"
 					use:melt={$option({ value: font, label: font })}
 				>
 					<span class="capitalize" style={font !== 'initial' ? `font-family: ${font};` : ''}

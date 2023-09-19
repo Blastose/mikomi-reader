@@ -16,6 +16,6 @@
 			{/if}
 		</div>
 	{:else}
-		<p class="text-gray-500">No highlights</p>
+		<p>No highlights</p>
 	{/each}
 </div>

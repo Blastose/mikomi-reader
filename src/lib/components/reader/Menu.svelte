@@ -34,7 +34,7 @@
 	});
 </script>
 
-<div use:melt={$root} class="flex flex-col h-full">
+<div use:melt={$root} class="dialog-theme flex flex-col h-full">
 	<div
 		use:melt={$list}
 		class="flex shrink-0 overflow-x-auto pt-8 px-6
@@ -55,13 +55,22 @@
 		{/each}
 	</div>
 
-	<div use:melt={$content('tab-1')} class="item-gutter grow px-6 py-4 overflow-y-auto">
+	<div
+		use:melt={$content('tab-1')}
+		class="item-gutter grow px-6 py-4 custom-scroll overflow-y-auto"
+	>
 		<Toc {tocData} {currentPage} {columnCount} />
 	</div>
-	<div use:melt={$content('tab-2')} class="item-gutter grow pl-6 pr-2 py-4 overflow-y-auto">
+	<div
+		use:melt={$content('tab-2')}
+		class="item-gutter grow pl-6 pr-2 py-4 custom-scroll overflow-y-auto"
+	>
 		<Bookmarks {bookmarks} {columnCount} {onSidebarItemClickWithPage} {onBookmarkItemDelete} />
 	</div>
-	<div use:melt={$content('tab-3')} class="item-gutter grow px-6 py-4 overflow-y-auto">
+	<div
+		use:melt={$content('tab-3')}
+		class="item-gutter grow px-6 py-4 custom-scroll overflow-y-auto"
+	>
 		<Highlights {columnCount} {onSidebarItemClickWithPage} />
 	</div>
 </div>

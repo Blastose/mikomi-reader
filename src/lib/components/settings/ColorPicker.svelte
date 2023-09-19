@@ -3,7 +3,7 @@
 	export let label: string;
 </script>
 
-<label class="flex gap-2">
+<label class="flex gap-2 justify-between">
 	<span>{label}</span>
 
 	<div class="w-6 h-6 overflow-hidden rounded-full border border-gray-500">

@@ -145,7 +145,7 @@
 		<div
 			id="search-"
 			bind:this={searchDialog}
-			class="fixed z-50 top-12 p-6 w-[66vw] sm:w-[50vw] max-w-xl h-[calc(90vh_-_3rem)] right-6 rounded-xl shadow-2xl bg-white"
+			class="dialog-theme fixed z-50 top-12 p-6 w-[66vw] sm:w-[50vw] max-w-xl h-[calc(90vh_-_3rem)] right-6 rounded-xl shadow-2xl"
 			use:melt={$content}
 			transition:fly={{
 				duration: 200,
@@ -169,20 +169,22 @@
 						<input
 							bind:value={$searchModalTermStore}
 							on:keydown={onInputKeyDown}
-							class="search-input grow py-2 px-8 border-b border-black focus:outline-none focus:border-blue-600"
+							class="dialog-theme search-input grow py-2 px-8 border-b border-neutral-500 focus:outline-none focus:border-blue-500"
 							type="text"
 							placeholder="Search in this book"
 						/>
 					</div>
 					{#if $searchHighlightsStore.highlights.length > 0 && $searchStateStore === 'searched'}
-						<p class="text-gray-500">{$searchHighlightsStore.highlights.length} results in book</p>
+						<p class="text-neutral-400">
+							{$searchHighlightsStore.highlights.length} results in book
+						</p>
 					{:else if $searchHighlightsStore.highlights.length === 0 && $searchStateStore === 'searched'}
-						<p class="text-gray-500">0 results in book</p>
+						<p class="text-neutral-400">0 results in book</p>
 					{/if}
 				</div>
 
 				{#if $searchHighlightsStore.highlights.length > 0}
-					<div class="flex flex-col gap-2 grow overflow-y-auto">
+					<div class="flex flex-col gap-2 grow custom-scroll overflow-y-auto">
 						<div class="flex flex-col gap-2">
 							{#each $searchHighlightsStore.highlights as searchResult, index}
 								<SearchItem {searchResult} {onSidebarItemClickWithPage} {columnCount} />
@@ -196,10 +198,11 @@
 			</div>
 			<button
 				use:melt={$close}
-				aria-label="close"
-				class="absolute right-4 top-4 inline-flex h-6 w-6
-                items-center justify-center rounded-full p-1 text-gray-800
-                hover:bg-gray-100 focus:shadow-gray-400"
+				aria-label="Close"
+				class="absolute right-[10px] top-[10px] inline-flex p-1
+            appearance-none items-center justify-center rounded-full text-neutral-200
+            hover:bg-neutral-700 focus:shadow-neutral-400 focus:outline-none focus:ring-2
+            focus:ring-neutral-400"
 			>
 				<IconX />
 			</button>
