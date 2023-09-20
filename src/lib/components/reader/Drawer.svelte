@@ -6,6 +6,7 @@
 	import type { NavPoint } from '$lib/components/reader/toc/tocParser';
 	import type { Writable } from 'svelte/store';
 	import type { Bookmark } from './utils';
+	import { quintOut } from 'svelte/easing';
 
 	export let tocData: NavPoint[];
 	export let currentPage: number;
@@ -17,7 +18,7 @@
 
 	const {
 		elements: { trigger, overlay, content, close, portalled }
-	} = createDialog({ open: drawerOpen });
+	} = createDialog({ open: drawerOpen, preventScroll: false });
 </script>
 
 <button use:melt={$trigger} aria-label="Open reader sidebar">
@@ -37,7 +38,9 @@
         shadow-lg focus:outline-none"
 			transition:fly={{
 				x: -350,
-				duration: 300
+				duration: 300,
+				opacity: 1,
+				easing: quintOut
 			}}
 		>
 			<button

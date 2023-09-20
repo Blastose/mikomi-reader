@@ -38,7 +38,8 @@
 		states: { open }
 	} = createDialog({
 		forceVisible: true,
-		onOpenChange: handleOpen
+		onOpenChange: handleOpen,
+		preventScroll: false
 	});
 
 	function dragging(node: HTMLDivElement) {

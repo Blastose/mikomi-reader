@@ -12,6 +12,7 @@
 		elements: { trigger, menu, option, label },
 		states: { selectedLabel, open }
 	} = createSelect({
+		preventScroll: false,
 		defaultSelected: { value: fontFamily, label: fontFamily },
 		forceVisible: true,
 		positioning: {

@@ -50,7 +50,8 @@
 	} = createDialog({
 		forceVisible: true,
 		open: searchModalOpenStore,
-		onOpenChange: handleOpen
+		onOpenChange: handleOpen,
+		preventScroll: false
 	});
 
 	function dragging(draggableNode: HTMLElement) {

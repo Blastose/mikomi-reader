@@ -49,7 +49,8 @@
 		states: { open }
 	} = createDialog({
 		forceVisible: true,
-		onOpenChange: handleOpen
+		onOpenChange: handleOpen,
+		preventScroll: false
 	});
 
 	let selectionState: 'noneSelected' | 'selectedText' = 'noneSelected';

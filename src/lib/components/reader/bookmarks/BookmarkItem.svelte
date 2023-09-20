@@ -9,6 +9,7 @@
 		elements: { trigger, menu, item },
 		states: { open }
 	} = createDropdownMenu({
+		preventScroll: false,
 		forceVisible: true,
 		positioning: { placement: 'bottom-end' }
 	});
@@ -30,7 +31,7 @@
 		<span class="text-sm text-neutral-400">{relativeTime(new Date(), bookmark.dateAdded)}</span>
 	</button>
 	<button
-		class="h-min w-min p-1 text-neutral-400 duration-300 rounded-full hover:bg-neutral-300"
+		class="h-min w-min p-1 text-neutral-400 duration-300 rounded-full hover:bg-neutral-700"
 		use:melt={$trigger}
 		aria-label="Open bookmark overflow menu"
 	>
