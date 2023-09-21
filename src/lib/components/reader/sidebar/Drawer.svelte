@@ -5,7 +5,7 @@
 	import Menu from './Menu.svelte';
 	import type { NavPoint } from '$lib/components/reader/toc/tocParser';
 	import type { Writable } from 'svelte/store';
-	import type { Bookmark } from './utils';
+	import type { Bookmark } from '$lib/components/reader/utils';
 	import { quintOut } from 'svelte/easing';
 
 	export let tocData: NavPoint[];
@@ -38,7 +38,7 @@
         shadow-lg focus:outline-none"
 			transition:fly={{
 				x: -350,
-				duration: 300,
+				duration: 500,
 				opacity: 1,
 				easing: quintOut
 			}}

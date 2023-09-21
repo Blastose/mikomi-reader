@@ -14,7 +14,7 @@
 		goToPage
 	} from '$lib/components/reader/utils.js';
 	import { IconBookmark, IconBookmarkFilled } from '@tabler/icons-svelte';
-	import Drawer from '$lib/components/reader/Drawer.svelte';
+	import Drawer from '$lib/components/reader/sidebar/Drawer.svelte';
 	import type { NavPoint } from '$lib/components/reader/toc/tocParser';
 	import { writable } from 'svelte/store';
 	import type { Bookmark, Orientation } from '$lib/components/reader/utils.js';
@@ -303,15 +303,16 @@
 
 	onMount(async () => {
 		clearEpubStyles();
-		const t1 = performance.now();
+		let t1 = performance.now();
 		const epubData = await loadEpub(data.book.path);
-		const t2 = performance.now();
+		let t2 = performance.now();
 		console.log(`${(t2 - t1) / 1000} seconds`);
 		html = epubData.newHtml;
 		blobUrls = epubData.blobUrls;
 		tocData = epubData.tocNavs;
 
 		loading = false;
+		t1 = performance.now();
 		await tick();
 
 		// Needs a delay for the total page sizes to be correct;
@@ -336,6 +337,8 @@
 		}
 		tocData = tocData;
 		currentPageBookmarks = currentPageInBookmarks(currentPage);
+		t2 = performance.now();
+		console.log(`${(t2 - t1) / 1000} seconds`);
 	});
 
 	onDestroy(() => {
@@ -358,7 +361,7 @@
 		<p>Loading...</p>
 	{:else}
 		<div class="relative mt-4">
-			<div class="absolute -top-8 w-full gap-6 left-0 flex justify-between items-center">
+			<div class="absolute -top-8 w-full gap-6 left-0 grid grid-cols-[1fr_auto_1fr] items-center">
 				<div class="flex gap-1 items-center">
 					<Drawer
 						{currentPage}
@@ -375,7 +378,7 @@
 						{data.book.title}
 					</p>
 				</div>
-				<div class="flex gap-1 items-center">
+				<div class="flex gap-1 items-center justify-end">
 					<Settings
 						on:pageresize={onPageResize}
 						bind:fontSize={$readerSettingsStore.fontSize}

@@ -2,11 +2,12 @@
 	import { createTabs, melt } from '@melt-ui/svelte';
 	import { cubicInOut } from 'svelte/easing';
 	import { crossfade } from 'svelte/transition';
-	import Toc from './toc/Toc.svelte';
-	import Bookmarks from './bookmarks/Bookmarks.svelte';
+	import Toc from '$lib/components/reader/toc/Toc.svelte';
+	import Bookmarks from '$lib/components/reader/bookmarks/Bookmarks.svelte';
 	import type { NavPoint } from '$lib/components/reader/toc/tocParser';
-	import type { Bookmark } from './utils';
-	import Highlights from './highlights/Highlights.svelte';
+	import type { Bookmark } from '$lib/components/reader/utils';
+	import Highlights from '$lib/components/reader/highlights/Highlights.svelte';
+	import { menuTabStore } from './menuTabStore';
 
 	export let tocData: NavPoint[];
 	export let currentPage: number;
@@ -16,10 +17,9 @@
 	export let onBookmarkItemDelete: (id: string) => void;
 
 	const {
-		elements: { root, list, content, trigger },
-		states: { value }
+		elements: { root, list, content, trigger }
 	} = createTabs({
-		defaultValue: 'tab-1'
+		value: menuTabStore
 	});
 
 	const triggers = [
@@ -44,7 +44,7 @@
 		{#each triggers as triggerItem}
 			<button use:melt={$trigger(triggerItem.id)} class="trigger relative hover:cursor-pointer">
 				{triggerItem.title}
-				{#if $value === triggerItem.id}
+				{#if $menuTabStore === triggerItem.id}
 					<div
 						in:send={{ key: 'trigger' }}
 						out:receive={{ key: 'trigger' }}

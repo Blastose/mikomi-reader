@@ -41,7 +41,7 @@
 
 {#if $open}
 	<div
-		class="dialog-theme shadow-md rounded-md flex flex-col"
+		class="bg-neutral-700 shadow-md rounded-md flex flex-col"
 		use:melt={$menu}
 		transition:fly={{ duration: 150, y: -10 }}
 	>
