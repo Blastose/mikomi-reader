@@ -3,6 +3,7 @@
 	import { onDestroy, onMount, tick } from 'svelte';
 	import { loadEpub } from '$lib/components/reader/loadEpub.js';
 	import {
+		calculateBookmarkChapterPositions,
 		calculateBookmarkPageNumbers,
 		calculateTocPageNumbers,
 		clearEpubStyles,
@@ -11,6 +12,7 @@
 		getPageFromScroll,
 		getScrollAlignedToPageFloor,
 		getSelector,
+		getTocChapterFromPage,
 		goToPage
 	} from '$lib/components/reader/utils.js';
 	import { IconBookmark, IconBookmarkFilled } from '@tabler/icons-svelte';
@@ -88,12 +90,14 @@
 				$readerSettingsStore.writingMode === 'horizontal' ? filteredRects[0].x : filteredRects[0].y,
 				pageSize
 			);
+			const page = getPageFromScroll(scroll, pageSize);
 			return {
 				id: highlight.id,
 				note: highlight.note,
 				dateAdded: highlight.date_added,
 				displayText: range.toString(),
-				page: getPageFromScroll(scroll, pageSize),
+				page,
+				chapter: getTocChapterFromPage(page, tocData, tocData[0].label),
 				range,
 				rects: filteredRects,
 				color: highlight.color
@@ -228,13 +232,14 @@
 			id: bookmarkData.id
 		});
 
-		const inMemoryBookmark = {
+		const inMemoryBookmark: Bookmark = {
 			id: bookmarkData.id,
 			cssSelector: selector,
 			displayText: bookmarkData.displayText,
 			element: foundElement,
 			page: bookmarkPage,
-			dateAdded: bookmarkData.dateAdded
+			dateAdded: bookmarkData.dateAdded,
+			chapter: getTocChapterFromPage(bookmarkPage, tocData, tocData[0].label)
 		};
 		bookmarks.push(inMemoryBookmark);
 		bookmarks.sort((a, b) => (a.page ?? 0) - (b.page ?? 0));
@@ -266,10 +271,11 @@
 
 	async function onPageResize() {
 		await tick();
-		updateHighlightRectsAndPages();
 		calculateTocPageNumbers(readerNode, $readerSettingsStore.writingMode, pageSize, tocData);
 		tocData = tocData;
 		calculateBookmarkPageNumbers(bookmarks, $readerSettingsStore.writingMode, pageSize);
+		calculateBookmarkChapterPositions(bookmarks, tocData);
+		updateHighlightRectsAndPages();
 		bookmarks = bookmarks;
 		currentPageBookmarks = currentPageInBookmarks(currentPage);
 
@@ -321,11 +327,6 @@
 		updateCurrentPage();
 		updateTotalPages();
 
-		bookmarks = initializeBookmarkDataFromDB(data.book.bookmarks);
-		highlightsStore.set(initializeHighlightDataFromDB(data.book.highlights));
-		calculateBookmarkPageNumbers(bookmarks, $readerSettingsStore.writingMode, pageSize);
-		bookmarks.sort((a, b) => (a.page ?? 0) - (b.page ?? 0));
-		bookmarks = bookmarks;
 		calculateTocPageNumbers(readerNode, $readerSettingsStore.writingMode, pageSize, tocData);
 		if (tocData.length > 0) {
 			if (tocData[0].page !== 1) {
@@ -336,7 +337,17 @@
 			}
 		}
 		tocData = tocData;
+
+		bookmarks = initializeBookmarkDataFromDB(data.book.bookmarks);
+		calculateBookmarkPageNumbers(bookmarks, $readerSettingsStore.writingMode, pageSize);
+		bookmarks.sort((a, b) => (a.page ?? 0) - (b.page ?? 0));
+		bookmarks = bookmarks;
+		calculateBookmarkChapterPositions(bookmarks, tocData);
 		currentPageBookmarks = currentPageInBookmarks(currentPage);
+
+		// TODO make highlight.chapter from offesetLeft/offesetHeight instead of page number
+		highlightsStore.set(initializeHighlightDataFromDB(data.book.highlights));
+
 		t2 = performance.now();
 		console.log(`${(t2 - t1) / 1000} seconds`);
 	});
@@ -351,6 +362,7 @@
 	$: {
 		document.body.style.setProperty('--background-color', $readerThemeStore.backgroundColor);
 		document.body.style.setProperty('--color', $readerThemeStore.color);
+		document.body.style.setProperty('--mix-blend-mode', $readerThemeStore.imageMixBlendMode);
 	}
 </script>
 
@@ -440,6 +452,7 @@
 				bind:margins={$readerSettingsStore.margins}
 				bind:onColumnCountChange
 				bind:onWritingModeChange
+				{tocData}
 				{drawerOpen}
 			/>
 			{#if currentPage && totalPages}

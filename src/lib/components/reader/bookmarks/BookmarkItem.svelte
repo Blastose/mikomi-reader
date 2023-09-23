@@ -22,12 +22,15 @@
 
 <div class="flex">
 	<button
-		class="flex flex-col grow"
+		class="text-left flex flex-col grow"
 		on:click={() => {
 			onSidebarItemClickWithPage(bookmark.page ?? 1);
 		}}
 	>
 		<span>Page {columnCount === 1 ? `${bookmark.page}` : `${(bookmark.page ?? 1) * 2 - 1}`}</span>
+		{#if bookmark.chapter}
+			<span class="text-sm text-neutral-300">{bookmark.chapter}</span>
+		{/if}
 		<span class="text-sm text-neutral-400">{relativeTime(new Date(), bookmark.dateAdded)}</span>
 	</button>
 	<button

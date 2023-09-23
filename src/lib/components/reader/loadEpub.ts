@@ -35,8 +35,13 @@ function parseToc(toc: Toc | null) {
 		tocNavs = parseNavToc(navElement, toc.path);
 	} else {
 		const tocDoc = parser.parseFromString(toc.content, 'text/xml');
-		const navMap = tocDoc.querySelector('navMap');
-		if (!navMap) throw Error('Invalid NCX TOC');
+		let navMap = tocDoc.querySelector('navMap');
+		if (!navMap) {
+			const tocDoc = parser.parseFromString(toc.content, 'text/html');
+			navMap = tocDoc.querySelector('navMap');
+		}
+		if (!navMap) throw Error('Invalid NAV TOC');
+
 		tocNavs = parseNcxToc(navMap, toc.path);
 	}
 

@@ -36,7 +36,7 @@
 	});
 </script>
 
-<div use:melt={$root} class="flex flex-col h-full">
+<div use:melt={$root} class="flex flex-col h-full gap-2">
 	<div>
 		<slot />
 		<div
@@ -60,7 +60,7 @@
 		</div>
 	</div>
 
-	<div use:melt={$content('tab-1')} class="grow custom-scroll overflow-y-auto">
+	<div use:melt={$content('tab-1')} class="pb-6 px-6 grow custom-scroll overflow-y-auto">
 		<AppearanceSettings
 			bind:columnCount
 			bind:fontFamily
@@ -74,7 +74,7 @@
 			{dispatchWrapper}
 		/>
 	</div>
-	<div use:melt={$content('tab-2')} class="grow custom-scroll overflow-y-auto">
+	<div use:melt={$content('tab-2')} class="pb-6 px-6 grow custom-scroll overflow-y-auto">
 		<ThemeSettings />
 	</div>
 </div>

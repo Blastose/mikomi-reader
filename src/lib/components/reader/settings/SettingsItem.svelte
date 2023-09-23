@@ -29,7 +29,7 @@
 			</svelte:fragment>
 		</SettingsButton>
 		{#if reset}
-			<SettingsButton onClick={reset} fitWidth={true}>
+			<SettingsButton onClick={reset} fitWidth={true} subText="reset">
 				<svelte:fragment slot="icon">
 					<IconArrowBack />
 				</svelte:fragment>

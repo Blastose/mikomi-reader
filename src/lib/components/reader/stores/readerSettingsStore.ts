@@ -57,9 +57,30 @@ export const presetReaderThemes: ReaderThemeSettings[] = [
 		imageMixBlendMode: 'normal'
 	},
 	{
+		name: 'Dark 2',
+		backgroundColor: '#202124',
+		color: '#f8f9fa',
+		linkColor: '#4ca6ff',
+		imageMixBlendMode: 'normal'
+	},
+	{
+		name: 'Dark contrast',
+		backgroundColor: '#121212',
+		color: '#ffffff',
+		linkColor: '#4ca6ff',
+		imageMixBlendMode: 'normal'
+	},
+	{
 		name: 'Sepia',
 		backgroundColor: '#fbf0d9',
 		color: '#5f4b32',
+		linkColor: '#9b674c',
+		imageMixBlendMode: 'multiply'
+	},
+	{
+		name: 'Sepia contrast',
+		backgroundColor: '#fbf0d9',
+		color: '#000000',
 		linkColor: '#9b674c',
 		imageMixBlendMode: 'multiply'
 	},

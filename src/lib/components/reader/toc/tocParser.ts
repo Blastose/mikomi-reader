@@ -1,5 +1,7 @@
 export type NavPoint = {
+	// epub://
 	content: string;
+	// display text
 	label: string;
 	children: NavPoint[];
 	page?: number;

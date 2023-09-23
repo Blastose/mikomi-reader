@@ -18,9 +18,11 @@
 	import { searchModalOpenStore } from './search/search';
 	import type { EnglishFont, LineHeight, TextAlign } from './settings/settings';
 	import Slider from '$lib/components/reader/slider/Slider.svelte';
+	import type { NavPoint } from './toc/tocParser';
 
 	export let html: string;
 	export let drawerOpen: Writable<boolean>;
+	export let tocData: NavPoint[];
 
 	// Settings
 	export let columnCount: number = 1;
@@ -278,7 +280,14 @@
 	}}
 />
 
-<Overlayer bind:overlayContainer {readerNode} {currentPage} {pageSize} orientation={writingMode} />
+<Overlayer
+	bind:overlayContainer
+	{tocData}
+	{readerNode}
+	{currentPage}
+	{pageSize}
+	orientation={writingMode}
+/>
 
 <div
 	style="--column-gap: {columnGap}px;

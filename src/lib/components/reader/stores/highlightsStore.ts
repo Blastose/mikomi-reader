@@ -5,6 +5,7 @@ export type Highlight = {
 	note: string;
 	displayText: string;
 	page: number;
+	chapter: string;
 	dateAdded: number;
 	range: Range;
 	color: string;

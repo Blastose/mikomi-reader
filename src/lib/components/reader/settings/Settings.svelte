@@ -103,7 +103,7 @@
 	{#if $open}
 		<div
 			bind:this={dialog}
-			class="dialog-theme fixed z-50 flex flex-col top-12 p-6 w-[66vw] sm:w-80 max-w-xl h-[calc(90vh_-_3rem)] max-h-[calc(90vh_-_3rem)] right-6 rounded-xl shadow-2xl"
+			class="dialog-theme fixed z-50 flex flex-col top-12 w-[66vw] sm:w-80 max-w-xl h-[calc(90vh_-_3rem)] max-h-[calc(90vh_-_3rem)] right-6 rounded-xl shadow-2xl"
 			use:melt={$content}
 			transition:fly={{
 				duration: 200,
@@ -123,7 +123,11 @@
 				{onColumnCountChange}
 				{dispatchWrapper}
 			>
-				<h2 use:dragging use:melt={$title} class="select-none cursor-grab m-0 text-lg font-medium">
+				<h2
+					use:dragging
+					use:melt={$title}
+					class="pt-6 px-6 select-none cursor-grab m-0 text-lg font-medium"
+				>
 					Display options
 				</h2>
 			</Menu>

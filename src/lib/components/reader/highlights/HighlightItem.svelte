@@ -34,11 +34,16 @@
 
 <div class="flex flex-col gap-2">
 	<div class="flex justify-between">
-		<p class="text-sm">
-			Page {columnCount === 1 ? `${highlight.page}` : `${(highlight.page ?? 1) * 2 - 1}`} - {relativeTime(
-				new Date(),
-				highlight.dateAdded
-			)}
+		<p class="text-sm flex flex-col">
+			<span>
+				Page {columnCount === 1 ? `${highlight.page}` : `${(highlight.page ?? 1) * 2 - 1}`} - {relativeTime(
+					new Date(),
+					highlight.dateAdded
+				)}
+			</span>
+			<span class="line-clamp-2">
+				{highlight.chapter}
+			</span>
 		</p>
 		<button on:click={onTrashClick} aria-label="Delete highlight">
 			<IconTrash stroke={1} />

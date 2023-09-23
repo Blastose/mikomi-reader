@@ -7,6 +7,7 @@ export type Bookmark = {
 	cssSelector: string;
 	dateAdded: number;
 	page?: number;
+	chapter?: string;
 };
 
 export function smoothScrollTo(
@@ -246,4 +247,44 @@ export function calculateBookmarkPageNumbers(
 	for (const bookmark of bookmarks) {
 		bookmark.page = getPageFromElement(bookmark.element, readingDirection, pageSize);
 	}
+}
+
+export function calculateBookmarkChapterPositions(bookmarks: Bookmark[], tocData: NavPoint[]) {
+	for (const bookmark of bookmarks) {
+		bookmark.chapter = getTocChapterFromPage(bookmark.page ?? 1, tocData, tocData[0].label);
+	}
+}
+
+function flattenTocData(tocData: NavPoint[]) {
+	const sum: NavPoint[] = [];
+	function flattenTocDataNested(tocData: NavPoint[]) {
+		for (const toc of tocData) {
+			sum.push(toc);
+
+			flattenTocDataNested(toc.children);
+		}
+
+		return sum;
+	}
+	return flattenTocDataNested(tocData);
+}
+
+export function getTocChapterFromPage(
+	page: number,
+	tocData: NavPoint[],
+	previousChapter: string
+): string {
+	// TODO Watch for performance issues, since it will flatten each time the function is called
+	const newR = flattenTocData(tocData);
+	for (const toc of newR) {
+		if (!toc.page) return 'TODO';
+
+		if (page < toc.page) {
+			return previousChapter;
+		}
+		previousChapter = toc.label;
+	}
+
+	// We're past the last chapter and there are no more chapters, so the page is in that chapter
+	return previousChapter;
 }
