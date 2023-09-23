@@ -17,6 +17,7 @@
 	import Overlayer from '$lib/components/overlayer/Overlayer.svelte';
 	import { searchModalOpenStore } from './search/search';
 	import type { EnglishFont, LineHeight, TextAlign } from './settings/settings';
+	import Slider from '$lib/components/reader/slider/Slider.svelte';
 
 	export let html: string;
 	export let drawerOpen: Writable<boolean>;
@@ -303,18 +304,22 @@
 
 <div>
 	<div>
-		<input
-			class="w-full {writingMode === 'horizontal'
-				? 'writing-horizontal-tb'
-				: 'writing-vertical-rl'}"
-			type="range"
-			min="1"
-			max={totalPages}
-			bind:value={currentPage}
-			on:input={(e) => {
-				updateScrollFromPageNumber(Number(e.currentTarget.value));
-			}}
-		/>
+		{#if totalPages}
+			{#key totalPages}
+				<Slider
+					min={1}
+					max={totalPages}
+					{currentPage}
+					onValueChange={({ curr: _, next }) => {
+						currentPage = next[0];
+						updateScrollFromPageNumber(currentPage);
+						return next;
+					}}
+				/>
+			{/key}
+		{:else}
+			<div class="w-full" />
+		{/if}
 	</div>
 	<div>
 		<button
@@ -357,6 +362,7 @@
 		max-width: 100%;
 		height: auto;
 		object-fit: contain;
+		mix-blend-mode: var(--mix-blend-mode);
 	}
 
 	.text-epub.writing-vertical-rl :global(img),
@@ -366,6 +372,7 @@
 		max-width: var(--max-width) !important;
 		height: auto;
 		object-fit: contain;
+		mix-blend-mode: var(--mix-blend-mode);
 	}
 
 	.text-epub :global(svg > image) {
@@ -409,10 +416,6 @@
 		writing-mode: vertical-rl !important;
 		-epub-writing-mode: vertical-rl !important;
 		-webkit-writing-mode: vertical-rl !important;
-	}
-
-	input[type='range'].writing-vertical-rl {
-		direction: rtl;
 	}
 
 	.text-epub > :global(div.new-body) {
