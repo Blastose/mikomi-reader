@@ -156,6 +156,19 @@ pub fn update_book_settings(
 
 #[tauri::command]
 #[specta::specta]
+pub fn get_reader_themes() -> Vec<models::ReaderTheme> {
+    let mut conn: SqliteConnection = establish_connection();
+
+    let themes: Vec<models::ReaderTheme> = schema::reader_theme::table
+        .select(models::ReaderTheme::as_select())
+        .get_results(&mut conn)
+        .unwrap();
+
+    themes
+}
+
+#[tauri::command]
+#[specta::specta]
 pub fn add_reader_theme(new_reader_theme: models::ReaderTheme) -> Result<(), String> {
     let mut conn: SqliteConnection = establish_connection();
     let res = diesel::insert_into(schema::reader_theme::table)

@@ -62,6 +62,10 @@ export function updateBookSettings(bookId: string, newBookSettings: BookSettings
     return invoke()<null>("update_book_settings", { bookId,newBookSettings })
 }
 
+export function getReaderThemes() {
+    return invoke()<ReaderTheme[]>("get_reader_themes")
+}
+
 export function addReaderTheme(newReaderTheme: ReaderTheme) {
     return invoke()<null>("add_reader_theme", { newReaderTheme })
 }

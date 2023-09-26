@@ -88,6 +88,8 @@ export const presetReaderThemes: ReaderThemeSettings[] = [
 	}
 ];
 
+export const savedReaderThemes = writable<(ReaderThemeSettings & { id: string })[]>([]);
+
 export async function addBookSettingsFromSettingsAndTheme(
 	bookId: string,
 	height: number,

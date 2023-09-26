@@ -1,12 +1,13 @@
 import type { PageLoad } from './$types';
-import { getBook } from '$lib/bindings';
+import { getBook, getReaderThemes } from '$lib/bindings';
 import {
 	readerSettingsStore,
 	readerThemeStore,
 	type MixBlendMode,
 	type ReaderThemeSettings,
 	addBookSettingsFromSettingsAndTheme,
-	type ReaderSettings
+	type ReaderSettings,
+	savedReaderThemes
 } from '$lib/components/reader/stores/readerSettingsStore';
 import type { Orientation } from '$lib/components/reader/utils';
 import type { EnglishFont, LineHeight, TextAlign } from '$lib/components/reader/settings/settings';
@@ -25,6 +26,18 @@ export const load = (async ({ params }) => {
 		throw Error('');
 	}
 	console.log(book);
+
+	const savedThemes = (await getReaderThemes()).map((theme) => {
+		return {
+			backgroundColor: theme.background_color,
+			color: theme.color,
+			imageMixBlendMode: theme.image_blend_mode as MixBlendMode,
+			linkColor: theme.link_color,
+			name: theme.name,
+			id: theme.id
+		} satisfies ReaderThemeSettings & { id: string };
+	});
+	savedReaderThemes.set(savedThemes);
 
 	if (book.settings) {
 		readerSettingsStore.set({

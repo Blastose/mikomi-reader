@@ -43,8 +43,6 @@
 
 	$: if (!$open) {
 		(async () => {
-			console.log(window.innerWidth);
-			console.log(window.innerHeight);
 			await addBookSettingsFromSettingsAndTheme(
 				$page.params.id,
 				window.innerHeight,
@@ -52,6 +50,7 @@
 				$readerSettingsStore,
 				$readerThemeStore
 			);
+			localStorage.setItem('last-reader-theme', JSON.stringify($readerThemeStore));
 		})();
 	}
 
@@ -120,7 +119,7 @@
 	{#if $open}
 		<div
 			bind:this={dialog}
-			class="dialog-theme fixed z-50 flex flex-col top-12 w-[66vw] sm:w-80 max-w-xl h-[calc(90vh_-_3rem)] max-h-[calc(90vh_-_3rem)] right-6 rounded-xl shadow-2xl"
+			class="dialog-theme overflow-hidden fixed z-50 flex flex-col top-12 w-[66vw] sm:w-80 max-w-xl h-[calc(90vh_-_3rem)] max-h-[calc(90vh_-_3rem)] right-6 rounded-xl shadow-2xl"
 			use:melt={$content}
 			transition:fly={{
 				duration: 200,
