@@ -81,6 +81,65 @@ pub struct Highlight {
 }
 
 #[derive(
+    Queryable,
+    Selectable,
+    Insertable,
+    Deserialize,
+    Serialize,
+    Associations,
+    Identifiable,
+    Type,
+    PartialEq,
+    Debug,
+    AsChangeset,
+)]
+#[diesel(belongs_to(Book))]
+#[diesel(table_name = crate::schema::book_settings)]
+#[diesel(check_for_backend(diesel::sqlite::Sqlite))]
+pub struct BookSettings {
+    pub id: String,
+    pub book_id: String,
+    pub width: Option<i32>,
+    pub height: Option<i32>,
+    pub percentage: Option<i32>,
+    pub last_element: Option<String>,
+    pub font_size: i32,
+    pub line_height: String,
+    pub margins: i32,
+    pub text_align: String,
+    pub column_count: i32,
+    pub writing_mode: String,
+    pub font_family: String,
+    pub background_color: String,
+    pub color: String,
+    pub link_color: String,
+    pub image_blend_mode: String,
+}
+
+#[derive(
+    Queryable,
+    Selectable,
+    Insertable,
+    Deserialize,
+    Serialize,
+    Identifiable,
+    Type,
+    PartialEq,
+    Debug,
+    AsChangeset,
+)]
+#[diesel(table_name = crate::schema::reader_theme)]
+#[diesel(check_for_backend(diesel::sqlite::Sqlite))]
+pub struct ReaderTheme {
+    pub id: String,
+    pub name: String,
+    pub background_color: String,
+    pub color: String,
+    pub link_color: String,
+    pub image_blend_mode: String,
+}
+
+#[derive(
     Queryable, Selectable, Insertable, Serialize, Associations, Identifiable, Type, PartialEq, Debug,
 )]
 #[diesel(belongs_to(Book))]

@@ -301,6 +301,7 @@
 				 {writingMode === 'horizontal' ? `padding: 0 ${margins}px;` : `padding: ${margins}px 0;`}"
 	class="text-epub
         {writingMode === 'horizontal' ? 'writing-horizontal-tb' : 'writing-vertical-rl'}"
+	class:with-line-height={lineHeight !== "normal"}				
 	bind:this={readerNode}
 	bind:clientHeight={readerHeight}
 	bind:clientWidth={readerWidth}
@@ -395,8 +396,15 @@
 
 	.text-epub :global(p) {
 		text-align: var(--text-align) !important;
-		line-height: var(--line-height) !important;
 		font-family: var(--font-family) !important;
+	}
+
+	.text-epub.with-line-height :global(p) {
+		line-height: var(--line-height) !important;
+	}
+
+	.text-epub :global(a) {
+		color: var(--link-color) !important;
 	}
 
 	.text-epub.writing-vertical-rl {

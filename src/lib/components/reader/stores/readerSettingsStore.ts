@@ -1,6 +1,7 @@
 import { writable } from 'svelte/store';
 import type { EnglishFont, LineHeight, TextAlign } from '../settings/settings';
 import type { Orientation } from '../utils';
+import { addBookSettings } from '$lib/bindings';
 
 export type ReaderSettings = {
 	fontSize: number;
@@ -33,13 +34,7 @@ export type ReaderThemeSettings = {
 	imageMixBlendMode: MixBlendMode;
 };
 
-export const readerThemeStore = writable<ReaderThemeSettings>({
-	name: 'Light',
-	backgroundColor: '#ffffff',
-	color: '#333333',
-	linkColor: '#007acc',
-	imageMixBlendMode: 'normal'
-});
+export const readerThemeStore = writable<ReaderThemeSettings>();
 
 export const presetReaderThemes: ReaderThemeSettings[] = [
 	{
@@ -88,7 +83,37 @@ export const presetReaderThemes: ReaderThemeSettings[] = [
 		name: 'Green',
 		backgroundColor: '#c5e7ce',
 		color: '#3a4a43',
-		linkColor: '#4CA64C',
+		linkColor: '#19568f',
 		imageMixBlendMode: 'normal'
 	}
 ];
+
+export async function addBookSettingsFromSettingsAndTheme(
+	bookId: string,
+	height: number,
+	width: number,
+	settings: ReaderSettings,
+	theme: ReaderThemeSettings,
+	percentage?: number,
+	lastElement?: string
+) {
+	await addBookSettings({
+		background_color: theme.backgroundColor,
+		book_id: bookId,
+		color: theme.color,
+		column_count: settings.columnCount,
+		font_family: settings.fontFamily,
+		font_size: settings.fontSize,
+		height,
+		id: crypto.randomUUID(),
+		image_blend_mode: theme.imageMixBlendMode,
+		line_height: String(settings.lineHeight),
+		link_color: theme.linkColor,
+		margins: settings.margins,
+		text_align: settings.textAlign,
+		width,
+		writing_mode: settings.writingMode,
+		last_element: lastElement ?? null,
+		percentage: percentage ?? null
+	});
+}

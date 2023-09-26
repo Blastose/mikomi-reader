@@ -49,13 +49,14 @@ pub struct BookWithAuthorsAndCover {
 }
 
 #[derive(Serialize, Type)]
-pub struct BookWithAuthorsAndCoverAndBookmarksAndHighlights {
+pub struct BookWithAuthorsAndCoverAndBookmarksAndHighlightsAndSettings {
     #[serde(flatten)]
     book: models::Book,
     authors: Vec<models::Author>,
     bookmarks: Vec<models::Bookmark>,
     highlights: Vec<models::Highlight>,
     cover: Option<String>,
+    settings: Option<models::BookSettings>,
 }
 
 #[tauri::command]
@@ -98,6 +99,102 @@ pub fn update_bookmark(id: String, display_text: String) -> Result<(), String> {
     match res {
         Ok(_) => return Ok(()),
         Err(_) => return Err(String::from("Cannot update bookmark")),
+    }
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn add_book_settings(new_book_settings: models::BookSettings) -> Result<(), String> {
+    let mut conn: SqliteConnection = establish_connection();
+    let res = diesel::insert_into(schema::book_settings::table)
+        .values(&new_book_settings)
+        .on_conflict(schema::book_settings::book_id)
+        .do_update()
+        .set(&new_book_settings)
+        .execute(&mut conn);
+
+    match res {
+        Ok(_) => return Ok(()),
+        Err(e) => {
+            println!("{e}");
+            return Err(String::from("Cannot add book settings"));
+        }
+    }
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn remove_book_settings(id: String) -> Result<(), String> {
+    let mut conn: SqliteConnection = establish_connection();
+    let res = diesel::delete(schema::book_settings::table.filter(schema::book_settings::id.eq(id)))
+        .execute(&mut conn);
+
+    match res {
+        Ok(_) => return Ok(()),
+        Err(_) => return Err(String::from("Cannot delete book settings")),
+    }
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn update_book_settings(
+    book_id: String,
+    new_book_settings: models::BookSettings,
+) -> Result<(), String> {
+    let mut conn: SqliteConnection = establish_connection();
+    let res = diesel::update(
+        schema::book_settings::table.filter(schema::book_settings::book_id.eq(book_id)),
+    )
+    .set(&new_book_settings)
+    .execute(&mut conn);
+
+    match res {
+        Ok(_) => return Ok(()),
+        Err(_) => return Err(String::from("Cannot update book settings")),
+    }
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn add_reader_theme(new_reader_theme: models::ReaderTheme) -> Result<(), String> {
+    let mut conn: SqliteConnection = establish_connection();
+    let res = diesel::insert_into(schema::reader_theme::table)
+        .values(&new_reader_theme)
+        .on_conflict(schema::reader_theme::id)
+        .do_update()
+        .set(&new_reader_theme)
+        .execute(&mut conn);
+
+    match res {
+        Ok(_) => return Ok(()),
+        Err(_) => return Err(String::from("Cannot add reader theme")),
+    }
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn remove_reader_theme(id: String) -> Result<(), String> {
+    let mut conn: SqliteConnection = establish_connection();
+    let res = diesel::delete(schema::reader_theme::table.filter(schema::reader_theme::id.eq(id)))
+        .execute(&mut conn);
+
+    match res {
+        Ok(_) => return Ok(()),
+        Err(_) => return Err(String::from("Cannot delete reader theme")),
+    }
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn update_reader_theme(id: String, name: String) -> Result<(), String> {
+    let mut conn: SqliteConnection = establish_connection();
+    let res = diesel::update(schema::reader_theme::table.filter(schema::reader_theme::id.eq(id)))
+        .set((schema::reader_theme::name.eq(name),))
+        .execute(&mut conn);
+
+    match res {
+        Ok(_) => return Ok(()),
+        Err(_) => return Err(String::from("Cannot update reader theme")),
     }
 }
 
@@ -150,7 +247,7 @@ pub fn update_highlight(id: String, note: String, color: String) -> Result<(), S
 
 #[tauri::command]
 #[specta::specta]
-pub fn get_book(id: String) -> Option<BookWithAuthorsAndCoverAndBookmarksAndHighlights> {
+pub fn get_book(id: String) -> Option<BookWithAuthorsAndCoverAndBookmarksAndHighlightsAndSettings> {
     let mut conn: SqliteConnection = establish_connection();
 
     let books: Vec<models::Book> = schema::book::table
@@ -168,6 +265,13 @@ pub fn get_book(id: String) -> Option<BookWithAuthorsAndCoverAndBookmarksAndHigh
         .select(models::Highlight::as_select())
         .load(&mut conn)
         .unwrap();
+
+    let settings: Vec<models::BookSettings> = models::BookSettings::belonging_to(&books)
+        .select(models::BookSettings::as_select())
+        .load(&mut conn)
+        .unwrap();
+
+    let settings = settings.into_iter().nth(0);
 
     let authors_with_book_link: Vec<(models::BookAuthorLink, models::Author)> =
         models::BookAuthorLink::belonging_to(&books)
@@ -195,13 +299,16 @@ pub fn get_book(id: String) -> Option<BookWithAuthorsAndCoverAndBookmarksAndHigh
         Err(_) => None,
     };
 
-    Some(BookWithAuthorsAndCoverAndBookmarksAndHighlights {
-        book,
-        authors: authors_with_book_link.into_iter().map(|(_, a)| a).collect(),
-        bookmarks,
-        highlights,
-        cover,
-    })
+    Some(
+        BookWithAuthorsAndCoverAndBookmarksAndHighlightsAndSettings {
+            book,
+            authors: authors_with_book_link.into_iter().map(|(_, a)| a).collect(),
+            bookmarks,
+            highlights,
+            cover,
+            settings,
+        },
+    )
 }
 
 #[tauri::command]

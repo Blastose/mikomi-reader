@@ -5,11 +5,14 @@
 	import type { EnglishFont, LineHeight, TextAlign } from './settings';
 	import type { Orientation } from '../utils';
 	import { createEventDispatcher, tick } from 'svelte';
-	import DisplaySettings from './DisplaySettings.svelte';
-	import SettingsButtonsItem from './SettingsButtonsItem.svelte';
-	import FontSettings from './FontSettings.svelte';
 	import { readerStateStore } from '../stores/readerStateStore';
 	import Menu from './Menu.svelte';
+	import { addBookSettingsFromSettingsAndTheme } from '$lib/components/reader/stores/readerSettingsStore';
+	import { page } from '$app/stores';
+	import {
+		readerSettingsStore,
+		readerThemeStore
+	} from '$lib/components/reader/stores/readerSettingsStore';
 
 	export let fontSize: number;
 	export let lineHeight: LineHeight;
@@ -37,6 +40,20 @@
 		}
 		return next;
 	};
+
+	$: if (!$open) {
+		(async () => {
+			console.log(window.innerWidth);
+			console.log(window.innerHeight);
+			await addBookSettingsFromSettingsAndTheme(
+				$page.params.id,
+				window.innerHeight,
+				window.innerWidth,
+				$readerSettingsStore,
+				$readerThemeStore
+			);
+		})();
+	}
 
 	const {
 		elements: { trigger, content, title, close, portalled },

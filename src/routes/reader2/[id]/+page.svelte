@@ -9,6 +9,7 @@
 		clearEpubStyles,
 		getFirstVisibleElementInParentElement,
 		getNodeBySelector,
+		getPageFromElement,
 		getPageFromScroll,
 		getScrollAlignedToPageFloor,
 		getSelector,
@@ -32,8 +33,33 @@
 	import Search from '$lib/components/reader/search/Search.svelte';
 	import { searchHighlightsStore } from '$lib/components/reader/search/search.js';
 	import Settings from '$lib/components/reader/settings/Settings.svelte';
-	import { readerSettingsStore } from '$lib/components/reader/stores/readerSettingsStore.js';
+	import {
+		addBookSettingsFromSettingsAndTheme,
+		readerSettingsStore
+	} from '$lib/components/reader/stores/readerSettingsStore.js';
 	import { readerThemeStore } from '$lib/components/reader/stores/readerSettingsStore.js';
+	import { page } from '$app/stores';
+	import { appWindow } from '@tauri-apps/api/window';
+
+	appWindow.onCloseRequested(async () => {
+		const el = getFirstVisibleElementInParentElement(readerNode, $readerSettingsStore.writingMode);
+		let selector: string | null = null;
+		if (el) {
+			selector = getSelector(el);
+		}
+
+		await addBookSettingsFromSettingsAndTheme(
+			$page.params.id,
+			window.innerHeight ?? 860,
+			window.innerWidth ?? 512,
+			$readerSettingsStore,
+			$readerThemeStore,
+			currentPage !== totalPages
+				? parseInt((((currentPage - 1) / totalPages) * 100).toFixed(0))
+				: 100,
+			selector ?? undefined
+		);
+	});
 
 	export let data;
 
@@ -281,6 +307,14 @@
 
 		overlayContainer.scrollLeft = readerNode.scrollLeft;
 		overlayContainer.scrollTop = readerNode.scrollTop;
+
+		await addBookSettingsFromSettingsAndTheme(
+			$page.params.id,
+			window.innerHeight ?? 860,
+			window.innerWidth ?? 512,
+			$readerSettingsStore,
+			$readerThemeStore
+		);
 	}
 
 	function updateCurrentPage(newPage?: number) {
@@ -320,6 +354,19 @@
 		loading = false;
 		t1 = performance.now();
 		await tick();
+
+		// jump to the last element from settings
+		if (data.book.settings?.last_element) {
+			const selector = getNodeBySelector(data.book.settings.last_element);
+			if (selector) {
+				const page = getPageFromElement(
+					selector as HTMLElement,
+					$readerSettingsStore.writingMode,
+					pageSize
+				);
+				goToPage(readerNode, page, pageSize);
+			}
+		}
 
 		// Needs a delay for the total page sizes to be correct;
 		// Not 100% sure why; probably because of images loading
@@ -362,6 +409,7 @@
 	$: {
 		document.body.style.setProperty('--background-color', $readerThemeStore.backgroundColor);
 		document.body.style.setProperty('--color', $readerThemeStore.color);
+		document.body.style.setProperty('--link-color', $readerThemeStore.linkColor);
 		document.body.style.setProperty('--mix-blend-mode', $readerThemeStore.imageMixBlendMode);
 	}
 </script>

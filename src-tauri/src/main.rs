@@ -23,6 +23,12 @@ fn main() {
             db::add_highlight,
             db::remove_highlight,
             db::update_highlight,
+            db::add_book_settings,
+            db::remove_book_settings,
+            db::update_book_settings,
+            db::add_reader_theme,
+            db::remove_reader_theme,
+            db::update_reader_theme,
             epub::get_epub
         ],
         "../src/lib/bindings.ts",
@@ -44,6 +50,12 @@ fn main() {
             db::add_highlight,
             db::remove_highlight,
             db::update_highlight,
+            db::add_book_settings,
+            db::remove_book_settings,
+            db::update_book_settings,
+            db::add_reader_theme,
+            db::remove_reader_theme,
+            db::update_reader_theme,
             epub::get_epub
         ])
         .run(tauri::generate_context!())

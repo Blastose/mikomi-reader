@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { addBookmark, getEpub, removeBookmark } from '$lib/bindings';
+	import { addBookmark, getBook, getEpub, removeBookmark } from '$lib/bindings';
 	import { onDestroy, onMount, tick } from 'svelte';
 	import postcss from 'postcss';
 	import prefixer from 'postcss-prefix-selector';
@@ -630,11 +630,14 @@
 <main class="container px-12 py-8 mx-auto duration-150">
 	<div class="flex gap-2">
 		<button
-			on:click={() => {
+			on:click={async () => {
+				// Need to get updated settings
+				const book = await getBook(data.book.id);
+
 				new WebviewWindow(`${data.book.id}2`, {
 					url: `/reader2/${data.book.id}`,
-					height: 860,
-					width: 512,
+					height: data.book.settings?.height ?? 860,
+					width: data.book.settings?.width ?? 512,
 					title: `${data.book.title} - Mikomi Reader`
 				});
 			}}>2</button

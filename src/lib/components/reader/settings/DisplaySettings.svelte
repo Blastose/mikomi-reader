@@ -1,8 +1,9 @@
 <script lang="ts">
 	import SettingsItem from './SettingsItem.svelte';
+	import type { LineHeight } from './settings';
 
 	export let fontSize: number;
-	export let lineHeight: number | string;
+	export let lineHeight: LineHeight;
 	export let margins: number;
 	export let dispatchWrapper: (f: () => void) => void;
 
@@ -58,7 +59,7 @@
 		}}
 		reset={() => {
 			dispatchWrapper(() => {
-				lineHeight = 'initial';
+				lineHeight = 'normal';
 			});
 		}}
 	/>

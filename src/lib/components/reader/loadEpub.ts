@@ -37,7 +37,14 @@ function parseToc(toc: Toc | null) {
 		const tocDoc = parser.parseFromString(toc.content, 'text/xml');
 		let navMap = tocDoc.querySelector('navMap');
 		if (!navMap) {
-			const tocDoc = parser.parseFromString(toc.content, 'text/html');
+			// .toc file is not able to be parsed by .parseFromString so
+			// we just extract out the content between <navMap> tags
+			const regexMatch = toc.content.match(/<navMap>.*<\/navMap>/s);
+			let tocContent = toc.content;
+			if (regexMatch) {
+				tocContent = regexMatch[0];
+			}
+			const tocDoc = parser.parseFromString(tocContent, 'text/xml');
 			navMap = tocDoc.querySelector('navMap');
 		}
 		if (!navMap) throw Error('Invalid NAV TOC');
