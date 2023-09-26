@@ -56,7 +56,7 @@ function getCharactersBeforeAndAfterIndexes(
 }
 
 export function highlightTextInString(text: string, startIndex: number, endIndex: number): string {
-	const highlightedText = `<span style="background-color: #bcdaff;">${text.slice(
+	const highlightedText = `<span style="color: black; background-color: #bcdaff;">${text.slice(
 		startIndex,
 		endIndex
 	)}</span>`;

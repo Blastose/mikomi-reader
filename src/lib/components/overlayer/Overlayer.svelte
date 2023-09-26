@@ -11,6 +11,7 @@
 		getPageFromScroll,
 		getScrollAlignedToPageFloor,
 		getSelector,
+		getTocChapterFromPage,
 		type Orientation
 	} from '$lib/components/reader/utils';
 	import { addHighlight } from '$lib/bindings';
@@ -27,11 +28,13 @@
 		searchModalTermStore,
 		searchStateStore
 	} from '$lib/components/reader/search/search';
+	import type { NavPoint } from '$lib/components/reader/toc/tocParser';
 
 	export let currentPage: number;
 	export let pageSize: number;
 	export let readerNode: HTMLDivElement;
 	export let orientation: Orientation;
+	export let tocData: NavPoint[];
 
 	$: book_id = $page.params.id;
 
@@ -49,7 +52,8 @@
 		states: { open }
 	} = createDialog({
 		forceVisible: true,
-		onOpenChange: handleOpen
+		onOpenChange: handleOpen,
+		preventScroll: false
 	});
 
 	let selectionState: 'noneSelected' | 'selectedText' = 'noneSelected';
@@ -113,11 +117,13 @@
 			orientation === 'horizontal' ? filteredRects[0].x : filteredRects[0].y,
 			pageSize
 		);
+		const page = getPageFromScroll(scroll, pageSize);
 		highlightsStore.update((highlights) => {
 			highlights.push({
 				id: newHighlightId,
 				dateAdded: dateAdded,
-				page: getPageFromScroll(scroll, pageSize),
+				page,
+				chapter: getTocChapterFromPage(page, tocData, tocData[0].label),
 				displayText: range.toString(),
 				note: '',
 				range,
@@ -183,7 +189,7 @@
 				e.preventDefault();
 			}}
 			bind:this={overlayOptions}
-			class="fixed left-[50%] top-[50%] z-50 rounded-xl p-2 shadow-lg bg-gray-100"
+			class="dialog-theme fixed left-[50%] top-[50%] z-50 rounded-xl p-2 shadow-lg"
 			use:melt={$content}
 			transition:fly={{
 				duration: 150,

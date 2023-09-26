@@ -9,6 +9,7 @@
 		elements: { trigger, menu, item },
 		states: { open }
 	} = createDropdownMenu({
+		preventScroll: false,
 		forceVisible: true,
 		positioning: { placement: 'bottom-end' }
 	});
@@ -21,16 +22,19 @@
 
 <div class="flex">
 	<button
-		class="flex flex-col grow"
+		class="text-left flex flex-col grow"
 		on:click={() => {
 			onSidebarItemClickWithPage(bookmark.page ?? 1);
 		}}
 	>
 		<span>Page {columnCount === 1 ? `${bookmark.page}` : `${(bookmark.page ?? 1) * 2 - 1}`}</span>
-		<span class="text-sm text-gray-500">{relativeTime(new Date(), bookmark.dateAdded)}</span>
+		{#if bookmark.chapter}
+			<span class="text-sm text-neutral-300">{bookmark.chapter}</span>
+		{/if}
+		<span class="text-sm text-neutral-400">{relativeTime(new Date(), bookmark.dateAdded)}</span>
 	</button>
 	<button
-		class="h-min w-min p-1 text-gray-500 duration-300 rounded-full hover:bg-gray-300"
+		class="h-min w-min p-1 text-neutral-400 duration-300 rounded-full hover:bg-neutral-700"
 		use:melt={$trigger}
 		aria-label="Open bookmark overflow menu"
 	>
@@ -40,20 +44,20 @@
 
 {#if $open}
 	<div
-		class="bg-gray-100 shadow-md rounded-md flex flex-col"
+		class="bg-neutral-700 shadow-md rounded-md flex flex-col"
 		use:melt={$menu}
 		transition:fly={{ duration: 150, y: -10 }}
 	>
 		<button
 			disabled
-			class="cursor-not-allowed text-left pr-6 pl-4 py-2 flex gap-4 hover:bg-gray-200 duration-150 rounded-md"
+			class="cursor-not-allowed text-left pr-6 pl-4 py-2 flex gap-4 hover:bg-neutral-600 duration-150 rounded-md"
 			use:melt={$item}
 		>
 			<IconPencil />
 			<span>Edit</span>
 		</button>
 		<button
-			class="text-left pr-6 pl-4 py-2 flex gap-4 hover:bg-gray-200 duration-150 rounded-md"
+			class="text-left pr-6 pl-4 py-2 flex gap-4 hover:bg-neutral-600 duration-150 rounded-md"
 			use:melt={$item}
 			on:click={() => {
 				onBookmarkItemDelete(bookmark.id);

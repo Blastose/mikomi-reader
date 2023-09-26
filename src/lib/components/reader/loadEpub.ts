@@ -27,16 +27,28 @@ function parseToc(toc: Toc | null) {
 	if (!toc) return [];
 
 	const parser = new DOMParser();
-	const tocDoc = parser.parseFromString(toc.content, 'text/html');
-
 	let tocNavs;
 	if (toc.kind === 'Nav') {
+		const tocDoc = parser.parseFromString(toc.content, 'text/html');
 		const navElement = tocDoc.querySelector('nav > ol');
 		if (!navElement) throw Error('Invalid NAV TOC');
 		tocNavs = parseNavToc(navElement, toc.path);
 	} else {
-		const navMap = tocDoc.querySelector('navMap');
-		if (!navMap) throw Error('Invalid NCX TOC');
+		const tocDoc = parser.parseFromString(toc.content, 'text/xml');
+		let navMap = tocDoc.querySelector('navMap');
+		if (!navMap) {
+			// .toc file is not able to be parsed by .parseFromString so
+			// we just extract out the content between <navMap> tags
+			const regexMatch = toc.content.match(/<navMap>.*<\/navMap>/s);
+			let tocContent = toc.content;
+			if (regexMatch) {
+				tocContent = regexMatch[0];
+			}
+			const tocDoc = parser.parseFromString(tocContent, 'text/xml');
+			navMap = tocDoc.querySelector('navMap');
+		}
+		if (!navMap) throw Error('Invalid NAV TOC');
+
 		tocNavs = parseNcxToc(navMap, toc.path);
 	}
 

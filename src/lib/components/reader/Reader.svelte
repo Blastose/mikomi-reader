@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount, tick } from 'svelte';
+	import { tick } from 'svelte';
 	import {
 		createSelectorFromEpubUri,
 		getFirstVisibleElementInParentElement,
@@ -16,24 +16,64 @@
 	import { readerStateStore } from './stores/readerStateStore';
 	import Overlayer from '$lib/components/overlayer/Overlayer.svelte';
 	import { searchModalOpenStore } from './search/search';
+	import type { EnglishFont, LineHeight, TextAlign } from './settings/settings';
+	import Slider from '$lib/components/reader/slider/Slider.svelte';
+	import type { NavPoint } from './toc/tocParser';
 
 	export let html: string;
 	export let drawerOpen: Writable<boolean>;
+	export let tocData: NavPoint[];
 
 	// Settings
 	export let columnCount: number = 1;
 	export let fontSize: number = 16;
 	export let writingMode: Orientation = 'horizontal';
+	export let lineHeight: LineHeight;
+	export let textAlign: TextAlign;
+	export let fontFamily: EnglishFont;
+	export let margins: number;
 
 	export let readerNode: HTMLDivElement;
+	export let overlayContainer: HTMLDivElement;
 	export let readerHeight: number;
 	export let readerWidth: number;
 	export let columnGap = 24;
+	// TODO If we want to let the reader change the column gap
+	// when the reader is in 2 cols, we need to make a new variable
+	$: columnGap = 24 + margins * 2;
+
+	export const onColumnCountChange = async (newColumnCount: 1 | 2) => {
+		await jumpToLastVisibleElementAfterFunction(async () => {
+			columnCount = newColumnCount;
+			await tick();
+			fillerPageAtEnd = checkTwoColumnViewRequiresFillerPageAtEnd();
+		});
+		await tick();
+		updateCurrentPage();
+		updateTotalPages();
+		dispatchResize();
+	};
+	export const onWritingModeChange = async (newWritingMode: Orientation) => {
+		await jumpToLastVisibleElementAfterFunction(async () => {
+			writingMode = newWritingMode;
+			if (writingMode === 'vertical') {
+				fillerPageAtEnd = false;
+			}
+		});
+		await tick();
+		updateCurrentPage();
+		updateTotalPages();
+		dispatchResize();
+	};
 
 	export let currentPage: number;
 	export let totalPages: number;
 	export let pageSize: number;
-	$: pageSize = writingMode === 'horizontal' ? readerWidth + columnGap : readerHeight + columnGap;
+
+	$: pageSize =
+		writingMode === 'horizontal'
+			? readerWidth + columnGap - margins * 2
+			: readerHeight + columnGap - margins * 2;
 
 	$: if ($drawerOpen === false) {
 		readerStateStore.set('reading');
@@ -42,14 +82,11 @@
 	}
 
 	let showRuler = false;
-	let overlayContainer: HTMLDivElement;
 
 	const dispatch = createEventDispatcher();
 
 	function dispatchResize() {
 		dispatch('pageresize');
-		overlayContainer.scrollLeft = readerNode.scrollLeft;
-		overlayContainer.scrollTop = readerNode.scrollTop;
 	}
 
 	function nextPage() {
@@ -170,13 +207,18 @@
 	const debouncedOnResize = debounce(onResize, 500);
 
 	function onDocumentClick(e: MouseEvent) {
-		const target = e.target as HTMLAnchorElement | null;
+		const target = e.target as HTMLElement | null;
 		const a = target?.closest('a');
 
 		if (a?.tagName === 'A') {
 			e.preventDefault();
 			if (!a.href.startsWith('epub://')) return;
 			onAnchorClick(a);
+		} else if (target?.tagName === 'IMG') {
+			e.preventDefault();
+			const imgNode = target as HTMLImageElement;
+			console.log('Open in viewer');
+			console.log(imgNode.src);
 		}
 	}
 
@@ -212,11 +254,6 @@
 	}
 
 	$: history.replaceState({ page: currentPage }, '');
-
-	onMount(() => {
-		updateCurrentPage();
-		updateTotalPages();
-	});
 </script>
 
 <svelte:window
@@ -243,16 +280,28 @@
 	}}
 />
 
-<Overlayer bind:overlayContainer {readerNode} {currentPage} {pageSize} orientation={writingMode} />
+<Overlayer
+	bind:overlayContainer
+	{tocData}
+	{readerNode}
+	{currentPage}
+	{pageSize}
+	orientation={writingMode}
+/>
 
 <div
 	style="--column-gap: {columnGap}px;
          --column-count: {columnCount}; 
          --max-height: {readerHeight * 0.95}px; 
          --max-width: {readerWidth * 0.95}px; 
-         font-size: {fontSize}px !important;"
+				 --text-align: {textAlign};
+				 --font-family: {fontFamily};
+				 --line-height: {lineHeight};
+         font-size: {fontSize}px !important;
+				 {writingMode === 'horizontal' ? `padding: 0 ${margins}px;` : `padding: ${margins}px 0;`}"
 	class="text-epub
         {writingMode === 'horizontal' ? 'writing-horizontal-tb' : 'writing-vertical-rl'}"
+	class:with-line-height={lineHeight !== "normal"}				
 	bind:this={readerNode}
 	bind:clientHeight={readerHeight}
 	bind:clientWidth={readerWidth}
@@ -265,55 +314,24 @@
 
 <div>
 	<div>
-		<input
-			class="w-full {writingMode === 'horizontal'
-				? 'writing-horizontal-tb'
-				: 'writing-vertical-rl'}"
-			type="range"
-			min="1"
-			max={totalPages}
-			bind:value={currentPage}
-			on:input={(e) => {
-				updateScrollFromPageNumber(Number(e.currentTarget.value));
-			}}
-		/>
+		{#if totalPages}
+			{#key totalPages}
+				<Slider
+					min={1}
+					max={totalPages}
+					{currentPage}
+					onValueChange={({ curr: _, next }) => {
+						currentPage = next[0];
+						updateScrollFromPageNumber(currentPage);
+						return next;
+					}}
+				/>
+			{/key}
+		{:else}
+			<div class="w-full" />
+		{/if}
 	</div>
 	<div>
-		<button
-			on:click={async () => {
-				await jumpToLastVisibleElementAfterFunction(async () => {
-					columnCount = columnCount === 1 ? 2 : 1;
-					await tick();
-					fillerPageAtEnd = checkTwoColumnViewRequiresFillerPageAtEnd();
-				});
-				await tick();
-				updateCurrentPage();
-				updateTotalPages();
-				dispatchResize();
-			}}>Col</button
-		>
-		<button
-			on:click={async () => {
-				await jumpToLastVisibleElementAfterFunction(async () => {
-					writingMode = writingMode === 'horizontal' ? 'vertical' : 'horizontal';
-					if (writingMode === 'vertical') {
-						fillerPageAtEnd = false;
-					}
-				});
-				await tick();
-				updateCurrentPage();
-				updateTotalPages();
-				dispatchResize();
-			}}>Dir</button
-		>
-		<button
-			on:click={() => {
-				console.log(checkTwoColumnViewRequiresFillerPageAtEnd());
-				fillerPageAtEnd = checkTwoColumnViewRequiresFillerPageAtEnd();
-			}}
-		>
-			Req 2
-		</button>
 		<button
 			on:click={() => {
 				showRuler = !showRuler;
@@ -330,8 +348,7 @@
 
 <style>
 	.text-epub {
-		font-family: 'ヒラギノ角ゴ Pro W3', 'Hiragino Kaku Gothic Pro', 'メイリオ', Meiryo,
-			'ＭＳ Ｐゴシック', sans-serif;
+		font-family: var(--font-family) !important;
 		user-select: text;
 		max-height: calc(100dvh - 128px);
 		height: 100vh;
@@ -355,6 +372,7 @@
 		max-width: 100%;
 		height: auto;
 		object-fit: contain;
+		mix-blend-mode: var(--mix-blend-mode);
 	}
 
 	.text-epub.writing-vertical-rl :global(img),
@@ -364,6 +382,7 @@
 		max-width: var(--max-width) !important;
 		height: auto;
 		object-fit: contain;
+		mix-blend-mode: var(--mix-blend-mode);
 	}
 
 	.text-epub :global(svg > image) {
@@ -373,6 +392,19 @@
 
 	.text-epub :global(img) {
 		display: inline;
+	}
+
+	.text-epub :global(p) {
+		text-align: var(--text-align) !important;
+		font-family: var(--font-family) !important;
+	}
+
+	.text-epub.with-line-height :global(p) {
+		line-height: var(--line-height) !important;
+	}
+
+	.text-epub :global(a) {
+		color: var(--link-color) !important;
 	}
 
 	.text-epub.writing-vertical-rl {
@@ -401,10 +433,6 @@
 		writing-mode: vertical-rl !important;
 		-epub-writing-mode: vertical-rl !important;
 		-webkit-writing-mode: vertical-rl !important;
-	}
-
-	input[type='range'].writing-vertical-rl {
-		direction: rtl;
 	}
 
 	.text-epub > :global(div.new-body) {

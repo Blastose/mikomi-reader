@@ -7,7 +7,7 @@
 	import { page } from '$app/stores';
 
 	function useLayoutF(path: string) {
-		if (path.startsWith('/reader') || path.startsWith('/settings')) {
+		if (path.startsWith('/reader')) {
 			return false;
 		}
 		return true;

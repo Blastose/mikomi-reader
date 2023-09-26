@@ -38,7 +38,8 @@
 		states: { open }
 	} = createDialog({
 		forceVisible: true,
-		onOpenChange: handleOpen
+		onOpenChange: handleOpen,
+		preventScroll: false
 	});
 
 	function dragging(node: HTMLDivElement) {
@@ -170,7 +171,7 @@
 		<div
 			use:dragging
 			bind:this={overlayOptions}
-			class="fixed z-50 rounded-xl select-none p-2 shadow-lg bg-gray-100 max-w-[calc(100vw_-_20px)]"
+			class="dialog-theme fixed z-50 rounded-xl select-none p-2 shadow-lg max-w-[calc(100vw_-_20px)]"
 			use:melt={$content}
 			transition:fly={{
 				duration: 200,
@@ -181,7 +182,7 @@
 			<div class="flex flex-col gap-4 p-2">
 				<textarea
 					bind:value={noteText}
-					class="p-2 resize-none"
+					class="bg-neutral-700 p-2 resize-none outline-none ring-neutral-200 focus:ring-1 rounded-sm"
 					cols="30"
 					rows="5"
 					placeholder="Add note"
@@ -207,11 +208,11 @@
 				<div class="flex justify-between">
 					<button class="flex flex-col items-center" on:click={onTrashClick}>
 						<IconTrash />
-						<span class="text-sm text-gray-500">Delete</span>
+						<span class="text-sm text-neutral-400">Delete</span>
 					</button>
 					<button class="flex flex-col items-center" on:click={onSaveClick}>
 						<IconCheck />
-						<span class="text-sm text-gray-500">Save</span>
+						<span class="text-sm text-neutral-400">Save</span>
 					</button>
 				</div>
 			</div>
