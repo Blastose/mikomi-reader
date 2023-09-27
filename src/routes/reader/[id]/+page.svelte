@@ -14,6 +14,9 @@
 	import ReaderSidebar from './ReaderSidebar.svelte';
 	import { addToast } from '$lib/components/toast/ToastContainer.svelte';
 	import { WebviewWindow } from '@tauri-apps/api/window';
+	import { convertFileSrc } from '@tauri-apps/api/tauri';
+	import { BlobReader, ZipReader } from '@zip.js/zip.js';
+	import { Epub } from '$lib/epub/epub';
 
 	// tauriWindow.getCurrent().listen(TauriEvent.WINDOW_CLOSE_REQUESTED, async () => {
 	// 	console.log('alsdkjalsd');
@@ -642,6 +645,33 @@
 				});
 			}}>2</button
 		>
+		<button
+			on:click={async () => {
+				console.log(data.book.path);
+				const a = convertFileSrc(data.book.path);
+				console.log(a);
+				const res = await fetch(a);
+				console.log(res);
+				const r = await res.blob();
+				console.log(r);
+				const reader = new BlobReader(r);
+				const zipReader = new ZipReader(reader);
+				console.log(await zipReader.getEntries());
+
+				const epub = await Epub.fromUrl(a);
+
+				// while (true) {
+				// 	const current = await epub.getCurrentWithEpubUris();
+				// 	console.log(current);
+
+				// 	if (!epub.goNext()) {
+				// 		break;
+				// 	}
+				// }
+			}}
+		>
+			3
+		</button>
 		<p class="line-clamp-1">
 			p:{currentPage}/{totalPages}|
 			{readerNode?.scrollLeft.toFixed(2)}

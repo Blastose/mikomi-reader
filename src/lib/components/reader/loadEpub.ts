@@ -1,7 +1,9 @@
-import { getEpub, type HtmlData, type ImageData, type Toc } from '$lib/bindings';
 import postcss from 'postcss';
 import prefixer from 'postcss-prefix-selector';
 import { parseNavToc, parseNcxToc } from '$lib/components/reader/toc/tocParser';
+import { Epub } from '$lib/epub/epub';
+import { convertFileSrc } from '@tauri-apps/api/tauri';
+import type { Toc } from '$lib/bindings';
 
 async function prefixCss(css: string) {
 	const prefed = postcss()
@@ -73,7 +75,7 @@ async function addEpubCssToHead(csses: Record<string, string>) {
 
 function createImageUrls(
 	imgNodes: Element[],
-	imgMap: Record<string, ImageData | null>,
+	imgMap: Record<string, { data: Uint8Array }>,
 	objectUrls: string[]
 ) {
 	for (const node of imgNodes) {
@@ -89,12 +91,10 @@ function createImageUrls(
 
 		const imageData = imgMap[imageEpubUri];
 		if (!imageData) return;
-		const blob = new Blob([new Uint8Array(imageData.data)]);
+		const blob = new Blob([imageData.data]);
 		const blobUrl = URL.createObjectURL(blob);
 
 		node.setAttribute(imageNodeType, blobUrl);
-		node.setAttribute('width', String(imageData.width));
-		node.setAttribute('height', String(imageData.height));
 
 		objectUrls.push(blobUrl);
 	}
@@ -107,13 +107,16 @@ function fixPreserveAspectRatio(doc: Document) {
 	}
 }
 
-function parseHtml(htmlData: HtmlData[], imgMap: Record<string, ImageData | null>) {
+function parseHtml(
+	htmlData: { id: string; htmlContent: string }[],
+	imgMap: Record<string, { data: Uint8Array }>
+) {
 	const parser = new DOMParser();
 	let newHtml = '';
 	const blobUrls: string[] = [];
 
-	for (const [index, { id, html_content }] of htmlData.entries()) {
-		const xmlDoc = parser.parseFromString(html_content, 'application/xhtml+xml');
+	for (const [index, { id, htmlContent }] of htmlData.entries()) {
+		const xmlDoc = parser.parseFromString(htmlContent, 'application/xhtml+xml');
 		const imgNodes = xmlDoc.querySelectorAll('body img');
 		const imageNodes = xmlDoc.querySelectorAll('body image');
 		createImageUrls([...imgNodes, ...imageNodes], imgMap, blobUrls);
@@ -140,11 +143,14 @@ function parseHtml(htmlData: HtmlData[], imgMap: Record<string, ImageData | null
 }
 
 export async function loadEpub(path: string) {
-	const { html, img, css, toc } = await getEpub(path);
+	const fileSrc = convertFileSrc(path);
+	const epub = await Epub.fromUrl(fileSrc);
+	const { html, img, css, toc } = await epub.getEpub();
 
-	const tocNavs = parseToc(toc);
-	await addEpubCssToHead(css);
-	const { newHtml, blobUrls } = parseHtml(html, img);
+	const tocNavs = parseToc(toc ?? null);
+	await addEpubCssToHead(Object.fromEntries(css));
+
+	const { newHtml, blobUrls } = parseHtml(html, Object.fromEntries(img));
 
 	return {
 		newHtml,

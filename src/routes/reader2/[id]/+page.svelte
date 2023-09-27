@@ -42,6 +42,7 @@
 	import { appWindow } from '@tauri-apps/api/window';
 
 	appWindow.onCloseRequested(async () => {
+		if (!readerNode) return;
 		const el = getFirstVisibleElementInParentElement(readerNode, $readerSettingsStore.writingMode);
 		let selector: string | null = null;
 		if (el) {
