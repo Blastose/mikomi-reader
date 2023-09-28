@@ -5,7 +5,6 @@ use specta::collect_types;
 use tauri_specta::ts;
 
 mod db;
-mod epub;
 pub mod models;
 pub mod schema;
 
@@ -30,7 +29,6 @@ fn main() {
             db::add_reader_theme,
             db::remove_reader_theme,
             db::update_reader_theme,
-            epub::get_epub
         ],
         "../src/lib/bindings.ts",
     )
@@ -58,7 +56,6 @@ fn main() {
             db::add_reader_theme,
             db::remove_reader_theme,
             db::update_reader_theme,
-            epub::get_epub
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
