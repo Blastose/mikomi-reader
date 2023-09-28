@@ -75,6 +75,7 @@
 	let currentPage: number = 1;
 	let totalPages: number;
 	let pageSize: number;
+	let currentScroll: number;
 
 	let onColumnCountChange: (newColumnCount: 1 | 2) => Promise<void>;
 	let onWritingModeChange: (newWritingMode: Orientation) => Promise<void>;
@@ -366,6 +367,10 @@
 					pageSize
 				);
 				goToPage(readerNode, page, pageSize);
+				currentScroll =
+					$readerSettingsStore.writingMode === 'horizontal'
+						? readerNode.scrollLeft
+						: readerNode.scrollTop;
 			}
 		}
 
@@ -493,6 +498,7 @@
 				bind:readerWidth
 				bind:columnGap
 				bind:currentPage
+				bind:currentScroll
 				bind:totalPages
 				bind:pageSize
 				bind:lineHeight={$readerSettingsStore.lineHeight}

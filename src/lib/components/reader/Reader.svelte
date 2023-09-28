@@ -81,6 +81,9 @@
 		readerStateStore.set('sidebarOpen');
 	}
 
+	export let currentScroll: number;
+	$: currentScroll = writingMode === 'horizontal' ? readerNode?.scrollLeft : readerNode?.scrollTop;
+
 	let showRuler = false;
 
 	const dispatch = createEventDispatcher();
@@ -89,14 +92,22 @@
 		dispatch('pageresize');
 	}
 
+	function setScrollBasedOnWritingMode(newScroll: number) {
+		if (writingMode === 'horizontal') {
+			readerNode.scrollLeft = newScroll;
+			readerNode.scrollTop = 0;
+		} else {
+			readerNode.scrollLeft = 0;
+			readerNode.scrollTop = newScroll;
+		}
+	}
+
 	function nextPage() {
-		readerNode.scrollLeft += pageSize;
-		readerNode.scrollTop += pageSize;
+		setScrollBasedOnWritingMode(currentScroll + pageSize);
 	}
 
 	function prevPage() {
-		readerNode.scrollLeft -= pageSize;
-		readerNode.scrollTop -= pageSize;
+		setScrollBasedOnWritingMode(currentScroll - pageSize);
 	}
 
 	function nextPageSmoothHorizontal() {
@@ -190,15 +201,15 @@
 		await func();
 		await tick();
 		if (lastVisibleElement) {
-			readerNode.scrollLeft = getScrollAlignedToPageFloor(lastVisibleElement.offsetLeft, pageSize);
-			readerNode.scrollTop = getScrollAlignedToPageFloor(lastVisibleElement.offsetTop, pageSize);
+			const scrollToUse =
+				writingMode === 'horizontal' ? lastVisibleElement.offsetLeft : lastVisibleElement.offsetTop;
+			setScrollBasedOnWritingMode(getScrollAlignedToPageFloor(scrollToUse, pageSize));
 		}
 	}
 
 	async function onResize() {
 		await tick();
-		readerNode.scrollLeft = getScrollAlignedToPageFloor(readerNode.scrollLeft, pageSize);
-		readerNode.scrollTop = getScrollAlignedToPageFloor(readerNode.scrollTop, pageSize);
+		setScrollBasedOnWritingMode(getScrollAlignedToPageFloor(currentScroll, pageSize));
 		updateCurrentPage();
 		updateTotalPages();
 		dispatchResize();
@@ -232,8 +243,8 @@
 		const scrollLeft = elRect.left - readerNodeRect.left + readerNode.scrollLeft;
 		const scrollTop = elRect.top - readerNodeRect.top + readerNode.scrollTop;
 
-		readerNode.scrollLeft = getScrollAlignedToPageFloor(scrollLeft, pageSize);
-		readerNode.scrollTop = getScrollAlignedToPageFloor(scrollTop, pageSize);
+		const scrollToUse = writingMode === 'horizontal' ? scrollLeft : scrollTop;
+		setScrollBasedOnWritingMode(getScrollAlignedToPageFloor(scrollToUse, pageSize));
 
 		updateCurrentPage();
 		history.pushState(currentPage, '');
@@ -241,8 +252,7 @@
 	}
 
 	function updateScrollFromPageNumber(pageNumber: number) {
-		readerNode.scrollLeft = (pageNumber - 1) * pageSize;
-		readerNode.scrollTop = (pageNumber - 1) * pageSize;
+		setScrollBasedOnWritingMode((pageNumber - 1) * pageSize);
 	}
 
 	function onPopstate(e: PopStateEvent) {

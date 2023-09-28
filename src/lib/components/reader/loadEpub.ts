@@ -64,6 +64,7 @@ async function addEpubCssToHead(csses: Record<string, string>) {
 		newCss = newCss.replaceAll(/page-break-inside: *always;/g, 'break-inside: column;');
 		newCss = newCss.replaceAll(/page-break-after: *always;/g, 'break-after: column;');
 		newCss = newCss.replaceAll(/page-break-before: *always;/g, 'break-before: column;');
+		newCss = newCss.replaceAll(/overflow: *hidden;/g, '');
 
 		const styleNode = document.createElement('style');
 		styleNode.id = key;
