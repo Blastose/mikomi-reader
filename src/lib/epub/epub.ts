@@ -1,6 +1,5 @@
 // TypeScript port of https://github.com/danigm/epub-rs/
 
-import type { NavPoint } from '$lib/components/reader/toc/tocParser';
 import { BlobReader, ZipReader, type Entry, Uint8ArrayWriter, TextWriter } from '@zip.js/zip.js';
 
 class Archive {
@@ -42,17 +41,16 @@ class Archive {
 	}
 }
 
-type Resource = {
+export type Resource = {
 	path: string;
 	mime: string;
 };
 
-type Toc = { kind: 'Ncx' | 'Nav'; content: string; path: string };
+export type Toc = { kind: 'Ncx' | 'Nav'; content: string; path: string };
 
 export class Epub {
 	archive: Archive;
 	spine: Array<string>;
-	toc: Array<NavPoint>;
 	resources: Map<string, Resource>;
 	metadata: Map<string, Array<string>>;
 	rootFilePath: string;
@@ -64,7 +62,6 @@ export class Epub {
 	constructor(archive: Archive, rootFilePath: string, rootBasePath: string) {
 		this.archive = archive;
 		this.spine = [];
-		this.toc = [];
 		this.resources = new Map();
 		this.metadata = new Map();
 		this.rootFilePath = rootFilePath;
@@ -94,7 +91,7 @@ export class Epub {
 
 	async fillResources() {
 		const rootFile = await this.archive.getEntryAsString(this.rootFilePath);
-		if (!rootFile) throw new Error('TODO');
+		if (!rootFile) throw new Error('Invalid epub');
 
 		const parser = new DOMParser();
 		const root = parser.parseFromString(rootFile, 'application/xhtml+xml');
@@ -102,7 +99,7 @@ export class Epub {
 
 		// Manifest
 		const manifest = root.querySelector('manifest');
-		if (!manifest) throw new Error('TODO');
+		if (!manifest) throw new Error('Invalid epub');
 		const items = manifest.children;
 		for (const item of items) {
 			if (!this.coverId) {
@@ -118,20 +115,17 @@ export class Epub {
 
 		// Spine
 		const spine = root.querySelector('spine');
-		if (!spine) throw new Error('TODO');
+		if (!spine) throw new Error('Invalid epub');
 		const itemrefs = spine.children;
 		for (const itemref of itemrefs) {
 			const id = itemref.getAttribute('idref');
-			if (!id) throw new Error('TODO');
+			if (!id) throw new Error('Invalid epub');
 			this.spine.push(id);
 		}
 
-		// TODO
-		// toc.ncx
-
 		// Metadata
 		const metadata = root.querySelector('metadata');
-		if (!metadata) throw new Error('TODO');
+		if (!metadata) throw new Error('Invalid epub');
 		const metadataChildren = metadata.children;
 		for (const item of metadataChildren) {
 			if (item.localName === 'meta') {
@@ -166,7 +160,7 @@ export class Epub {
 		const id = element.getAttribute('id');
 		const href = element.getAttribute('href');
 		const mediaType = element.getAttribute('media-type');
-		if (!id || !href || !mediaType) throw new Error('TODO');
+		if (!id || !href || !mediaType) throw new Error('Invalid epub');
 
 		this.resources.set(id, {
 			path: this.joinBasePath(href),
@@ -389,33 +383,13 @@ export class Epub {
 	async getEpub() {
 		const html_full: { id: string; htmlContent: string }[] = [];
 		const csses = await this.getCss();
-		// TODO fix width/height
 		const imgs = await this.getImages();
 
 		for (;;) {
 			const currentPath = this.getCurrentPath();
-			if (!currentPath) throw new Error('TODO');
+			if (!currentPath) throw new Error('Invalid epub');
 			const currentWithEpubUris = await this.getCurrentWithEpubUris();
-			if (!currentWithEpubUris) throw new Error('TODO');
-			// const parser = new DOMParser();
-			// const doc = parser.parseFromString(currentWithEpubUris, 'application/xhtml+xml');
-
-			// const imgs = doc.querySelectorAll('img');
-			// for (const img of imgs) {
-			// 	if (img.src) {
-			// 		img.value;
-			// 	}
-			// }
-
-			// const links = doc.querySelectorAll('link');
-			// for (const link of links) {
-			// 	if (link.rel && link.type === 'text/css' && link.href) {
-			// 		const hrefWithoutPrefix = stripPrefix(link.href, 'epub://');
-			// 		const css = await this.getResourceStrByPath(hrefWithoutPrefix);
-			// 		if (!css) continue;
-			// 		csses.set(link.href, css);
-			// 	}
-			// }
+			if (!currentWithEpubUris) throw new Error('Invalid epub');
 
 			html_full.push({
 				id: currentPath,

@@ -55,8 +55,8 @@
 		const newUrl = `/reader/${id}`;
 		new WebviewWindow(id, {
 			url: newUrl,
-			height: 1070,
-			width: 720,
+			height: data.book.settings?.height ?? 860,
+			width: data.book.settings?.height ?? 512,
 			title: `${data.book.title} - Mikomi Reader`
 		});
 	}

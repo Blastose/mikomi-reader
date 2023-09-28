@@ -3,7 +3,7 @@ import prefixer from 'postcss-prefix-selector';
 import { parseNavToc, parseNcxToc } from '$lib/components/reader/toc/tocParser';
 import { Epub } from '$lib/epub/epub';
 import { convertFileSrc } from '@tauri-apps/api/tauri';
-import type { Toc } from '$lib/bindings';
+import type { Toc } from '$lib/epub/epub';
 
 async function prefixCss(css: string) {
 	const prefed = postcss()

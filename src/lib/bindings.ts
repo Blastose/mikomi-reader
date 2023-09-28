@@ -78,19 +78,10 @@ export function updateReaderTheme(id: string, name: string) {
     return invoke()<null>("update_reader_theme", { id,name })
 }
 
-export function getEpub(path: string) {
-    return invoke()<EpubData>("get_epub", { path })
-}
-
-export type ImageData = { data: number[]; width: number; height: number }
 export type BookWithAuthorsAndCover = ({ id: string; title: string; path: string }) & { authors: Author[]; cover: string | null }
 export type BookWithAuthorsAndCoverAndBookmarksAndHighlightsAndSettings = ({ id: string; title: string; path: string }) & { authors: Author[]; bookmarks: Bookmark[]; highlights: Highlight[]; cover: string | null; settings: BookSettings | null }
-export type HtmlData = { id: string; html_content: string }
-export type EpubData = { html: HtmlData[]; img: { [key: string]: ImageData }; css: { [key: string]: string }; toc: Toc | null }
 export type Book = { id: string; title: string; path: string }
-export type Toc = { kind: TocKind; content: string; path: string }
 export type Highlight = { id: string; book_id: string; date_added: number; note: string; start_container: string; start_offset: number; end_container: string; end_offset: number; color: string }
-export type TocKind = "Ncx" | "Nav"
 export type ReaderTheme = { id: string; name: string; background_color: string; color: string; link_color: string; image_blend_mode: string }
 export type Author = { id: string; name: string }
 export type BookSettings = { id: string; book_id: string; width: number | null; height: number | null; percentage: number | null; last_element: string | null; font_size: number; line_height: string; margins: number; text_align: string; column_count: number; writing_mode: string; font_family: string; background_color: string; color: string; link_color: string; image_blend_mode: string }
