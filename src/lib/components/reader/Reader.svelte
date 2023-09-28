@@ -18,6 +18,7 @@
 	import { searchModalOpenStore } from './search/search';
 	import type { EnglishFont, LineHeight, TextAlign } from './settings/settings';
 	import Slider from '$lib/components/reader/slider/Slider.svelte';
+	import Slider2 from '$lib/components/reader/slider/Slider2.svelte';
 	import type { NavPoint } from './toc/tocParser';
 
 	export let html: string;
@@ -325,6 +326,18 @@
 
 <div>
 	<div>
+		{#if totalPages}
+			{#key totalPages}
+				<Slider2
+					min={1}
+					max={totalPages}
+					bind:currentPage
+					onChange={(page) => {
+						updateScrollFromPageNumber(page);
+					}}
+				/>
+			{/key}
+		{/if}
 		{#if totalPages}
 			{#key totalPages}
 				<Slider

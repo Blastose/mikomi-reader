@@ -2,7 +2,6 @@
 	import { createSlider, melt, type CreateSliderProps } from '@melt-ui/svelte';
 	import { writable } from 'svelte/store';
 	import { readerThemeStore } from '$lib/components/reader/stores/readerSettingsStore';
-	import Slider2 from './Slider2.svelte';
 
 	export let min: number;
 	export let max: number;
@@ -23,8 +22,6 @@
 		value: currentPageStore
 	});
 </script>
-
-<Slider2 {min} {max} bind:currentPage />
 
 <span use:melt={$root} class="relative flex h-[40px] w-full items-center">
 	<span class="block h-[4px] w-full bg-black/40">
