@@ -24,7 +24,7 @@
 	});
 </script>
 
-<Slider2 {min} {max} {currentPage} />
+<Slider2 {min} {max} bind:currentPage />
 
 <span use:melt={$root} class="relative flex h-[40px] w-full items-center">
 	<span class="block h-[4px] w-full bg-black/40">
