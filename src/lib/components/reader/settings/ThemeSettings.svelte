@@ -23,6 +23,7 @@
 	});
 
 	async function addCurrentThemeToReaderThemes() {
+		addToast({ data: { title: 'Added theme', color: '', description: '' } });
 		const id = crypto.randomUUID();
 		await addReaderTheme({
 			background_color: $readerThemeStore.backgroundColor,
@@ -30,7 +31,8 @@
 			id,
 			image_blend_mode: $readerThemeStore.imageMixBlendMode,
 			link_color: $readerThemeStore.linkColor,
-			name: 'Custom theme'
+			name: 'Custom theme',
+			primary_color: $readerThemeStore.primaryColor
 		});
 
 		savedReaderThemes.update((themes) => {
@@ -56,7 +58,8 @@
 				id: deletedTheme.id,
 				image_blend_mode: deletedTheme.imageMixBlendMode,
 				link_color: deletedTheme.linkColor,
-				name: deletedTheme.name
+				name: deletedTheme.name,
+				primary_color: deletedTheme.primaryColor
 			});
 
 			savedReaderThemes.update((themes) => {
@@ -88,6 +91,10 @@
 		<div>
 			<ColorPicker label="Link color" bind:color={$readerThemeStore.linkColor} />
 			<span class="text-sm">{$readerThemeStore.linkColor}</span>
+		</div>
+		<div>
+			<ColorPicker label="Primary color" bind:color={$readerThemeStore.primaryColor} />
+			<span class="text-sm">{$readerThemeStore.primaryColor}</span>
 		</div>
 
 		{#key $readerThemeStore}

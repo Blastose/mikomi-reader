@@ -25,7 +25,7 @@
 </script>
 
 <div
-	class="fixed top-0 right-0 z-50 flex flex-col items-end gap-2 m-4 md:bottom-0 md:top-auto"
+	class="fixed top-0 right-0 z-[51] flex flex-col items-end gap-2 m-4 md:bottom-0 md:top-auto"
 	use:portal
 >
 	{#each $toasts as toast (toast.id)}

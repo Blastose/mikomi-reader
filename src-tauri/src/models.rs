@@ -113,6 +113,7 @@ pub struct BookSettings {
     pub background_color: String,
     pub color: String,
     pub link_color: String,
+    pub primary_color: String,
     pub image_blend_mode: String,
 }
 
@@ -136,6 +137,7 @@ pub struct ReaderTheme {
     pub background_color: String,
     pub color: String,
     pub link_color: String,
+    pub primary_color: String,
     pub image_blend_mode: String,
 }
 

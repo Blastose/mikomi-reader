@@ -417,6 +417,7 @@
 		document.body.style.setProperty('--color', $readerThemeStore.color);
 		document.body.style.setProperty('--link-color', $readerThemeStore.linkColor);
 		document.body.style.setProperty('--mix-blend-mode', $readerThemeStore.imageMixBlendMode);
+		document.body.style.setProperty('--primary-color', $readerThemeStore.primaryColor);
 	}
 </script>
 
@@ -474,7 +475,7 @@
 						aria-label="Bookmark page"
 					>
 						{#if currentPageBookmarks.length > 0}
-							<IconBookmarkFilled class="text-pink-500" />
+							<IconBookmarkFilled class="primary-color-fill" />
 							{#if currentPageBookmarks.length > 1}
 								<span class="absolute top-2 left-5 text-sm text-black"
 									>{currentPageBookmarks.length}</span
@@ -545,5 +546,9 @@
 		overflow: hidden;
 		background-color: var(--background-color);
 		color: var(--color);
+	}
+
+	button > :global(svg.primary-color-fill) {
+		color: var(--primary-color);
 	}
 </style>

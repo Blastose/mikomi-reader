@@ -34,6 +34,7 @@ export const load = (async ({ params }) => {
 			imageMixBlendMode: theme.image_blend_mode as MixBlendMode,
 			linkColor: theme.link_color,
 			name: theme.name,
+			primaryColor: theme.primary_color,
 			id: theme.id
 		} satisfies ReaderThemeSettings & { id: string };
 	});
@@ -55,7 +56,8 @@ export const load = (async ({ params }) => {
 			backgroundColor: book.settings.background_color,
 			color: book.settings.color,
 			linkColor: book.settings.link_color,
-			imageMixBlendMode: book.settings.image_blend_mode as MixBlendMode
+			imageMixBlendMode: book.settings.image_blend_mode as MixBlendMode,
+			primaryColor: book.settings.primary_color
 		});
 	} else {
 		const defaultSettings = {
@@ -81,8 +83,9 @@ export const load = (async ({ params }) => {
 				backgroundColor: '#ffffff',
 				color: '#333333',
 				linkColor: '#007acc',
-				imageMixBlendMode: 'normal'
-			} as ReaderThemeSettings;
+				imageMixBlendMode: 'normal',
+				primaryColor: '#e91e63'
+			} satisfies ReaderThemeSettings;
 			readerThemeStore.set(defaultTheme);
 		}
 		await addBookSettingsFromSettingsAndTheme(params.id, 860, 512, defaultSettings, defaultTheme);

@@ -16,6 +16,7 @@ CREATE TABLE book_settings (
     background_color TEXT NOT NULL,
     color TEXT NOT NULL,
     link_color TEXT NOT NULL,
+    primary_color TEXT NOT NULL,
     image_blend_mode TEXT NOT NULL,
     FOREIGN KEY (book_id) REFERENCES book(id)
 );
@@ -26,5 +27,6 @@ CREATE TABLE reader_theme (
     background_color TEXT NOT NULL,
     color TEXT NOT NULL,
     link_color TEXT NOT NULL,
-    image_blend_mode TEXT NOT NULL
+    image_blend_mode TEXT NOT NULL,
+    primary_color TEXT NOT NULL
 );

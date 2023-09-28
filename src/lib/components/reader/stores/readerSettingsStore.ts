@@ -32,6 +32,7 @@ export type ReaderThemeSettings = {
 	color: string;
 	linkColor: string;
 	imageMixBlendMode: MixBlendMode;
+	primaryColor: string;
 };
 
 export const readerThemeStore = writable<ReaderThemeSettings>();
@@ -42,49 +43,48 @@ export const presetReaderThemes: ReaderThemeSettings[] = [
 		backgroundColor: '#ffffff',
 		color: '#333333',
 		linkColor: '#007acc',
-		imageMixBlendMode: 'normal'
+		imageMixBlendMode: 'normal',
+		primaryColor: '#4181e3'
 	},
 	{
 		name: 'Dark',
-		backgroundColor: '#121212',
-		color: '#d3d3d3',
-		linkColor: '#4ca6ff',
-		imageMixBlendMode: 'normal'
-	},
-	{
-		name: 'Dark 2',
 		backgroundColor: '#202124',
 		color: '#f8f9fa',
 		linkColor: '#4ca6ff',
-		imageMixBlendMode: 'normal'
+		imageMixBlendMode: 'normal',
+		primaryColor: '#6c73d5'
 	},
 	{
 		name: 'Dark contrast',
 		backgroundColor: '#121212',
 		color: '#ffffff',
 		linkColor: '#4ca6ff',
-		imageMixBlendMode: 'normal'
+		imageMixBlendMode: 'normal',
+		primaryColor: '#6c73d5'
 	},
 	{
 		name: 'Sepia',
 		backgroundColor: '#fbf0d9',
 		color: '#5f4b32',
 		linkColor: '#9b674c',
-		imageMixBlendMode: 'multiply'
+		imageMixBlendMode: 'multiply',
+		primaryColor: '#b77d7d'
 	},
 	{
 		name: 'Sepia contrast',
 		backgroundColor: '#fbf0d9',
 		color: '#000000',
 		linkColor: '#9b674c',
-		imageMixBlendMode: 'multiply'
+		imageMixBlendMode: 'multiply',
+		primaryColor: '#b77d7d'
 	},
 	{
 		name: 'Green',
 		backgroundColor: '#c5e7ce',
 		color: '#3a4a43',
 		linkColor: '#19568f',
-		imageMixBlendMode: 'normal'
+		imageMixBlendMode: 'normal',
+		primaryColor: '#7880a9'
 	}
 ];
 
@@ -111,6 +111,7 @@ export async function addBookSettingsFromSettingsAndTheme(
 		image_blend_mode: theme.imageMixBlendMode,
 		line_height: String(settings.lineHeight),
 		link_color: theme.linkColor,
+		primary_color: theme.primaryColor,
 		margins: settings.margins,
 		text_align: settings.textAlign,
 		width,

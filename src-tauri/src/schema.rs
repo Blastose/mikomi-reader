@@ -41,6 +41,7 @@ diesel::table! {
         background_color -> Text,
         color -> Text,
         link_color -> Text,
+        primary_color -> Text,
         image_blend_mode -> Text,
     }
 }
@@ -77,6 +78,7 @@ diesel::table! {
         color -> Text,
         link_color -> Text,
         image_blend_mode -> Text,
+        primary_color -> Text,
     }
 }
 
