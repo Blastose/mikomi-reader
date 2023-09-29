@@ -2,10 +2,14 @@
 	import { readerThemeStore } from '$lib/components/reader/stores/readerSettingsStore';
 	import { readerSettingsStore } from '$lib/components/reader/stores/readerSettingsStore';
 	import { fade } from 'svelte/transition';
+	import type { NavPoint } from '$lib/components/reader/toc/tocParser';
+	import { getTocChapterFromPage } from '$lib/components/reader/utils';
+	import { tick } from 'svelte';
 
 	export let max: number;
 	export let currentPage: number;
 	export let onChange: (page: number) => void;
+	export let tocData: NavPoint[];
 
 	$: orientation = $readerSettingsStore.writingMode;
 	$: left = ((currentPage - 1) / (max - 1)) * 100;
@@ -17,7 +21,10 @@
 	let track: HTMLSpanElement;
 	let showTooltip = false;
 	let hoveredPage = currentPage;
+	let hoveredChapter = '';
+	let tooltip: HTMLSpanElement;
 	let tooltipLeft: number;
+	let tooltipTriangleLeft: number;
 	let mousePressed = false;
 	let thumb: HTMLSpanElement;
 	$: cursor = mousePressed ? 'grabbing' : 'grab';
@@ -89,25 +96,43 @@
 
 <div class="relative">
 	{#if showTooltip}
-		<span
-			transition:fade
-			style:left="{tooltipLeft}%"
-			class="tooltip select-none pointer-events-none absolute shadow-md w-12 bottom-10 text-center translate-x-[-50%] bg-gray-200 p-2 rounded-md"
-		>
-			{hoveredPage}
-		</span>
+		<div transition:fade>
+			<span
+				bind:this={tooltip}
+				style:left="{tooltipLeft}px"
+				class="dialog-theme text-sm whitespace-nowrap select-none pointer-events-none absolute shadow-md bottom-10 text-center py-2 px-4 rounded-md"
+			>
+				{hoveredChapter} - page {hoveredPage}
+			</span>
+			<span
+				style:left="{tooltipTriangleLeft}px"
+				class="tooltip-triangle translate-x-[-50%] select-none pointer-events-none absolute bottom-8"
+			/>
+		</div>
 	{/if}
 	<span
 		bind:this={track}
 		on:pointerleave={() => {
 			showTooltip = false;
 		}}
-		on:pointermove={(e) => {
-			const rect = track.getBoundingClientRect();
+		on:pointermove={async (e) => {
+			const rectTrack = track.getBoundingClientRect();
 			showTooltip = true;
-			const percentage = (e.clientX - rect.left) / track.offsetWidth;
-			tooltipLeft = percentage * 100;
+			await tick();
+			const percentage = (e.clientX - rectTrack.left) / track.offsetWidth;
+			tooltipTriangleLeft = percentage * track.offsetWidth;
+			console.log(percentage);
+			tooltipLeft = e.clientX - rectTrack.left - tooltip.offsetWidth / 2;
+			await tick();
+			const rectTooltip = tooltip.getBoundingClientRect();
+			if (rectTooltip.x < 0) {
+				tooltipLeft = -rectTrack.left;
+			} else if (rectTooltip.x + rectTooltip.width > window.innerWidth) {
+				tooltipLeft = window.innerWidth - rectTooltip.width - rectTrack.left;
+			}
+
 			hoveredPage = getPageFromSection(percentage);
+			hoveredChapter = getTocChapterFromPage(hoveredPage, tocData, 'TODO');
 		}}
 		style:--cursor={cursor}
 		class="{mousePressed ? 'hover:cursor-[var(--cursor)]' : ''} 
@@ -139,15 +164,11 @@
 		background-color: var(--primary-color);
 	}
 
-	.tooltip::after {
-		content: '';
-		position: absolute;
-		top: 100%;
-		left: 50%;
-
-		margin-left: -10px;
-		border-width: 10px;
-		border-style: solid;
-		border-color: rgb(229 231 235) transparent transparent transparent;
+	.tooltip-triangle {
+		width: 0;
+		height: 0;
+		border-left: 20px solid transparent;
+		border-right: 20px solid transparent;
+		border-top: 20px solid rgb(32, 32, 34);
 	}
 </style>

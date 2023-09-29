@@ -330,6 +330,7 @@
 			{#key totalPages}
 				<Slider2
 					max={totalPages}
+					{tocData}
 					bind:currentPage
 					onChange={(page) => {
 						updateScrollFromPageNumber(page);
