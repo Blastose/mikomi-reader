@@ -329,25 +329,10 @@
 		{#if totalPages}
 			{#key totalPages}
 				<Slider2
-					min={1}
 					max={totalPages}
 					bind:currentPage
 					onChange={(page) => {
 						updateScrollFromPageNumber(page);
-					}}
-				/>
-			{/key}
-		{/if}
-		{#if totalPages}
-			{#key totalPages}
-				<Slider
-					min={1}
-					max={totalPages}
-					{currentPage}
-					onValueChange={({ curr: _, next }) => {
-						currentPage = next[0];
-						updateScrollFromPageNumber(currentPage);
-						return next;
 					}}
 				/>
 			{/key}

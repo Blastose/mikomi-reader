@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { readerThemeStore } from '$lib/components/reader/stores/readerSettingsStore';
 	import { readerSettingsStore } from '$lib/components/reader/stores/readerSettingsStore';
+	import { fade } from 'svelte/transition';
 
-	export let min: number;
 	export let max: number;
 	export let currentPage: number;
 	export let onChange: (page: number) => void;
@@ -14,30 +14,30 @@
 	$: progressTrackLeft = orientation === 'horizontal' ? 0 : 100 - left;
 	$: progressTrackRight = orientation === 'horizontal' ? 100 - left : 0;
 
-	function a(node: HTMLSpanElement) {}
-
 	let track: HTMLSpanElement;
-
-	let showTooltip = true;
+	let showTooltip = false;
 	let hoveredPage = currentPage;
 	let tooltipLeft: number;
+	let mousePressed = false;
+	let thumb: HTMLSpanElement;
+	$: cursor = mousePressed ? 'grabbing' : 'grab';
 
-	let arrayA: { start: number; end: number; page: number; inversePage: number }[] = [];
+	let pageSections: { start: number; end: number; page: number; inversePage: number }[] = [];
 	let numSections = max - 1;
 	let sectionWidth = 1 / numSections;
 	for (let i = 0; i < numSections + 1; i++) {
-		const start = i * sectionWidth - sectionWidth / 2;
-		arrayA.push({
-			start: start,
-			end: start + sectionWidth,
+		const start = i === 0 ? -Infinity : i * sectionWidth - sectionWidth / 2;
+		const end = i === numSections ? Infinity : i === 0 ? 0 + sectionWidth : start + sectionWidth;
+		pageSections.push({
+			start,
+			end,
 			page: i + 1,
 			inversePage: numSections + 1 - i
 		});
 	}
-	console.log(arrayA);
 
 	function getPageFromSection(percentage: number) {
-		for (const a of arrayA) {
+		for (const a of pageSections) {
 			if (percentage >= a.start && percentage <= a.end) {
 				if (orientation === 'horizontal') {
 					return a.page;
@@ -49,66 +49,90 @@
 		return -1;
 	}
 
-	let mousePressed = false;
+	function pointerDown(e: PointerEvent) {
+		if (e.button !== 0) return;
+		const target = e.target as HTMLElement;
+		if (!track.contains(target)) return;
+
+		e.preventDefault();
+		mousePressed = true;
+		thumb.focus();
+		const rect = track.getBoundingClientRect();
+		const relPosX = e.clientX - rect.left;
+		const percentage = relPosX / track.offsetWidth;
+		currentPage = getPageFromSection(percentage);
+		onChange(currentPage);
+	}
+
+	function pointerUp() {
+		mousePressed = false;
+	}
+
+	function pointerMove(e: PointerEvent) {
+		if (!mousePressed) return;
+
+		const rect = track.getBoundingClientRect();
+		const relPosX = e.clientX - rect.left;
+		thumb.focus();
+		const percentage = relPosX / track.offsetWidth;
+		currentPage = getPageFromSection(percentage);
+		onChange(currentPage);
+	}
 </script>
 
-<!-- svelte-ignore a11y-no-static-element-interactions -->
-<!-- svelte-ignore a11y-mouse-events-have-key-events -->
-<span
-	bind:this={track}
-	on:mouseout={(e) => {
-		showTooltip = false;
-	}}
-	on:mousedown={(e) => {
-		mousePressed = true;
-		const percentage = e.offsetX / track.offsetWidth;
-		tooltipLeft = percentage * 100;
+<svelte:document
+	on:pointerdown={pointerDown}
+	on:pointerup={pointerUp}
+	on:pointermove={pointerMove}
+	on:pointerleave={pointerUp}
+/>
 
-		hoveredPage = getPageFromSection(percentage);
-
-		currentPage = hoveredPage;
-		onChange(currentPage);
-	}}
-	on:mouseup={() => {
-		mousePressed = false;
-	}}
-	on:mousemove={(e) => {
-		showTooltip = true;
-		const percentage = e.offsetX / track.offsetWidth;
-		tooltipLeft = percentage * 100;
-
-		hoveredPage = getPageFromSection(percentage);
-
-		if (!mousePressed) return;
-		currentPage = hoveredPage;
-		onChange(currentPage);
-	}}
-	class="relative flex h-[40px] w-full items-center"
->
+<div class="relative">
 	{#if showTooltip}
 		<span
+			transition:fade
 			style:left="{tooltipLeft}%"
-			class="tooltip absolute shadow-md w-12 text-center translate-x-[-50%] bottom-10 bg-gray-200 p-2 rounded-md"
+			class="tooltip select-none pointer-events-none absolute shadow-md w-12 bottom-10 text-center translate-x-[-50%] bg-gray-200 p-2 rounded-md"
 		>
 			{hoveredPage}
 		</span>
 	{/if}
-	<span class="block h-[4px] w-full bg-black/40">
+	<span
+		bind:this={track}
+		on:pointerleave={() => {
+			showTooltip = false;
+		}}
+		on:pointermove={(e) => {
+			const rect = track.getBoundingClientRect();
+			showTooltip = true;
+			const percentage = (e.clientX - rect.left) / track.offsetWidth;
+			tooltipLeft = percentage * 100;
+			hoveredPage = getPageFromSection(percentage);
+		}}
+		style:--cursor={cursor}
+		class="{mousePressed ? 'hover:cursor-[var(--cursor)]' : ''} 
+		relative flex h-[40px] w-full items-center select-none"
+	>
+		<span class="block h-[4px] w-full bg-black/40">
+			<span
+				style:position="absolute"
+				style:right="{progressTrackRight}%"
+				style:left="{progressTrackLeft}%"
+				class="h-[4px] primary-bg-color"
+			/>
+		</span>
+		<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
 		<span
+			tabindex="0"
+			bind:this={thumb}
+			style:--primary-color-outline={`${$readerThemeStore.primaryColor}66`}
 			style:position="absolute"
-			style:right="{progressTrackRight}%"
-			style:left="{progressTrackLeft}%"
-			class="h-[4px] primary-bg-color"
+			style:translate="-50%"
+			style:left="{thumbLeft}%"
+			class="hover:cursor-[var(--cursor)] block h-4 w-4 rounded-full primary-bg-color focus:outline-none focus:ring-4 focus:ring-[var(--primary-color-outline)]"
 		/>
 	</span>
-	<span
-		style:--primary-color-outline={`${$readerThemeStore.primaryColor}66`}
-		style:position="absolute"
-		style:translate="-50%"
-		style:left="{thumbLeft}%"
-		class="pointer-events-none block h-4 w-4 rounded-full primary-bg-color focus:outline-none focus:ring-4 focus:ring-[var(--primary-color-outline)]"
-	/>
-</span>
+</div>
 
 <style>
 	.primary-bg-color {
