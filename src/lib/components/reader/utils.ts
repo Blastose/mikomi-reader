@@ -277,7 +277,7 @@ export function getTocChapterFromPage(
 	previousChapter: string
 ): string {
 	for (const toc of flatTocData) {
-		if (!toc.page) return 'TODO';
+		if (!toc.page) return 'Unknown';
 
 		if (page < toc.page) {
 			return previousChapter;

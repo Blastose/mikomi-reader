@@ -132,7 +132,7 @@
 			}
 
 			hoveredPage = getPageFromSection(percentage);
-			hoveredChapter = getTocChapterFromPage(hoveredPage, $flatTocStore, 'TODO');
+			hoveredChapter = getTocChapterFromPage(hoveredPage, $flatTocStore, $flatTocStore[0].label);
 		}}
 		style:--cursor={cursor}
 		class="{mousePressed ? 'hover:cursor-[var(--cursor)]' : ''} 
