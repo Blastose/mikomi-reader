@@ -280,6 +280,10 @@
 	function onSidebarItemClickWithPage(page: number) {
 		goToPage(readerNode, page, pageSize);
 		currentPage = page;
+		currentScroll =
+			$readerSettingsStore.writingMode === 'horizontal'
+				? readerNode.scrollLeft
+				: readerNode.scrollTop;
 		drawerOpen.set(false);
 	}
 

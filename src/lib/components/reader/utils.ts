@@ -145,8 +145,10 @@ export function getScrollAlignedToPageCeil(scroll: number, pageSize: number) {
 }
 
 export function goToPage(node: HTMLElement, page: number, pageSize: number) {
-	node.scrollLeft = (page - 1) * pageSize;
-	node.scrollTop = (page - 1) * pageSize;
+	const newScroll = (page - 1) * pageSize;
+	node.scrollLeft = newScroll;
+	node.scrollTop = newScroll;
+	return newScroll;
 }
 
 export function createSelectorFromEpubUri(uri: string): string {
