@@ -85,7 +85,6 @@ export class Epub {
 
 		const epub = new Epub(archive, rootFilePath, rootBasePath);
 		await epub.fillResources();
-		console.log(epub);
 		return epub;
 	}
 
