@@ -68,6 +68,7 @@
 		const percentage = relPosX / track.offsetWidth;
 		currentPage = getPageFromSection(percentage);
 		onChange(currentPage);
+		history.pushState(currentPage, '');
 	}
 
 	function pointerUp() {
