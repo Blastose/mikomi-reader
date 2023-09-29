@@ -12,13 +12,13 @@
 	import SideButtons from './SideButtons.svelte';
 	import Ruler from './Ruler.svelte';
 	import { createEventDispatcher } from 'svelte';
-	import type { Writable } from 'svelte/store';
+	import { writable, type Writable } from 'svelte/store';
 	import { readerStateStore } from './stores/readerStateStore';
 	import Overlayer from '$lib/components/overlayer/Overlayer.svelte';
 	import { searchModalOpenStore } from './search/search';
 	import type { EnglishFont, LineHeight, TextAlign } from './settings/settings';
 	import Slider from '$lib/components/reader/slider/Slider.svelte';
-	import type { NavPoint } from './toc/tocParser';
+	import ImageDialog from '$lib/components/reader/image-dialog/ImageDialog.svelte';
 
 	export let html: string;
 	export let drawerOpen: Writable<boolean>;
@@ -84,6 +84,7 @@
 	$: currentScroll = writingMode === 'horizontal' ? readerNode?.scrollLeft : readerNode?.scrollTop;
 
 	let showRuler = false;
+	let showImage: string | null = null;
 
 	const dispatch = createEventDispatcher();
 
@@ -224,11 +225,12 @@
 			e.preventDefault();
 			if (!a.href.startsWith('epub://')) return;
 			onAnchorClick(a);
-		} else if (target?.tagName === 'IMG') {
+		} else if (target?.tagName === 'IMG' || target?.tagName.toUpperCase() === 'IMAGE') {
+			if (!e.altKey) return;
 			e.preventDefault();
 			const imgNode = target as HTMLImageElement;
-			console.log('Open in viewer');
-			console.log(imgNode.src);
+			showImage = imgNode.src ?? imgNode.getAttribute('xlink:href');
+			showImageStore.set(true);
 		}
 	}
 
@@ -263,6 +265,8 @@
 	}
 
 	$: history.replaceState({ page: currentPage }, '');
+
+	const showImageStore = writable(false);
 </script>
 
 <svelte:window
@@ -276,6 +280,8 @@
 {#if showRuler}
 	<Ruler />
 {/if}
+
+<ImageDialog {showImageStore} src={showImage} />
 
 <SideButtons
 	orientation={writingMode}

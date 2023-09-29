@@ -121,7 +121,6 @@
 			await tick();
 			const percentage = (e.clientX - rectTrack.left) / track.offsetWidth;
 			tooltipTriangleLeft = percentage * track.offsetWidth;
-			console.log(percentage);
 			tooltipLeft = e.clientX - rectTrack.left - tooltip.offsetWidth / 2;
 			await tick();
 			const rectTooltip = tooltip.getBoundingClientRect();

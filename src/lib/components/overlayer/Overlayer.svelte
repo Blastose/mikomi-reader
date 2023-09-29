@@ -90,12 +90,10 @@
 	function onHighlightButtonClick(e: MouseEvent) {
 		const target = e.target as HTMLElement;
 		const buttonNode = target.closest('button');
-		console.log(buttonNode);
 		if (!buttonNode) return;
 
 		const color = buttonNode.dataset.color as string;
 		const range = window.getSelection()?.getRangeAt(0);
-		console.log(range);
 		if (!range) return;
 
 		const readerNodeRect = readerNode.getBoundingClientRect();
@@ -132,7 +130,6 @@
 			});
 			return highlights;
 		});
-		console.log(get(highlightsStore));
 
 		addHighlight({
 			id: newHighlightId,
