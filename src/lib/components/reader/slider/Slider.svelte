@@ -2,14 +2,13 @@
 	import { readerThemeStore } from '$lib/components/reader/stores/readerSettingsStore';
 	import { readerSettingsStore } from '$lib/components/reader/stores/readerSettingsStore';
 	import { fade } from 'svelte/transition';
-	import type { NavPoint } from '$lib/components/reader/toc/tocParser';
 	import { getTocChapterFromPage } from '$lib/components/reader/utils';
 	import { tick } from 'svelte';
+	import { flatTocStore } from '../stores/tocStore';
 
 	export let max: number;
 	export let currentPage: number;
 	export let onChange: (page: number) => void;
-	export let tocData: NavPoint[];
 
 	$: orientation = $readerSettingsStore.writingMode;
 	$: left = ((currentPage - 1) / (max - 1)) * 100;
@@ -132,7 +131,7 @@
 			}
 
 			hoveredPage = getPageFromSection(percentage);
-			hoveredChapter = getTocChapterFromPage(hoveredPage, tocData, 'TODO');
+			hoveredChapter = getTocChapterFromPage(hoveredPage, $flatTocStore, 'TODO');
 		}}
 		style:--cursor={cursor}
 		class="{mousePressed ? 'hover:cursor-[var(--cursor)]' : ''} 

@@ -257,7 +257,7 @@ export function calculateBookmarkChapterPositions(bookmarks: Bookmark[], tocData
 	}
 }
 
-function flattenTocData(tocData: NavPoint[]) {
+export function flattenTocData(tocData: NavPoint[]) {
 	const sum: NavPoint[] = [];
 	function flattenTocDataNested(tocData: NavPoint[]) {
 		for (const toc of tocData) {
@@ -273,12 +273,10 @@ function flattenTocData(tocData: NavPoint[]) {
 
 export function getTocChapterFromPage(
 	page: number,
-	tocData: NavPoint[],
+	flatTocData: NavPoint[],
 	previousChapter: string
 ): string {
-	// TODO Watch for performance issues, since it will flatten each time the function is called
-	const newR = flattenTocData(tocData);
-	for (const toc of newR) {
+	for (const toc of flatTocData) {
 		if (!toc.page) return 'TODO';
 
 		if (page < toc.page) {

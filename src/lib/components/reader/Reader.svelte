@@ -22,7 +22,6 @@
 
 	export let html: string;
 	export let drawerOpen: Writable<boolean>;
-	export let tocData: NavPoint[];
 
 	// Settings
 	export let columnCount: number = 1;
@@ -290,14 +289,7 @@
 	}}
 />
 
-<Overlayer
-	bind:overlayContainer
-	{tocData}
-	{readerNode}
-	{currentPage}
-	{pageSize}
-	orientation={writingMode}
-/>
+<Overlayer bind:overlayContainer {readerNode} {currentPage} {pageSize} orientation={writingMode} />
 
 <div
 	style="--column-gap: {columnGap}px;
@@ -329,7 +321,6 @@
 			{#key totalPages}
 				<Slider
 					max={totalPages}
-					{tocData}
 					bind:currentPage
 					onChange={(page) => {
 						updateScrollFromPageNumber(page);
