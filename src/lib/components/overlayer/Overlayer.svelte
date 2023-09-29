@@ -29,12 +29,12 @@
 		searchStateStore
 	} from '$lib/components/reader/search/search';
 	import type { NavPoint } from '$lib/components/reader/toc/tocParser';
+	import { flatTocStore } from '$lib/components/reader/stores/tocStore';
 
 	export let currentPage: number;
 	export let pageSize: number;
 	export let readerNode: HTMLDivElement;
 	export let orientation: Orientation;
-	export let tocData: NavPoint[];
 
 	$: book_id = $page.params.id;
 
@@ -123,7 +123,7 @@
 				id: newHighlightId,
 				dateAdded: dateAdded,
 				page,
-				chapter: getTocChapterFromPage(page, tocData, tocData[0].label),
+				chapter: getTocChapterFromPage(page, $flatTocStore, $flatTocStore[0].label),
 				displayText: range.toString(),
 				note: '',
 				range,

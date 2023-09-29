@@ -145,8 +145,10 @@ export function getScrollAlignedToPageCeil(scroll: number, pageSize: number) {
 }
 
 export function goToPage(node: HTMLElement, page: number, pageSize: number) {
-	node.scrollLeft = (page - 1) * pageSize;
-	node.scrollTop = (page - 1) * pageSize;
+	const newScroll = (page - 1) * pageSize;
+	node.scrollLeft = newScroll;
+	node.scrollTop = newScroll;
+	return newScroll;
 }
 
 export function createSelectorFromEpubUri(uri: string): string {
@@ -255,7 +257,7 @@ export function calculateBookmarkChapterPositions(bookmarks: Bookmark[], tocData
 	}
 }
 
-function flattenTocData(tocData: NavPoint[]) {
+export function flattenTocData(tocData: NavPoint[]) {
 	const sum: NavPoint[] = [];
 	function flattenTocDataNested(tocData: NavPoint[]) {
 		for (const toc of tocData) {
@@ -271,13 +273,11 @@ function flattenTocData(tocData: NavPoint[]) {
 
 export function getTocChapterFromPage(
 	page: number,
-	tocData: NavPoint[],
+	flatTocData: NavPoint[],
 	previousChapter: string
 ): string {
-	// TODO Watch for performance issues, since it will flatten each time the function is called
-	const newR = flattenTocData(tocData);
-	for (const toc of newR) {
-		if (!toc.page) return 'TODO';
+	for (const toc of flatTocData) {
+		if (!toc.page) return 'Unknown';
 
 		if (page < toc.page) {
 			return previousChapter;

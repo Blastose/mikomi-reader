@@ -18,7 +18,6 @@
 	} from '$lib/components/reader/utils.js';
 	import { IconBookmark, IconBookmarkFilled } from '@tabler/icons-svelte';
 	import Drawer from '$lib/components/reader/sidebar/Drawer.svelte';
-	import type { NavPoint } from '$lib/components/reader/toc/tocParser';
 	import { writable } from 'svelte/store';
 	import type { Bookmark, Orientation } from '$lib/components/reader/utils.js';
 	import { addBookmark, removeBookmark } from '$lib/bindings.js';
@@ -40,6 +39,7 @@
 	import { readerThemeStore } from '$lib/components/reader/stores/readerSettingsStore.js';
 	import { page } from '$app/stores';
 	import { appWindow } from '@tauri-apps/api/window';
+	import { tocStore, flatTocStore } from '$lib/components/reader/stores/tocStore.js';
 
 	appWindow.onCloseRequested(async () => {
 		if (!readerNode) return;
@@ -82,7 +82,6 @@
 
 	let blobUrls: string[] = [];
 
-	let tocData: NavPoint[] = [];
 	let drawerOpen = writable(false);
 
 	let bookmarks: Bookmark[] = [];
@@ -125,7 +124,7 @@
 				dateAdded: highlight.date_added,
 				displayText: range.toString(),
 				page,
-				chapter: getTocChapterFromPage(page, tocData, tocData[0].label),
+				chapter: getTocChapterFromPage(page, $flatTocStore, $flatTocStore[0].label),
 				range,
 				rects: filteredRects,
 				color: highlight.color
@@ -267,7 +266,7 @@
 			element: foundElement,
 			page: bookmarkPage,
 			dateAdded: bookmarkData.dateAdded,
-			chapter: getTocChapterFromPage(bookmarkPage, tocData, tocData[0].label)
+			chapter: getTocChapterFromPage(bookmarkPage, $flatTocStore, $flatTocStore[0].label)
 		};
 		bookmarks.push(inMemoryBookmark);
 		bookmarks.sort((a, b) => (a.page ?? 0) - (b.page ?? 0));
@@ -280,6 +279,10 @@
 	function onSidebarItemClickWithPage(page: number) {
 		goToPage(readerNode, page, pageSize);
 		currentPage = page;
+		currentScroll =
+			$readerSettingsStore.writingMode === 'horizontal'
+				? readerNode.scrollLeft
+				: readerNode.scrollTop;
 		drawerOpen.set(false);
 	}
 
@@ -299,10 +302,10 @@
 
 	async function onPageResize() {
 		await tick();
-		calculateTocPageNumbers(readerNode, $readerSettingsStore.writingMode, pageSize, tocData);
-		tocData = tocData;
+		calculateTocPageNumbers(readerNode, $readerSettingsStore.writingMode, pageSize, $flatTocStore);
+		$tocStore = $tocStore;
 		calculateBookmarkPageNumbers(bookmarks, $readerSettingsStore.writingMode, pageSize);
-		calculateBookmarkChapterPositions(bookmarks, tocData);
+		calculateBookmarkChapterPositions(bookmarks, $flatTocStore);
 		updateHighlightRectsAndPages();
 		bookmarks = bookmarks;
 		currentPageBookmarks = currentPageInBookmarks(currentPage);
@@ -351,7 +354,7 @@
 		console.log(`${(t2 - t1) / 1000} seconds`);
 		html = epubData.newHtml;
 		blobUrls = epubData.blobUrls;
-		tocData = epubData.tocNavs;
+		$tocStore = epubData.tocNavs;
 
 		loading = false;
 		t1 = performance.now();
@@ -380,22 +383,22 @@
 		updateCurrentPage();
 		updateTotalPages();
 
-		calculateTocPageNumbers(readerNode, $readerSettingsStore.writingMode, pageSize, tocData);
-		if (tocData.length > 0) {
-			if (tocData[0].page !== 1) {
-				tocData = [
+		calculateTocPageNumbers(readerNode, $readerSettingsStore.writingMode, pageSize, $flatTocStore);
+		if ($tocStore.length > 0) {
+			if ($tocStore[0].page !== 1) {
+				$tocStore = [
 					{ content: 'epub://text-epub-start', label: 'Start', page: 1, children: [] },
-					...tocData
+					...$tocStore
 				];
 			}
 		}
-		tocData = tocData;
+		$tocStore = $tocStore;
 
 		bookmarks = initializeBookmarkDataFromDB(data.book.bookmarks);
 		calculateBookmarkPageNumbers(bookmarks, $readerSettingsStore.writingMode, pageSize);
 		bookmarks.sort((a, b) => (a.page ?? 0) - (b.page ?? 0));
 		bookmarks = bookmarks;
-		calculateBookmarkChapterPositions(bookmarks, tocData);
+		calculateBookmarkChapterPositions(bookmarks, $flatTocStore);
 		currentPageBookmarks = currentPageInBookmarks(currentPage);
 
 		// TODO make highlight.chapter from offesetLeft/offesetHeight instead of page number
@@ -432,7 +435,7 @@
 				<div class="flex gap-1 items-center">
 					<Drawer
 						{currentPage}
-						{tocData}
+						tocData={$tocStore}
 						{drawerOpen}
 						{bookmarks}
 						columnCount={$readerSettingsStore.columnCount}
@@ -508,7 +511,6 @@
 				bind:margins={$readerSettingsStore.margins}
 				bind:onColumnCountChange
 				bind:onWritingModeChange
-				{tocData}
 				{drawerOpen}
 			/>
 			{#if currentPage && totalPages}
