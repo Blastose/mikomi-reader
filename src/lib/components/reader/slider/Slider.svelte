@@ -4,7 +4,7 @@
 	import { fade } from 'svelte/transition';
 	import { getTocChapterFromPage } from '$lib/components/reader/utils';
 	import { tick } from 'svelte';
-	import { flatTocStore } from '../stores/tocStore';
+	import { flatTocStore } from '$lib/components/reader/stores/tocStore';
 
 	export let max: number;
 	export let currentPage: number;
@@ -106,7 +106,9 @@
 				style:left="{tooltipLeft}px"
 				class="dialog-theme text-sm whitespace-nowrap select-none pointer-events-none absolute shadow-md bottom-10 text-center py-2 px-4 rounded-md"
 			>
-				{hoveredChapter} - page {hoveredPage}
+				{hoveredChapter} - page {$readerSettingsStore.columnCount === 1
+					? `${hoveredPage}`
+					: `${(hoveredPage ?? 1) * 2 - 1}`}
 			</span>
 		</div>
 	{/if}
