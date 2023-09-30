@@ -432,7 +432,7 @@
 	{:else}
 		<div class="relative mt-4">
 			<div class="absolute -top-8 w-full gap-6 left-0 grid grid-cols-[1fr_auto_1fr] items-center">
-				<div class="flex gap-1 items-center">
+				<div class="flex gap-1 items-center opacity-75">
 					<Drawer
 						{currentPage}
 						tocData={$tocStore}
@@ -444,33 +444,35 @@
 					/>
 				</div>
 				<div>
-					<p class="line-clamp-1">
+					<p class="line-clamp-1 opacity-75">
 						{data.book.title}
 					</p>
 				</div>
 				<div class="flex gap-1 items-center justify-end">
-					<Settings
-						on:pageresize={onPageResize}
-						bind:fontSize={$readerSettingsStore.fontSize}
-						bind:lineHeight={$readerSettingsStore.lineHeight}
-						bind:textAlign={$readerSettingsStore.textAlign}
-						bind:columnCount={$readerSettingsStore.columnCount}
-						bind:fontFamily={$readerSettingsStore.fontFamily}
-						bind:writingMode={$readerSettingsStore.writingMode}
-						bind:margins={$readerSettingsStore.margins}
-						{onColumnCountChange}
-						{onWritingModeChange}
-						{updateCurrentPage}
-						{updateTotalPages}
-					/>
-					<Search
-						{readerNode}
-						{currentPage}
-						orientation={$readerSettingsStore.writingMode}
-						{pageSize}
-						columnCount={$readerSettingsStore.columnCount}
-						{onSidebarItemClickWithPage}
-					/>
+					<div class="flex gap-1 items-center opacity-75">
+						<Settings
+							on:pageresize={onPageResize}
+							bind:fontSize={$readerSettingsStore.fontSize}
+							bind:lineHeight={$readerSettingsStore.lineHeight}
+							bind:textAlign={$readerSettingsStore.textAlign}
+							bind:columnCount={$readerSettingsStore.columnCount}
+							bind:fontFamily={$readerSettingsStore.fontFamily}
+							bind:writingMode={$readerSettingsStore.writingMode}
+							bind:margins={$readerSettingsStore.margins}
+							{onColumnCountChange}
+							{onWritingModeChange}
+							{updateCurrentPage}
+							{updateTotalPages}
+						/>
+						<Search
+							{readerNode}
+							{currentPage}
+							orientation={$readerSettingsStore.writingMode}
+							{pageSize}
+							columnCount={$readerSettingsStore.columnCount}
+							{onSidebarItemClickWithPage}
+						/>
+					</div>
 					<button
 						class="relative"
 						disabled={bookmarkInProgress}
@@ -478,14 +480,14 @@
 						aria-label="Bookmark page"
 					>
 						{#if currentPageBookmarks.length > 0}
-							<IconBookmarkFilled class="primary-color-fill" />
+							<IconBookmarkFilled class="primary-color-fill opacity-100" />
 							{#if currentPageBookmarks.length > 1}
 								<span class="absolute top-2 left-5 text-sm text-black"
 									>{currentPageBookmarks.length}</span
 								>
 							{/if}
 						{:else}
-							<IconBookmark />
+							<IconBookmark class="opacity-75" />
 						{/if}
 					</button>
 				</div>
@@ -515,7 +517,7 @@
 			/>
 			{#if currentPage && totalPages}
 				<div
-					class="absolute bottom-0 w-full flex -z-50
+					class="opacity-75 absolute bottom-0 w-full flex -z-50
 				{$readerSettingsStore.columnCount === 1 ? 'justify-center' : 'justify-around'}"
 				>
 					{#if $readerSettingsStore.columnCount === 1 || $readerSettingsStore.writingMode === 'vertical'}
@@ -531,7 +533,7 @@
 						</p>
 					{/if}
 				</div>
-				<div class=" absolute bottom-0 w-full flex justify-end -z-50">
+				<div class="opacity-75 absolute bottom-0 w-full flex justify-end -z-50">
 					<p>
 						{currentPage !== totalPages
 							? (((currentPage - 1) / totalPages) * 100).toFixed(0)
