@@ -5,6 +5,8 @@
 	import { onNavigate } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { appWindow } from '@tauri-apps/api/window';
+	import { themeStore } from '$lib/stores/themeStore';
+	import { page } from '$app/stores';
 
 	// Show window after it has loaded to prevent white page flash
 	// See https://github.com/tauri-apps/tauri/issues/1564
@@ -12,6 +14,9 @@
 		setTimeout(() => {
 			appWindow.show();
 		}, 1);
+		if (!$page.url.pathname.startsWith('/reader')) {
+			themeStore; // import themeStore to initialize it
+		}
 	});
 
 	onNavigate((navigation) => {
@@ -47,9 +52,21 @@
 			}
 		};
 	};
+
+	// TODO remove later
+	function handleKeyDown(e: KeyboardEvent) {
+		if (e.key !== 'l') return;
+
+		if ($themeStore === 'light') {
+			themeStore.set('dark');
+		} else if ($themeStore === 'dark') {
+			themeStore.set('light');
+		}
+	}
 </script>
 
 <svelte:window use:monitorScreenSize />
+<svelte:document on:keydown={handleKeyDown} />
 
 <Layout>
 	<slot />

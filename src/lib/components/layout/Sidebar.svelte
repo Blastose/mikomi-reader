@@ -12,7 +12,7 @@
 </script>
 
 <div
-	class="sidebar sticky top-0 z-50 w-full h-screen overflow-y-auto bg-gray-500 custom-scroll bg-opacity-20"
+	class="sidebar sticky top-0 z-50 w-full h-screen overflow-y-auto bg-[#e1e3e6] dark:bg-[#323235] dark:text-white custom-scroll"
 >
 	<div class="flex flex-col gap-1 py-4 pl-3 pr-1">
 		<div class="flex items-center gap-2">

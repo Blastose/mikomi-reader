@@ -3,6 +3,7 @@
 	import { IconBook, IconChevronUp } from '@tabler/icons-svelte';
 	import { WebviewWindow } from '@tauri-apps/api/window';
 	import { page } from '$app/stores';
+	import { themeStore } from '$lib/stores/themeStore.js';
 
 	export let data;
 
@@ -67,9 +68,13 @@
 
 <div class="-mt-16 grid-container container-mi">
 	<div
-		style={`background-image:linear-gradient(rgba(255, 255, 255, 0.99), rgba(255, 255, 255, 0.5)), url("${buildBase64ImageUrl(
-			data.book.cover ?? ''
-		)}");`}
+		style:background-image={$themeStore === 'dark'
+			? `linear-gradient(rgba(36, 36, 36, 0.99), rgba(36, 36, 36, 0.5)), url("${buildBase64ImageUrl(
+					data.book.cover ?? ''
+			  )}")`
+			: `linear-gradient(rgba(255, 255, 255, 0.99), rgba(255, 255, 255, 0.5)), url("${buildBase64ImageUrl(
+					data.book.cover ?? ''
+			  )}")`}
 		class="bg-no-repeat bg-cover -z-10 bg"
 	>
 		<div class="h-full backdrop-blur" />
@@ -96,7 +101,7 @@
 	<div class="flex flex-col gap-2 description">
 		<button
 			on:click={readBook}
-			class="flex items-center justify-center w-full gap-2 px-8 py-4 font-bold text-white duration-300 rounded-md hover:bg-black bg-neutral-800 sm:w-fit"
+			class="flex items-center justify-center w-full gap-2 px-8 py-4 font-bold text-white duration-300 rounded-md hover:bg-black bg-neutral-800 dark:bg-primary-500 dark:hover:bg-[#3b3a47] sm:w-fit"
 		>
 			<IconBook />
 			Read book
@@ -208,6 +213,14 @@
 			rgba(0, 0, 0, 0) 0%,
 			rgba(255, 255, 255, 0.781) 50%,
 			rgba(255, 255, 255, 1) 100%
+		);
+	}
+
+	:global(.dark) .hide-text-gradient {
+		background: linear-gradient(
+			rgba(255, 255, 255, 0) 0%,
+			rgba(36, 36, 36, 0.781) 50%,
+			rgba(36, 36, 36, 1) 100%
 		);
 	}
 

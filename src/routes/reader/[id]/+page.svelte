@@ -517,7 +517,7 @@
 			/>
 			{#if currentPage && totalPages}
 				<div
-					class="opacity-75 absolute bottom-0 w-full flex -z-50
+					class="opacity-75 absolute bottom-0 w-full flex pointer-events-none
 				{$readerSettingsStore.columnCount === 1 ? 'justify-center' : 'justify-around'}"
 				>
 					{#if $readerSettingsStore.columnCount === 1 || $readerSettingsStore.writingMode === 'vertical'}
@@ -533,7 +533,7 @@
 						</p>
 					{/if}
 				</div>
-				<div class="opacity-75 absolute bottom-0 w-full flex justify-end -z-50">
+				<div class="opacity-75 absolute bottom-0 w-full flex justify-end pointer-events-none">
 					<p>
 						{currentPage !== totalPages
 							? (((currentPage - 1) / totalPages) * 100).toFixed(0)

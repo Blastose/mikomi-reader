@@ -39,7 +39,7 @@
 
 <button
 	type="button"
-	class="flex flex-col items-center p-2 text-gray-700 duration-300 rounded-md hover:text-black hover:bg-gray-200"
+	class="flex flex-col items-center p-2 text-gray-700 dark:text-neutral-300 dark:hover:text-black duration-300 rounded-md hover:text-black hover:bg-gray-200"
 	on:click={onClick}
 	aria-label="Add books"
 >

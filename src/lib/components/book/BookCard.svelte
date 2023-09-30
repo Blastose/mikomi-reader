@@ -25,7 +25,10 @@
 			<p class="font-bold line-clamp-2" title={book.title}>
 				{book.title}
 			</p>
-			<p class="text-sm text-gray-600 line-clamp-1" title={book.authors[0]?.name ?? 'No author'}>
+			<p
+				class="text-sm text-gray-600 dark:text-neutral-300 line-clamp-1"
+				title={book.authors[0]?.name ?? 'No author'}
+			>
 				{book.authors[0]?.name ?? 'No author'}
 			</p>
 		</div>

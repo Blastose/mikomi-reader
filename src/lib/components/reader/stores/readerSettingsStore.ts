@@ -37,23 +37,27 @@ export type ReaderThemeSettings = {
 
 export const readerThemeStore = writable<ReaderThemeSettings>();
 
+export const lightTheme = {
+	name: 'Light',
+	backgroundColor: '#ffffff',
+	color: '#333333',
+	linkColor: '#007acc',
+	imageMixBlendMode: 'normal',
+	primaryColor: '#4181e3'
+} satisfies ReaderThemeSettings;
+
+export const darkTheme = {
+	name: 'Dark',
+	backgroundColor: '#202124',
+	color: '#f8f9fa',
+	linkColor: '#4ca6ff',
+	imageMixBlendMode: 'normal',
+	primaryColor: '#6c73d5'
+} satisfies ReaderThemeSettings;
+
 export const presetReaderThemes: ReaderThemeSettings[] = [
-	{
-		name: 'Light',
-		backgroundColor: '#ffffff',
-		color: '#333333',
-		linkColor: '#007acc',
-		imageMixBlendMode: 'normal',
-		primaryColor: '#4181e3'
-	},
-	{
-		name: 'Dark',
-		backgroundColor: '#202124',
-		color: '#f8f9fa',
-		linkColor: '#4ca6ff',
-		imageMixBlendMode: 'normal',
-		primaryColor: '#6c73d5'
-	},
+	lightTheme,
+	darkTheme,
 	{
 		name: 'Dark contrast',
 		backgroundColor: '#121212',
