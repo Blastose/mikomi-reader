@@ -7,7 +7,7 @@
 </script>
 
 <a href="/book/{book.id}" class="flex flex-col gap-1">
-	<div class="shadow-md overflow-hidden w-full h-[200px] md:h-60">
+	<div class="shadow-md overflow-hidden">
 		{#if book.cover}
 			<img
 				class="object-cover object-top w-full h-full duration-200 hover:scale-105"
