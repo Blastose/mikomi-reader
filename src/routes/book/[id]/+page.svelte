@@ -57,7 +57,8 @@
 			url: newUrl,
 			height: data.book.settings?.height ?? 860,
 			width: data.book.settings?.height ?? 512,
-			title: `${data.book.title} - Mikomi Reader`
+			title: `${data.book.title} - Mikomi Reader`,
+			visible: false
 		});
 	}
 </script>

@@ -3,6 +3,16 @@
 	import Layout from '$lib/components/layout/Layout.svelte';
 	import { windowSizeStore } from '$lib/stores/windowSizeStore';
 	import { onNavigate } from '$app/navigation';
+	import { onMount } from 'svelte';
+	import { appWindow } from '@tauri-apps/api/window';
+
+	// Show window after it has loaded to prevent white page flash
+	// See https://github.com/tauri-apps/tauri/issues/1564
+	onMount(() => {
+		setTimeout(() => {
+			appWindow.show();
+		}, 1);
+	});
 
 	onNavigate((navigation) => {
 		if (!document.startViewTransition) return;
