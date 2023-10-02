@@ -6,12 +6,14 @@ use specta::Type;
     Queryable,
     Selectable,
     Insertable,
+    Deserialize,
     Identifiable,
     QueryableByName,
     Serialize,
     Type,
     PartialEq,
     Debug,
+    AsChangeset,
 )]
 #[diesel(table_name = crate::schema::book)]
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]

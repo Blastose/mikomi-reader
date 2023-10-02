@@ -572,6 +572,20 @@ pub async fn add_multiple_books_from_files(paths: Vec<String>) -> Result<(), Str
     Ok(())
 }
 
+#[tauri::command]
+#[specta::specta]
+pub fn update_book(book: models::Book) -> Result<(), String> {
+    let mut conn: SqliteConnection = establish_connection();
+    let res = diesel::update(schema::book::table.filter(schema::book::id.eq(book.id.clone())))
+        .set(&book)
+        .execute(&mut conn);
+
+    match res {
+        Ok(_) => return Ok(()),
+        Err(_) => return Err(String::from("Cannot update book")),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::{establish_connection, run_migrations};

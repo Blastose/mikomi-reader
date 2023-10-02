@@ -4,6 +4,7 @@
 	import { WebviewWindow } from '@tauri-apps/api/window';
 	import { page } from '$app/stores';
 	import { themeStore } from '$lib/stores/themeStore.js';
+	import { updateBook } from '$lib/bindings.js';
 
 	export let data;
 
@@ -53,6 +54,7 @@
 	}
 
 	function readBook() {
+		updateBook({ ...data.book, last_read: Math.floor(Date.now() / 1000) });
 		const newUrl = `/reader/${id}`;
 		new WebviewWindow(id, {
 			url: newUrl,
