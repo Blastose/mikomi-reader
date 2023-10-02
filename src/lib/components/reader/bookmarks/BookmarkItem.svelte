@@ -18,6 +18,7 @@
 	export let columnCount: number;
 	export let onSidebarItemClickWithPage: (page: number) => void;
 	export let onBookmarkItemDelete: (id: string) => void;
+	export let onBookmarkItemEdit: (bookmark: Bookmark) => void;
 </script>
 
 <div class="flex">
@@ -27,6 +28,9 @@
 			onSidebarItemClickWithPage(bookmark.page ?? 1);
 		}}
 	>
+		{#if bookmark.displayText !== '' && bookmark.displayText !== 'Bookmark'}
+			<span class="font-bold">{bookmark.displayText}</span>
+		{/if}
 		<span>Page {columnCount === 1 ? `${bookmark.page}` : `${(bookmark.page ?? 1) * 2 - 1}`}</span>
 		{#if bookmark.chapter}
 			<span class="text-sm text-neutral-300">{bookmark.chapter}</span>
@@ -49,9 +53,11 @@
 		transition:fly={{ duration: 150, y: -10 }}
 	>
 		<button
-			disabled
-			class="cursor-not-allowed text-left pr-6 pl-4 py-2 flex gap-4 hover:bg-neutral-600 duration-150 rounded-md"
+			class="text-left pr-6 pl-4 py-2 flex gap-4 hover:bg-neutral-600 duration-150 rounded-md"
 			use:melt={$item}
+			on:click={() => {
+				onBookmarkItemEdit(bookmark);
+			}}
 		>
 			<IconPencil />
 			<span>Edit</span>
