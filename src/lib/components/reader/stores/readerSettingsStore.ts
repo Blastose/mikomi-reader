@@ -101,7 +101,8 @@ export async function addBookSettingsFromSettingsAndTheme(
 	settings: ReaderSettings,
 	theme: ReaderThemeSettings,
 	percentage?: number,
-	lastElement?: string
+	lastElement?: string,
+	lastPage?: number
 ) {
 	await addBookSettings({
 		background_color: theme.backgroundColor,
@@ -121,6 +122,7 @@ export async function addBookSettingsFromSettingsAndTheme(
 		width,
 		writing_mode: settings.writingMode,
 		last_element: lastElement ?? null,
+		last_page: lastPage ?? null,
 		percentage: percentage ?? null
 	});
 }

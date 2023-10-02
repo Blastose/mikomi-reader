@@ -1,9 +1,9 @@
 <script lang="ts">
-	import type { BookWithAuthorsAndCover } from '$lib/bindings.js';
+	import type { BookWithAuthorsAndCoverAndSettings } from '$lib/bindings.js';
 	import { IconDotsVertical } from '@tabler/icons-svelte';
 	import { buildBase64ImageUrl } from '$lib/util/util';
 
-	export let book: BookWithAuthorsAndCover;
+	export let book: BookWithAuthorsAndCoverAndSettings;
 </script>
 
 <a href="/book/{book.id}" class="flex flex-col gap-2 justify-end">

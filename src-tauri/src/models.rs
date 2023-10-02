@@ -107,6 +107,7 @@ pub struct BookSettings {
     pub height: Option<i32>,
     pub percentage: Option<i32>,
     pub last_element: Option<String>,
+    pub last_page: Option<i32>,
     pub font_size: i32,
     pub line_height: String,
     pub margins: i32,

@@ -44,6 +44,7 @@ diesel::table! {
         link_color -> Text,
         primary_color -> Text,
         image_blend_mode -> Text,
+        last_page -> Nullable<Integer>,
     }
 }
 
