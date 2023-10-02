@@ -371,8 +371,6 @@
 
 		// jump to the last element from settings
 		if (data.book.settings?.last_page) {
-			console.log(data.book.settings?.last_page);
-			console.log('alkdjaksdjlasakdjakllasdsd');
 			goToPage(readerNode, data.book.settings.last_page, pageSize);
 			currentPage = data.book.settings.last_page;
 			currentScroll =

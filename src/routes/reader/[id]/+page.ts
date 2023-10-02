@@ -84,7 +84,6 @@ export const load = (async ({ params }) => {
 				defaultTheme = darkTheme;
 			} else {
 				defaultTheme = lightTheme;
-				console.log('lakjsflkajsfjaklsjfklajsdlfjasflj');
 			}
 
 			readerThemeStore.set(defaultTheme);
