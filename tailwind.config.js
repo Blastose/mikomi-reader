@@ -7,10 +7,11 @@ export default {
 			colors: {
 				dark: {
 					100: '#2f2e31',
-					500: '#242424'
+					500: '#2b2b2b'
 				},
 				primary: {
-					500: '#5e5d6d'
+					100: '#eeedf3',
+					500: '#ffffff'
 				}
 			}
 		}

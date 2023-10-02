@@ -6,11 +6,11 @@
 	export let book: BookWithAuthorsAndCover;
 </script>
 
-<a href="/book/{book.id}" class="flex flex-col gap-1">
+<a href="/book/{book.id}" class="flex flex-col gap-2 justify-end">
 	<div class="shadow-md overflow-hidden">
 		{#if book.cover}
 			<img
-				class="object-cover object-top w-full h-full duration-200 hover:scale-105"
+				class="object-cover object-top w-full h-full rounded-md duration-200 hover:scale-105"
 				height="200"
 				width="134"
 				src={buildBase64ImageUrl(book.cover)}

@@ -69,7 +69,7 @@
 <div class="-mt-16 grid-container container-mi">
 	<div
 		style:background-image={$themeStore === 'dark'
-			? `linear-gradient(rgba(36, 36, 36, 0.99), rgba(36, 36, 36, 0.5)), url("${buildBase64ImageUrl(
+			? `linear-gradient(rgba(43, 43, 43, 0.99), rgba(43, 43, 43, 0.5)), url("${buildBase64ImageUrl(
 					data.book.cover ?? ''
 			  )}")`
 			: `linear-gradient(rgba(255, 255, 255, 0.99), rgba(255, 255, 255, 0.5)), url("${buildBase64ImageUrl(
@@ -101,7 +101,7 @@
 	<div class="flex flex-col gap-2 description">
 		<button
 			on:click={readBook}
-			class="flex items-center justify-center w-full gap-2 px-8 py-4 font-bold text-white duration-300 rounded-md hover:bg-black bg-neutral-800 dark:bg-primary-500 dark:hover:bg-[#3b3a47] sm:w-fit"
+			class="flex items-center justify-center w-full gap-2 px-8 py-4 font-bold text-white duration-300 rounded-md hover:bg-black bg-neutral-800 dark:bg-primary-100 dark:text-black dark:hover:bg-[#afafb6] sm:w-fit"
 		>
 			<IconBook />
 			Read book
@@ -219,8 +219,8 @@
 	:global(.dark) .hide-text-gradient {
 		background: linear-gradient(
 			rgba(255, 255, 255, 0) 0%,
-			rgba(36, 36, 36, 0.781) 50%,
-			rgba(36, 36, 36, 1) 100%
+			rgba(43, 43, 43, 0.781) 50%,
+			rgba(43, 43, 43, 1) 100%
 		);
 	}
 
