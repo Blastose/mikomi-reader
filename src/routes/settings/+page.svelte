@@ -15,6 +15,7 @@
 	<ColorPicker label={'Background color'} bind:color={backgroundColor} />
 
 	<button
+		class="font-bold text-lg"
 		on:click={() => {
 			if ($themeStore === 'light') {
 				themeStore.set('dark');
