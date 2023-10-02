@@ -339,6 +339,7 @@
 	</div>
 	<div>
 		<button
+			class="opacity-75"
 			on:click={() => {
 				showRuler = !showRuler;
 			}}

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import ColorPicker from '$lib/components/settings/ColorPicker.svelte';
-	// export let data;
+	import { themeStore } from '$lib/stores/themeStore';
 
 	let backgroundColor: string;
 </script>
@@ -13,4 +13,15 @@
 	</div>
 
 	<ColorPicker label={'Background color'} bind:color={backgroundColor} />
+
+	<button
+		class="font-bold text-lg"
+		on:click={() => {
+			if ($themeStore === 'light') {
+				themeStore.set('dark');
+			} else if ($themeStore === 'dark') {
+				themeStore.set('light');
+			}
+		}}>Switch theme</button
+	>
 </div>

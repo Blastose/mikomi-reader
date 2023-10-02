@@ -20,7 +20,8 @@
 		"@sveltejs/adapter-auto": "^2.0.0",
 		"@sveltejs/adapter-static": "^2.0.3",
 		"@sveltejs/kit": "^1.25.1",
-		"@tauri-apps/cli": "^1.4.0",
+		"@tailwindcss/container-queries": "^0.1.1",
+		"@tauri-apps/cli": "^1.5.0",
 		"@types/postcss-prefix-selector": "^1.15.0",
 		"@typescript-eslint/eslint-plugin": "^5.45.0",
 		"@typescript-eslint/parser": "^5.45.0",
@@ -44,7 +45,7 @@
 	"dependencies": {
 		"@melt-ui/svelte": "^0.47.6",
 		"@tabler/icons-svelte": "^2.29.0",
-		"@tauri-apps/api": "^1.4.0",
+		"@tauri-apps/api": "^1.5.0",
 		"@zip.js/zip.js": "^2.7.29",
 		"just-debounce-it": "^3.2.0",
 		"postcss-prefix-selector": "^1.16.0"

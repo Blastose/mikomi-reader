@@ -7,7 +7,9 @@ import {
 	type ReaderThemeSettings,
 	addBookSettingsFromSettingsAndTheme,
 	type ReaderSettings,
-	savedReaderThemes
+	savedReaderThemes,
+	lightTheme,
+	darkTheme
 } from '$lib/components/reader/stores/readerSettingsStore';
 import type { Orientation } from '$lib/components/reader/utils';
 import type { EnglishFont, LineHeight, TextAlign } from '$lib/components/reader/settings/settings';
@@ -78,14 +80,13 @@ export const load = (async ({ params }) => {
 			readerThemeStore.set(lastUsedTheme);
 			defaultTheme = lastUsedTheme;
 		} else {
-			defaultTheme = {
-				name: 'Light',
-				backgroundColor: '#ffffff',
-				color: '#333333',
-				linkColor: '#007acc',
-				imageMixBlendMode: 'normal',
-				primaryColor: '#e91e63'
-			} satisfies ReaderThemeSettings;
+			if (localStorage.getItem('theme') === 'dark') {
+				defaultTheme = darkTheme;
+			} else {
+				defaultTheme = lightTheme;
+				console.log('lakjsflkajsfjaklsjfklajsdlfjasflj');
+			}
+
 			readerThemeStore.set(defaultTheme);
 		}
 		await addBookSettingsFromSettingsAndTheme(params.id, 860, 512, defaultSettings, defaultTheme);

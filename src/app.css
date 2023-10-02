@@ -2,10 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+	:root {
+		--dark-500: #2b2b2b;
+	}
+}
+
 html {
 	overflow-x: hidden;
 	height: 100dvh;
 	scrollbar-gutter: stable;
+}
+
+html.dark {
+	background-color: var(--dark-500);
+	color: white;
+	color-scheme: dark;
 }
 
 body {

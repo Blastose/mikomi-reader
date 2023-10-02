@@ -52,7 +52,7 @@
 				"setSize": true,
 				"setSkipTaskbar": false,
 				"setTitle": true,
-				"show": false,
+				"show": true,
 				"startDragging": false,
 				"unmaximize": false,
 				"unminimize": false
@@ -110,7 +110,8 @@
 				"title": "Mikomi Reader",
 				"width": 1024,
 				"minWidth": 320,
-				"minHeight": 128
+				"minHeight": 128,
+				"visible": false
 			}
 		]
 	}

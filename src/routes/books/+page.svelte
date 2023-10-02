@@ -13,8 +13,8 @@
 </script>
 
 <div class="py-6 container-mi">
-	<div class="flex flex-col gap-4">
-		<div class="grid grid-cols-2 gap-4 sm:grid-cols-4 md:grid-cols-6">
+	<div class="flex flex-col gap-4 @container">
+		<div class="grid grid-cols-2 gap-4 @md:grid-cols-4 @4xl:grid-cols-6 @7xl:grid-cols-8">
 			{#await data.streamed.books}
 				{#each { length: 15 } as _}
 					<BookCardSkeleton />
