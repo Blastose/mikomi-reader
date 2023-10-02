@@ -19,6 +19,7 @@ pub struct Book {
     pub id: String,
     pub title: String,
     pub path: String,
+    pub last_read: Option<i32>,
 }
 
 #[derive(Queryable, Selectable, Insertable, Serialize, Identifiable, Type, PartialEq, Debug)]
@@ -92,6 +93,7 @@ pub struct Highlight {
     PartialEq,
     Debug,
     AsChangeset,
+    Clone,
 )]
 #[diesel(belongs_to(Book))]
 #[diesel(table_name = crate::schema::book_settings)]

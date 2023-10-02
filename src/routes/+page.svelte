@@ -16,7 +16,7 @@
 					<div class="flex flex-col">
 						<p class="text-sm sm:text-base font-bold line-clamp-1">{book.title}</p>
 						<p class="text-sm sm:text-base text-gray-500 dark:text-neutral-300">
-							{Math.floor(Math.random() * 100)}%
+							{book.settings?.percentage || 0}%
 						</p>
 					</div>
 				</a>

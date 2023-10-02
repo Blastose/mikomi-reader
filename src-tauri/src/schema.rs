@@ -12,6 +12,7 @@ diesel::table! {
         id -> Text,
         title -> Text,
         path -> Text,
+        last_read -> Nullable<Integer>,
     }
 }
 

@@ -41,11 +41,12 @@ struct BookWithAuthors {
 }
 
 #[derive(Serialize, Type)]
-pub struct BookWithAuthorsAndCover {
+pub struct BookWithAuthorsAndCoverAndSettings {
     #[serde(flatten)]
     book: models::Book,
     authors: Vec<models::Author>,
     cover: Option<String>,
+    settings: Option<models::BookSettings>,
 }
 
 #[derive(Serialize, Type)]
@@ -326,12 +327,17 @@ pub fn get_book(id: String) -> Option<BookWithAuthorsAndCoverAndBookmarksAndHigh
 
 #[tauri::command]
 #[specta::specta]
-pub fn get_books() -> Vec<BookWithAuthorsAndCover> {
+pub fn get_books() -> Vec<BookWithAuthorsAndCoverAndSettings> {
     let engine = general_purpose::STANDARD_NO_PAD;
     let mut conn: SqliteConnection = establish_connection();
 
     let all_books = schema::book::table
         .select(models::Book::as_select())
+        .load(&mut conn)
+        .unwrap();
+
+    let mut settings: Vec<models::BookSettings> = models::BookSettings::belonging_to(&all_books)
+        .select(models::BookSettings::as_select())
         .load(&mut conn)
         .unwrap();
 
@@ -355,7 +361,7 @@ pub fn get_books() -> Vec<BookWithAuthorsAndCover> {
         })
         .collect();
 
-    let books_with_authors_and_cover: Vec<BookWithAuthorsAndCover> = books_with_authors
+    let books_with_authors_and_cover: Vec<BookWithAuthorsAndCoverAndSettings> = books_with_authors
         .into_iter()
         .map(|book| {
             let path = Path::new("mikomi-data/covers").join(book.book.id.clone());
@@ -368,10 +374,19 @@ pub fn get_books() -> Vec<BookWithAuthorsAndCover> {
                 Err(_) => None,
             };
 
-            BookWithAuthorsAndCover {
+            let mut book_settings: Option<models::BookSettings> = None;
+            for setting in &mut settings {
+                if setting.book_id == book.book.id {
+                    book_settings = Some(setting.clone());
+                    break;
+                }
+            }
+
+            BookWithAuthorsAndCoverAndSettings {
                 book: book.book,
                 authors: book.authors,
                 cover,
+                settings: book_settings,
             }
         })
         .collect();
@@ -520,6 +535,7 @@ pub async fn add_book_from_file(path: String) -> Result<models::Book, String> {
         title,
         path,
         id: uuid.clone(),
+        last_read: None,
     };
 
     let res = diesel::insert_into(schema::book::table)
