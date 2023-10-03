@@ -22,6 +22,7 @@ pub struct Book {
     pub title: String,
     pub path: String,
     pub last_read: Option<i32>,
+    pub date_added: i32,
 }
 
 #[derive(Queryable, Selectable, Insertable, Serialize, Identifiable, Type, PartialEq, Debug)]

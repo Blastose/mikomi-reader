@@ -13,6 +13,7 @@ diesel::table! {
         title -> Text,
         path -> Text,
         last_read -> Nullable<Integer>,
+        date_added -> Integer,
     }
 }
 

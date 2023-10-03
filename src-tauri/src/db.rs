@@ -14,6 +14,7 @@ use std::fs::File;
 use std::io::Cursor;
 use std::io::Write;
 use std::path::Path;
+use std::time::{SystemTime, UNIX_EPOCH};
 use uuid::Uuid;
 
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
@@ -512,11 +513,15 @@ pub async fn add_book_from_file(path: String) -> Result<models::Book, String> {
         Some(v) => title = v,
         None => return Err(String::from("Epub does not have a title")),
     }
+
+    let start = SystemTime::now();
+
     let new_book = models::Book {
         title,
         path,
         id: uuid.clone(),
         last_read: None,
+        date_added: start.duration_since(UNIX_EPOCH).unwrap().as_secs() as i32,
     };
 
     let res = diesel::insert_into(schema::book::table)

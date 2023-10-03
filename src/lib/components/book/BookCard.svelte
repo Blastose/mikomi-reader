@@ -4,9 +4,14 @@
 	import { convertFileSrc } from '@tauri-apps/api/tauri';
 
 	export let book: BookWithAuthorsAndCoverAndSettings;
+	export let disablePointerEvents: boolean = false;
 </script>
 
-<a href="/book/{book.id}" class="flex flex-col gap-2 justify-end">
+<a
+	href="/book/{book.id}"
+	class="flex flex-col gap-2 justify-end"
+	class:pointer-events-none={disablePointerEvents}
+>
 	<div class="shadow-md overflow-hidden">
 		{#if book.cover}
 			<img
