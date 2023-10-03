@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { BookWithAuthorsAndCoverAndSettings } from '$lib/bindings.js';
 	import { IconDotsVertical } from '@tabler/icons-svelte';
-	import { buildBase64ImageUrl } from '$lib/util/util';
+	import { convertFileSrc } from '@tauri-apps/api/tauri';
 
 	export let book: BookWithAuthorsAndCoverAndSettings;
 </script>
@@ -13,7 +13,7 @@
 				class="object-cover object-top w-full h-full rounded-md duration-200 hover:scale-105"
 				height="200"
 				width="134"
-				src={buildBase64ImageUrl(book.cover)}
+				src={convertFileSrc(book.cover)}
 				alt=""
 			/>
 		{:else}

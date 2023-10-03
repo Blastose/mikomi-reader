@@ -1,6 +1,5 @@
 use crate::models;
 use crate::schema;
-use base64::{engine::general_purpose, Engine as _};
 use diesel::prelude::*;
 use diesel::{Connection, SqliteConnection};
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
@@ -303,15 +302,6 @@ pub fn get_book(id: String) -> Option<BookWithAuthorsAndCoverAndBookmarksAndHigh
     };
 
     let path = Path::new("mikomi-data/covers").join(book.id.clone());
-    let cover = fs::read(path);
-    let engine = general_purpose::STANDARD_NO_PAD;
-    let cover = match cover {
-        Ok(c) => {
-            let encoded = engine.encode(c);
-            Some(encoded)
-        }
-        Err(_) => None,
-    };
 
     Some(
         BookWithAuthorsAndCoverAndBookmarksAndHighlightsAndSettings {
@@ -319,7 +309,7 @@ pub fn get_book(id: String) -> Option<BookWithAuthorsAndCoverAndBookmarksAndHigh
             authors: authors_with_book_link.into_iter().map(|(_, a)| a).collect(),
             bookmarks,
             highlights,
-            cover,
+            cover: Some(String::from(path.to_string_lossy())),
             settings,
         },
     )
@@ -328,7 +318,6 @@ pub fn get_book(id: String) -> Option<BookWithAuthorsAndCoverAndBookmarksAndHigh
 #[tauri::command]
 #[specta::specta]
 pub fn get_books() -> Vec<BookWithAuthorsAndCoverAndSettings> {
-    let engine = general_purpose::STANDARD_NO_PAD;
     let mut conn: SqliteConnection = establish_connection();
 
     let all_books = schema::book::table
@@ -365,14 +354,6 @@ pub fn get_books() -> Vec<BookWithAuthorsAndCoverAndSettings> {
         .into_iter()
         .map(|book| {
             let path = Path::new("mikomi-data/covers").join(book.book.id.clone());
-            let cover = fs::read(path);
-            let cover = match cover {
-                Ok(c) => {
-                    let encoded = engine.encode(c);
-                    Some(encoded)
-                }
-                Err(_) => None,
-            };
 
             let mut book_settings: Option<models::BookSettings> = None;
             for setting in &mut settings {
@@ -385,7 +366,7 @@ pub fn get_books() -> Vec<BookWithAuthorsAndCoverAndSettings> {
             BookWithAuthorsAndCoverAndSettings {
                 book: book.book,
                 authors: book.authors,
-                cover,
+                cover: Some(String::from(path.to_string_lossy())),
                 settings: book_settings,
             }
         })

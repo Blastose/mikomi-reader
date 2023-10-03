@@ -83,8 +83,8 @@ export function updateReaderTheme(id: string, name: string) {
 }
 
 export type Bookmark = { id: string; book_id: string; display_text: string; date_added: number; css_selector: string }
-export type BookWithAuthorsAndCoverAndBookmarksAndHighlightsAndSettings = ({ id: string; title: string; path: string; last_read: number | null }) & { authors: Author[]; bookmarks: Bookmark[]; highlights: Highlight[]; cover: string | null; settings: BookSettings | null }
 export type BookWithAuthorsAndCoverAndSettings = ({ id: string; title: string; path: string; last_read: number | null }) & { authors: Author[]; cover: string | null; settings: BookSettings | null }
+export type BookWithAuthorsAndCoverAndBookmarksAndHighlightsAndSettings = ({ id: string; title: string; path: string; last_read: number | null }) & { authors: Author[]; bookmarks: Bookmark[]; highlights: Highlight[]; cover: string | null; settings: BookSettings | null }
 export type Book = { id: string; title: string; path: string; last_read: number | null }
 export type Author = { id: string; name: string }
 export type ReaderTheme = { id: string; name: string; background_color: string; color: string; link_color: string; primary_color: string; image_blend_mode: string }

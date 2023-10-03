@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { buildBase64ImageUrl } from '$lib/util/util.js';
+	import { convertFileSrc } from '@tauri-apps/api/tauri';
 
 	export let data;
 </script>
@@ -11,7 +11,7 @@
 			{#each data.books.slice(-4) as book}
 				<a href="/book/{book.id}" class="flex-1 flex flex-col max-w-[200px] gap-1">
 					{#if book.cover}
-						<img class="rounded-md shadow-md" src={buildBase64ImageUrl(book.cover)} alt="" />
+						<img class="rounded-md shadow-md" src={convertFileSrc(book.cover)} alt="" />
 					{/if}
 					<div class="flex flex-col">
 						<p class="text-sm sm:text-base font-bold line-clamp-1">{book.title}</p>
