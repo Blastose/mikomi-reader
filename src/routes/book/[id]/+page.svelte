@@ -68,7 +68,7 @@
 
 <svelte:window on:resize={onWindowResize} />
 
-<div class="-mt-16 grid-container container-mi">
+<div class="-mt-16 pb-8 grid-container container-mi">
 	<div
 		style:background-image={$themeStore === 'dark'
 			? `linear-gradient(rgba(43, 43, 43, 0.99), rgba(43, 43, 43, 0.5)), url("${convertFileSrc(
@@ -152,21 +152,6 @@
 				</button>
 			{/if}
 		</div>
-
-		<div>
-			<p>TOC</p>
-			<p>Ch 1. Poggers in the house</p>
-			<p>Ch 2. Poggers in the house</p>
-			<p>Ch 3. Poggers in the house</p>
-			<p>Ch 4. Poggers in the house</p>
-			<p>Ch 5. Poggers in the house</p>
-		</div>
-
-		{#each { length: 34 } as _}
-			<p>
-				{data.book.id}
-			</p>
-		{/each}
 	</div>
 </div>
 
