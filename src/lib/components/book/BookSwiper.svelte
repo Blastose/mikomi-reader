@@ -1,8 +1,5 @@
 <script lang="ts">
-	import type { BookWithAuthorsAndCoverAndSettings } from '$lib/bindings';
-	import BookImageCard from './BookImageCard.svelte';
-
-	export let books: BookWithAuthorsAndCoverAndSettings[];
+	export let gapSize: 'default' | 'large' = 'default';
 
 	let scroll = false;
 	const useSwipe = (node: HTMLDivElement) => {
@@ -13,12 +10,13 @@
 		let velocityX: number;
 
 		const pointerStart = (e: PointerEvent) => {
+			if (e.button !== 0) return;
 			cancelAnimationFrame(decelerationId);
 			pointerStartX = e.x;
 			moving = true;
 		};
 
-		const pointerEnd = (_e: PointerEvent) => {
+		const pointerEnd = (_: PointerEvent) => {
 			if (moving === true) {
 				moving = false;
 				scrollLeftStart = node.scrollLeft;
@@ -68,12 +66,8 @@
 </script>
 
 <div class="grid">
-	<div class="swipe-container" use:useSwipe>
-		{#each books as book (book.id)}
-			<div class="item">
-				<BookImageCard {book} disablePointerEvents={scroll} />
-			</div>
-		{/each}
+	<div class="swipe-container" class:gap-large={gapSize === 'large'} use:useSwipe>
+		<slot {scroll} />
 	</div>
 </div>
 
@@ -86,30 +80,7 @@
 		touch-action: none;
 	}
 
-	.item {
-		display: flex;
-		justify-content: flex-end;
-		flex: 0 0 25%;
-	}
-
-	@media (min-width: 640px) {
-		.item {
-			flex: 0 0 20%;
-		}
-	}
-	@media (min-width: 768px) {
-		.item {
-			flex: 0 0 16%;
-		}
-	}
-	@media (min-width: 1280px) {
-		.item {
-			flex: 0 0 14%;
-		}
-	}
-	@media (min-width: 1536px) {
-		.item {
-			flex: 0 0 10%;
-		}
+	.swipe-container.gap-large {
+		gap: 1.5rem;
 	}
 </style>

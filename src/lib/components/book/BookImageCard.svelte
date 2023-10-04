@@ -26,6 +26,8 @@
 		{/if}
 	</div>
 	<div class="hidden sm:block">
-		<p class="text-sm">{relativeTime(new Date(), book.date_added)}</p>
+		<p class="text-xs text-gray-500 dark:text-neutral-300">
+			Added {relativeTime(new Date(), book.date_added)}
+		</p>
 	</div>
 </a>

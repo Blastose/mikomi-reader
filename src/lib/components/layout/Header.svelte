@@ -18,7 +18,7 @@
 	{scrollY > 0 ? 'bg-white dark:bg-dark-500' : ''}"
 >
 	<div class="flex items-center justify-between h-full container-mi">
-		<div class="text-4xl font-bold text-neutral-700 dark:text-white">
+		<div class="text-4xl font-bold">
 			{#if isOnBookRoute}
 				<button
 					class="p-2 duration-300 rounded-full hover:bg-neutral-300"
