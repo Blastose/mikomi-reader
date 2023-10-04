@@ -6,12 +6,14 @@ use specta::Type;
     Queryable,
     Selectable,
     Insertable,
+    Deserialize,
     Identifiable,
     QueryableByName,
     Serialize,
     Type,
     PartialEq,
     Debug,
+    AsChangeset,
 )]
 #[diesel(table_name = crate::schema::book)]
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
@@ -19,6 +21,8 @@ pub struct Book {
     pub id: String,
     pub title: String,
     pub path: String,
+    pub last_read: Option<i32>,
+    pub date_added: i32,
 }
 
 #[derive(Queryable, Selectable, Insertable, Serialize, Identifiable, Type, PartialEq, Debug)]
@@ -92,6 +96,7 @@ pub struct Highlight {
     PartialEq,
     Debug,
     AsChangeset,
+    Clone,
 )]
 #[diesel(belongs_to(Book))]
 #[diesel(table_name = crate::schema::book_settings)]
@@ -103,6 +108,7 @@ pub struct BookSettings {
     pub height: Option<i32>,
     pub percentage: Option<i32>,
     pub last_element: Option<String>,
+    pub last_page: Option<i32>,
     pub font_size: i32,
     pub line_height: String,
     pub margins: i32,

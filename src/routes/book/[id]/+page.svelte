@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { buildBase64ImageUrl } from '$lib/util/util.js';
+	import { convertFileSrc } from '@tauri-apps/api/tauri';
 	import { IconBook, IconChevronUp } from '@tabler/icons-svelte';
 	import { WebviewWindow } from '@tauri-apps/api/window';
 	import { page } from '$app/stores';
 	import { themeStore } from '$lib/stores/themeStore.js';
+	import { updateBook } from '$lib/bindings.js';
 
 	export let data;
 
@@ -53,6 +54,7 @@
 	}
 
 	function readBook() {
+		updateBook({ ...data.book, last_read: Math.floor(Date.now() / 1000) });
 		const newUrl = `/reader/${id}`;
 		new WebviewWindow(id, {
 			url: newUrl,
@@ -66,13 +68,13 @@
 
 <svelte:window on:resize={onWindowResize} />
 
-<div class="-mt-16 grid-container container-mi">
+<div class="-mt-16 pb-8 grid-container container-mi">
 	<div
 		style:background-image={$themeStore === 'dark'
-			? `linear-gradient(rgba(43, 43, 43, 0.99), rgba(43, 43, 43, 0.5)), url("${buildBase64ImageUrl(
+			? `linear-gradient(rgba(43, 43, 43, 0.99), rgba(43, 43, 43, 0.5)), url("${convertFileSrc(
 					data.book.cover ?? ''
 			  )}")`
-			: `linear-gradient(rgba(255, 255, 255, 0.99), rgba(255, 255, 255, 0.5)), url("${buildBase64ImageUrl(
+			: `linear-gradient(rgba(255, 255, 255, 0.99), rgba(255, 255, 255, 0.5)), url("${convertFileSrc(
 					data.book.cover ?? ''
 			  )}")`}
 		class="bg-no-repeat bg-cover -z-10 bg"
@@ -83,7 +85,7 @@
 	<div class="filler" />
 
 	<div class="cover min-w-[128px] sm:min-w-[164px] md:min-w-[200px] max-w-[512px]">
-		<img class="rounded-md shadow-md" src={buildBase64ImageUrl(data.book.cover ?? '')} alt="" />
+		<img class="rounded-md shadow-md" src={convertFileSrc(data.book.cover ?? '')} alt="" />
 	</div>
 
 	<div id="title" class="flex flex-col gap-1 py-2 overflow-hidden">
@@ -150,21 +152,6 @@
 				</button>
 			{/if}
 		</div>
-
-		<div>
-			<p>TOC</p>
-			<p>Ch 1. Poggers in the house</p>
-			<p>Ch 2. Poggers in the house</p>
-			<p>Ch 3. Poggers in the house</p>
-			<p>Ch 4. Poggers in the house</p>
-			<p>Ch 5. Poggers in the house</p>
-		</div>
-
-		{#each { length: 34 } as _}
-			<p>
-				{data.book.id}
-			</p>
-		{/each}
 	</div>
 </div>
 

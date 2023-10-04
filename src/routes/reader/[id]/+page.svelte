@@ -48,7 +48,7 @@
 		if (el) {
 			selector = getSelector(el);
 		}
-
+		console.log(currentPage);
 		await addBookSettingsFromSettingsAndTheme(
 			$page.params.id,
 			window.innerHeight ?? 860,
@@ -58,14 +58,16 @@
 			currentPage !== totalPages
 				? parseInt((((currentPage - 1) / totalPages) * 100).toFixed(0))
 				: 100,
-			selector ?? undefined
+			selector ?? undefined,
+			currentPage
 		);
 	});
 
 	export let data;
 
 	let html: string;
-	let loading = true;
+	let dataLoading = true;
+	let domLoading = true;
 
 	let readerNode: HTMLDivElement;
 	let overlayContainer: HTMLDivElement;
@@ -356,12 +358,26 @@
 		blobUrls = epubData.blobUrls;
 		$tocStore = epubData.tocNavs;
 
-		loading = false;
+		dataLoading = false;
 		t1 = performance.now();
 		await tick();
 
+		// Needs a delay for the total page sizes to be correct;
+		// Not 100% sure why; probably because of images loading
+		await delay(100);
+		updateCurrentPage();
+		updateTotalPages();
+		await tick();
+
 		// jump to the last element from settings
-		if (data.book.settings?.last_element) {
+		if (data.book.settings?.last_page) {
+			goToPage(readerNode, data.book.settings.last_page, pageSize);
+			currentPage = data.book.settings.last_page;
+			currentScroll =
+				$readerSettingsStore.writingMode === 'horizontal'
+					? readerNode.scrollLeft
+					: readerNode.scrollTop;
+		} else if (data.book.settings?.last_element) {
 			const selector = getNodeBySelector(data.book.settings.last_element);
 			if (selector) {
 				const page = getPageFromElement(
@@ -370,18 +386,15 @@
 					pageSize
 				);
 				goToPage(readerNode, page, pageSize);
+				currentPage = page;
 				currentScroll =
 					$readerSettingsStore.writingMode === 'horizontal'
 						? readerNode.scrollLeft
 						: readerNode.scrollTop;
 			}
 		}
-
-		// Needs a delay for the total page sizes to be correct;
-		// Not 100% sure why; probably because of images loading
-		await delay(100);
-		updateCurrentPage();
-		updateTotalPages();
+		domLoading = false;
+		await tick();
 
 		calculateTocPageNumbers(readerNode, $readerSettingsStore.writingMode, pageSize, $flatTocStore);
 		if ($tocStore.length > 0) {
@@ -427,10 +440,10 @@
 <svelte:document on:keydown={onKeyDown} />
 
 <div class="px-12 py-8 mx-auto duration-150 flex flex-col">
-	{#if loading}
+	{#if dataLoading}
 		<p>Loading...</p>
 	{:else}
-		<div class="relative mt-4">
+		<div class="relative mt-4" class:invisible={domLoading}>
 			<div class="absolute -top-8 w-full gap-6 left-0 grid grid-cols-[1fr_auto_1fr] items-center">
 				<div class="flex gap-1 items-center opacity-75">
 					<Drawer

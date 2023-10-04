@@ -12,6 +12,8 @@ diesel::table! {
         id -> Text,
         title -> Text,
         path -> Text,
+        last_read -> Nullable<Integer>,
+        date_added -> Integer,
     }
 }
 
@@ -43,6 +45,7 @@ diesel::table! {
         link_color -> Text,
         primary_color -> Text,
         image_blend_mode -> Text,
+        last_page -> Nullable<Integer>,
     }
 }
 

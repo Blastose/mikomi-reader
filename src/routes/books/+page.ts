@@ -3,9 +3,9 @@ import { getBooks } from '$lib/bindings';
 import { cacheOrRun } from '$lib/cache/cache';
 
 export const load = (async ({ url }) => {
-	const data = cacheOrRun(url.toString(), getBooks);
+	const data = await cacheOrRun(url.toString(), getBooks);
 
 	return {
-		streamed: { books: data }
+		books: data
 	};
 }) satisfies PageLoad;

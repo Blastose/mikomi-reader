@@ -1,19 +1,24 @@
 <script lang="ts">
-	import type { BookWithAuthorsAndCover } from '$lib/bindings.js';
+	import type { BookWithAuthorsAndCoverAndSettings } from '$lib/bindings.js';
 	import { IconDotsVertical } from '@tabler/icons-svelte';
-	import { buildBase64ImageUrl } from '$lib/util/util';
+	import { convertFileSrc } from '@tauri-apps/api/tauri';
 
-	export let book: BookWithAuthorsAndCover;
+	export let book: BookWithAuthorsAndCoverAndSettings;
+	export let disablePointerEvents: boolean = false;
 </script>
 
-<a href="/book/{book.id}" class="flex flex-col gap-2 justify-end">
+<a
+	href="/book/{book.id}"
+	class="flex flex-col gap-2 justify-end"
+	class:pointer-events-none={disablePointerEvents}
+>
 	<div class="shadow-md overflow-hidden">
 		{#if book.cover}
 			<img
 				class="object-cover object-top w-full h-full rounded-md duration-200 hover:scale-105"
 				height="200"
 				width="134"
-				src={buildBase64ImageUrl(book.cover)}
+				src={convertFileSrc(book.cover)}
 				alt=""
 			/>
 		{:else}
