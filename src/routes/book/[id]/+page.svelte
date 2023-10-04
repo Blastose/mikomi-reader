@@ -110,7 +110,7 @@
 		</button>
 	</div>
 
-	<div class="flex flex-col gap-4 content">
+	<div class="flex flex-col gap-12 content">
 		<div class="flex flex-col gap-2">
 			<p class="text-lg font-bold">Synopsis:</p>
 			<div
@@ -151,6 +151,39 @@
 					<span class="-mt-2 text-xs">{expandedSynopsis ? 'Show less' : 'Show more'}</span>
 				</button>
 			{/if}
+		</div>
+
+		<hr class="dark:border-[#46464b]" />
+
+		<div class="flex flex-col gap-2">
+			<h3 class="text-xl font-bold">Info:</h3>
+
+			<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+				<div class="flex flex-col">
+					<p class="font-bold">Language</p>
+					<p>Japanese</p>
+				</div>
+
+				<div class="flex flex-col">
+					<p class="font-bold">Author(s)</p>
+					<p>{data.book.authors[0].name}</p>
+				</div>
+
+				<div class="flex flex-col">
+					<p class="font-bold">Published on</p>
+					<p>Aug 25, 2020</p>
+				</div>
+
+				<div class="flex flex-col">
+					<p class="font-bold">Publisher</p>
+					<p>Kodansha</p>
+				</div>
+
+				<div class="flex flex-col">
+					<p class="font-bold">ISBN</p>
+					<p>9781131313121</p>
+				</div>
+			</div>
 		</div>
 	</div>
 </div>
