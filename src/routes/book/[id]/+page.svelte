@@ -7,6 +7,7 @@
 	import { updateBook } from '$lib/bindings.js';
 	import CollectionsModal from '$lib/components/collections/CollectionsModal.svelte';
 	import { writable } from 'svelte/store';
+	import ReadingStatus from '$lib/components/book/ReadingStatus.svelte';
 
 	export let data;
 
@@ -119,6 +120,8 @@
 			<IconBook />
 			Read book
 		</button>
+
+		<ReadingStatus book={data.book} currentStatus={data.book.reading_status} />
 
 		<button
 			on:click={() => {

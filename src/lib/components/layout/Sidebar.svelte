@@ -5,7 +5,8 @@
 		IconCheckbox,
 		IconCircleArrowRight,
 		IconSettings,
-		IconFolders
+		IconFolders,
+		IconBook
 	} from '@tabler/icons-svelte';
 	import SidebarItem from './SidebarItem.svelte';
 	import Logo from '$lib/components/logo/Logo.svelte';
@@ -28,6 +29,9 @@
 		<p class="text-lg font-bold">Library</p>
 		<SidebarItem text="All" href="/books" active={$page.url.pathname === '/books'}>
 			<IconBooks />
+		</SidebarItem>
+		<SidebarItem text="Reading" href="/" active={false}>
+			<IconBook />
 		</SidebarItem>
 		<SidebarItem text="Plan to Read" href="/" active={false}>
 			<IconCircleArrowRight />

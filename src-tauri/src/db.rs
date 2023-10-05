@@ -699,6 +699,7 @@ pub async fn add_book_from_file(path: String) -> Result<models::Book, String> {
         id: uuid.clone(),
         last_read: None,
         date_added: start.duration_since(UNIX_EPOCH).unwrap().as_secs() as i32,
+        reading_status: String::from("Plan to read"),
     };
 
     let res = diesel::insert_into(schema::book::table)

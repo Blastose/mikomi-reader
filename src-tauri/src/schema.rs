@@ -14,6 +14,7 @@ diesel::table! {
         path -> Text,
         last_read -> Nullable<Integer>,
         date_added -> Integer,
+        reading_status -> Text,
     }
 }
 

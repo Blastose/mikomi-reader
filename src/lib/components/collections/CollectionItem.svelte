@@ -76,6 +76,8 @@
 	{/if}
 </div>
 
+<!-- TODO both InputModal and ConfirmModal add a <div> data-portal to the Dom -->
+<!-- This happens for each collection item -->
 <InputModal
 	modalTitle="Edit collection name"
 	bind:inputValue={editModalInput}
@@ -85,7 +87,6 @@
 	confirmText="Update"
 	cancelText="Cancel"
 />
-
 <ConfirmModal
 	modalTitle="Delete collection"
 	subText={`Are you sure you want to permanently delete "${collectionWithBooks.collection.name}"`}
@@ -93,7 +94,9 @@
 	onConfirm={async () => {
 		try {
 			removeCollection(collectionWithBooks.collection.id);
-			addToast({ data: { title: 'Deleted collection successfully', color: '', description: '' } });
+			addToast({
+				data: { title: 'Deleted collection successfully', color: '', description: '' }
+			});
 			invalidateAll();
 		} catch {
 			addToast({ data: { title: 'Unable to delete collection', color: '', description: '' } });

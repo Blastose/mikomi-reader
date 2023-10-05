@@ -13,7 +13,7 @@
 		return array;
 	}
 
-	let recentlyReadBooks = data.books
+	$: recentlyReadBooks = data.books
 		.filter((b) => b.settings?.percentage && b.settings?.percentage < 100)
 		.sort((a, b) => {
 			if (a.last_read && b.last_read) {
@@ -29,12 +29,12 @@
 			return 0;
 		});
 
-	let recentlyAddedBooks = data.books
+	$: recentlyAddedBooks = data.books
 		.filter((b) => !b.last_read)
 		.sort((a, b) => b.date_added - a.date_added)
 		.slice(0, 16);
 
-	let planToReadBooks = shuffleArray(data.books.filter((_) => true));
+	$: planToReadBooks = shuffleArray(data.books.filter((b) => b.reading_status === 'Plan to read'));
 </script>
 
 <div class="flex flex-col gap-2 py-6 container-mi">
@@ -48,7 +48,7 @@
 			</div>
 
 			<BookSwiper gapSize={'large'} let:scroll={disablePointerEvents}>
-				{#each recentlyReadBooks.slice(0, 12) as book}
+				{#each recentlyReadBooks.slice(0, 12) as book (book.id)}
 					<a
 						href="/book/{book.id}"
 						class="min-w-[128px] sm:min-w-[200px] flex flex-col gap-1 justify-end"

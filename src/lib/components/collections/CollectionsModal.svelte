@@ -60,7 +60,7 @@
 					{#each collections as collection}
 						<label class="flex gap-4">
 							<input type="checkbox" value={collection.id} bind:group={checkboxGroup} />
-							<span>{collection.name}</span>
+							<span class="overflow-hidden text-ellipsis whitespace-nowrap">{collection.name}</span>
 						</label>
 					{/each}
 				</div>
