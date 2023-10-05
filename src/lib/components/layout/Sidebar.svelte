@@ -4,7 +4,8 @@
 		IconBooks,
 		IconCheckbox,
 		IconCircleArrowRight,
-		IconSettings
+		IconSettings,
+		IconFolders
 	} from '@tabler/icons-svelte';
 	import SidebarItem from './SidebarItem.svelte';
 	import Logo from '$lib/components/logo/Logo.svelte';
@@ -33,6 +34,13 @@
 		</SidebarItem>
 		<SidebarItem text="Finished" href="/" active={false}>
 			<IconCheckbox />
+		</SidebarItem>
+		<SidebarItem
+			text="Collections"
+			href="/collections"
+			active={$page.url.pathname === '/collections'}
+		>
+			<IconFolders />
 		</SidebarItem>
 		<SidebarItem text="Settings" href="/settings" active={$page.url.pathname === '/settings'}>
 			<IconSettings />

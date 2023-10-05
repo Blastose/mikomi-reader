@@ -1,0 +1,162 @@
+<script lang="ts">
+	import {
+		updateCollectionName,
+		type BookWithAuthorsAndCoverAndSettingsAndCollections,
+		type Collection,
+		removeCollection
+	} from '$lib/bindings';
+	import { IconDotsVertical, IconPencil, IconTrash } from '@tabler/icons-svelte';
+	import BookImageCard from '$lib/components/book/BookImageCard.svelte';
+	import BookSwiper from '$lib/components/book/BookSwiper.svelte';
+	import { createDropdownMenu, melt } from '@melt-ui/svelte';
+	import { fly } from 'svelte/transition';
+	import InputModal from '$lib/components/modal/InputModal.svelte';
+	import { writable } from 'svelte/store';
+	import { addToast } from '../toast/ToastContainer.svelte';
+	import { invalidateAll } from '$app/navigation';
+	import ConfirmModal from '../modal/ConfirmModal.svelte';
+
+	export let collectionWithBooks: {
+		collection: Collection;
+		books: BookWithAuthorsAndCoverAndSettingsAndCollections[];
+	};
+
+	const {
+		elements: { trigger, menu, item },
+		states: { open }
+	} = createDropdownMenu({
+		preventScroll: false,
+		forceVisible: true,
+		positioning: { placement: 'bottom-end' }
+	});
+
+	const confirmModalOpen = writable(false);
+	const editModalOpen = writable(false);
+	let editModalInput: string = collectionWithBooks.collection.name;
+
+	async function handleEditModalSave() {
+		try {
+			await updateCollectionName(collectionWithBooks.collection.id, editModalInput);
+			addToast({ data: { title: 'Renamed collection successfully', color: '', description: '' } });
+			invalidateAll();
+		} catch {
+			addToast({ data: { title: 'Cannot rename collection', color: '', description: '' } });
+		}
+	}
+</script>
+
+<div class="flex flex-col gap-4 bg-[#e1e3e6] dark:bg-[#39393a] p-4 rounded-md">
+	<div class="grid">
+		<div class="flex overflow-hidden text-ellipsis whitespace-nowrap">
+			<p
+				class="text-xl font-bold w-full overflow-hidden text-ellipsis whitespace-nowrap target-title"
+			>
+				{collectionWithBooks.collection.name}
+			</p>
+			<button
+				use:melt={$trigger}
+				aria-label="Open collection options for {collectionWithBooks.collection.name}"
+			>
+				<IconDotsVertical />
+			</button>
+		</div>
+		<span class="text-sm sm:text-base text-gray-500 dark:text-neutral-300"
+			>{collectionWithBooks.books.length} books</span
+		>
+	</div>
+
+	{#if collectionWithBooks.books.length > 0}
+		<BookSwiper let:scroll>
+			{#each collectionWithBooks.books as book}
+				<div class="item">
+					<BookImageCard {book} disablePointerEvents={scroll} hideSubText={true} />
+				</div>
+			{/each}
+		</BookSwiper>
+	{/if}
+</div>
+
+<InputModal
+	modalTitle="Edit collection name"
+	bind:inputValue={editModalInput}
+	openStore={editModalOpen}
+	onSave={handleEditModalSave}
+	placeholder="New collection name"
+	confirmText="Update"
+	cancelText="Cancel"
+/>
+
+<ConfirmModal
+	modalTitle="Delete collection"
+	subText={`Are you sure you want to permanently delete "${collectionWithBooks.collection.name}"`}
+	openStore={confirmModalOpen}
+	onConfirm={async () => {
+		try {
+			removeCollection(collectionWithBooks.collection.id);
+			addToast({ data: { title: 'Deleted collection successfully', color: '', description: '' } });
+			invalidateAll();
+		} catch {
+			addToast({ data: { title: 'Unable to delete collection', color: '', description: '' } });
+		}
+	}}
+	cancelText="Cancel"
+	confirmText="Delete"
+/>
+
+{#if $open}
+	<div
+		class="text-white bg-neutral-700 shadow-md rounded-md flex flex-col z-50"
+		use:melt={$menu}
+		transition:fly={{ duration: 150, y: -10 }}
+	>
+		<button
+			class="text-left pr-6 pl-4 py-2 flex gap-4 hover:bg-neutral-600 duration-150 rounded-md"
+			use:melt={$item}
+			on:click={() => {
+				editModalOpen.set(true);
+			}}
+		>
+			<IconPencil />
+			<span>Edit</span>
+		</button>
+		<button
+			class="text-left pr-6 pl-4 py-2 flex gap-4 hover:bg-neutral-600 duration-150 rounded-md"
+			use:melt={$item}
+			on:click={() => {
+				confirmModalOpen.set(true);
+			}}
+		>
+			<IconTrash />
+			<span>Delete</span>
+		</button>
+	</div>
+{/if}
+
+<style>
+	.item {
+		display: flex;
+		justify-content: flex-end;
+		flex: 0 0 25%;
+	}
+
+	@media (min-width: 640px) {
+		.item {
+			flex: 0 0 20%;
+		}
+	}
+	@media (min-width: 768px) {
+		.item {
+			flex: 0 0 16%;
+		}
+	}
+	@media (min-width: 1280px) {
+		.item {
+			flex: 0 0 14%;
+		}
+	}
+	@media (min-width: 1536px) {
+		.item {
+			flex: 0 0 10%;
+		}
+	}
+</style>

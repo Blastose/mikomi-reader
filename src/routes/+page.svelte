@@ -35,8 +35,6 @@
 		.slice(0, 16);
 
 	let planToReadBooks = shuffleArray(data.books.filter((_) => true));
-
-	console.log(recentlyReadBooks);
 </script>
 
 <div class="flex flex-col gap-2 py-6 container-mi">

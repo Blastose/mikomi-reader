@@ -1,9 +1,9 @@
 <script lang="ts">
-	import type { BookWithAuthorsAndCoverAndSettings } from '$lib/bindings.js';
+	import type { BookWithAuthorsAndCoverAndSettingsAndCollections } from '$lib/bindings.js';
 	import { IconBook } from '@tabler/icons-svelte';
 	import { convertFileSrc } from '@tauri-apps/api/tauri';
 
-	export let book: BookWithAuthorsAndCoverAndSettings;
+	export let book: BookWithAuthorsAndCoverAndSettingsAndCollections;
 </script>
 
 <a href="/book/{book.id}" class="flex gap-4 @container">

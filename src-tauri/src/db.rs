@@ -41,21 +41,23 @@ struct BookWithAuthors {
 }
 
 #[derive(Serialize, Type)]
-pub struct BookWithAuthorsAndCoverAndSettings {
+pub struct BookWithAuthorsAndCoverAndSettingsAndCollections {
     #[serde(flatten)]
     book: models::Book,
     authors: Vec<models::Author>,
     cover: Option<String>,
     settings: Option<models::BookSettings>,
+    collections: Vec<models::Collection>,
 }
 
 #[derive(Serialize, Type)]
-pub struct BookWithAuthorsAndCoverAndBookmarksAndHighlightsAndSettings {
+pub struct BookWithAuthorsAndCoverAndBookmarksAndHighlightsAndSettingsAndCollections {
     #[serde(flatten)]
     book: models::Book,
     authors: Vec<models::Author>,
     bookmarks: Vec<models::Bookmark>,
     highlights: Vec<models::Highlight>,
+    collections: Vec<models::Collection>,
     cover: Option<String>,
     settings: Option<models::BookSettings>,
 }
@@ -214,6 +216,143 @@ pub fn update_reader_theme(id: String, name: String) -> Result<(), String> {
 
 #[tauri::command]
 #[specta::specta]
+pub fn get_collections() -> Vec<models::Collection> {
+    let mut conn: SqliteConnection = establish_connection();
+
+    schema::collection::table
+        .select(models::Collection::as_select())
+        .get_results(&mut conn)
+        .unwrap()
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn add_collection(new_collection: models::Collection) -> Result<(), String> {
+    let mut conn: SqliteConnection = establish_connection();
+    let res = diesel::insert_into(schema::collection::table)
+        .values(&new_collection)
+        .on_conflict(schema::collection::id)
+        .do_update()
+        .set(&new_collection)
+        .execute(&mut conn);
+
+    match res {
+        Ok(_) => return Ok(()),
+        Err(_) => return Err(String::from("Cannot add collection")),
+    }
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn update_collection_name(id: String, name: String) -> Result<(), String> {
+    let mut conn: SqliteConnection = establish_connection();
+
+    let res = diesel::update(schema::collection::table.filter(schema::collection::id.eq(id)))
+        .set(schema::collection::name.eq(name))
+        .execute(&mut conn);
+
+    println!("{:#?}", res);
+
+    match res {
+        Ok(_) => return Ok(()),
+        Err(_) => return Err(String::from("Cannot update collection")),
+    }
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn remove_collection(id: String) -> Result<(), String> {
+    let mut conn: SqliteConnection = establish_connection();
+
+    let res = conn.transaction(|conn| {
+        diesel::delete(
+            schema::book_collection_link::table
+                .filter(schema::book_collection_link::collection_id.eq(id.clone())),
+        )
+        .execute(conn)?;
+
+        diesel::delete(schema::collection::table.filter(schema::collection::id.eq(id)))
+            .execute(conn)?;
+
+        diesel::result::QueryResult::Ok(())
+    });
+
+    match res {
+        Ok(_) => return Ok(()),
+        Err(_) => return Err(String::from("Cannot delete collection")),
+    }
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn add_book_to_collection(book_id: String, collection_id: String) -> Result<(), String> {
+    let mut conn: SqliteConnection = establish_connection();
+
+    let res = diesel::insert_into(schema::book_collection_link::table)
+        .values((
+            schema::book_collection_link::book_id.eq(book_id),
+            schema::book_collection_link::collection_id.eq(collection_id),
+        ))
+        .execute(&mut conn);
+
+    match res {
+        Ok(_) => return Ok(()),
+        Err(_) => return Err(String::from("Cannot add book to collection")),
+    }
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn add_book_to_collections(book_id: String, collection_ids: Vec<String>) -> Result<(), String> {
+    let mut conn: SqliteConnection = establish_connection();
+
+    let res = conn.transaction(|conn| {
+        diesel::delete(
+            schema::book_collection_link::table
+                .filter(schema::book_collection_link::book_id.eq(book_id.clone())),
+        )
+        .execute(conn)?;
+
+        for collection_id in collection_ids {
+            diesel::insert_into(schema::book_collection_link::table)
+                .values((
+                    schema::book_collection_link::book_id.eq(book_id.clone()),
+                    schema::book_collection_link::collection_id.eq(collection_id),
+                ))
+                .execute(conn)?;
+        }
+
+        diesel::result::QueryResult::Ok(())
+    });
+
+    match res {
+        Ok(_) => return Ok(()),
+        Err(_) => return Err(String::from("Cannot add book to collection")),
+    }
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn remove_book_from_collection(book_id: String, collection_id: String) -> Result<(), String> {
+    let mut conn: SqliteConnection = establish_connection();
+
+    let res = diesel::delete(
+        schema::book_collection_link::table.filter(
+            schema::book_collection_link::collection_id
+                .eq(collection_id)
+                .and(schema::book_collection_link::book_id.eq(book_id)),
+        ),
+    )
+    .execute(&mut conn);
+
+    match res {
+        Ok(_) => return Ok(()),
+        Err(_) => return Err(String::from("Cannot remove book from collection")),
+    }
+}
+
+#[tauri::command]
+#[specta::specta]
 pub fn add_highlight(new_highlight: models::Highlight) -> Result<(), String> {
     let mut conn: SqliteConnection = establish_connection();
     let res = diesel::insert_into(schema::highlight::table)
@@ -261,7 +400,9 @@ pub fn update_highlight(id: String, note: String, color: String) -> Result<(), S
 
 #[tauri::command]
 #[specta::specta]
-pub fn get_book(id: String) -> Option<BookWithAuthorsAndCoverAndBookmarksAndHighlightsAndSettings> {
+pub fn get_book(
+    id: String,
+) -> Option<BookWithAuthorsAndCoverAndBookmarksAndHighlightsAndSettingsAndCollections> {
     let mut conn: SqliteConnection = establish_connection();
 
     let books: Vec<models::Book> = schema::book::table
@@ -297,6 +438,16 @@ pub fn get_book(id: String) -> Option<BookWithAuthorsAndCoverAndBookmarksAndHigh
             .load::<(models::BookAuthorLink, models::Author)>(&mut conn)
             .unwrap();
 
+    let collections_with_book_link: Vec<(models::BookCollectionLink, models::Collection)> =
+        models::BookCollectionLink::belonging_to(&books)
+            .inner_join(schema::collection::table)
+            .select((
+                models::BookCollectionLink::as_select(),
+                models::Collection::as_select(),
+            ))
+            .load::<(models::BookCollectionLink, models::Collection)>(&mut conn)
+            .unwrap();
+
     let book = match books.into_iter().nth(0) {
         Some(v) => v,
         None => return None,
@@ -305,20 +456,24 @@ pub fn get_book(id: String) -> Option<BookWithAuthorsAndCoverAndBookmarksAndHigh
     let path = Path::new("mikomi-data/covers").join(book.id.clone());
 
     Some(
-        BookWithAuthorsAndCoverAndBookmarksAndHighlightsAndSettings {
+        BookWithAuthorsAndCoverAndBookmarksAndHighlightsAndSettingsAndCollections {
             book,
             authors: authors_with_book_link.into_iter().map(|(_, a)| a).collect(),
             bookmarks,
             highlights,
             cover: Some(String::from(path.to_string_lossy())),
             settings,
+            collections: collections_with_book_link
+                .into_iter()
+                .map(|(_, c)| c)
+                .collect(),
         },
     )
 }
 
 #[tauri::command]
 #[specta::specta]
-pub fn get_books() -> Vec<BookWithAuthorsAndCoverAndSettings> {
+pub fn get_books() -> Vec<BookWithAuthorsAndCoverAndSettingsAndCollections> {
     let mut conn: SqliteConnection = establish_connection();
 
     let all_books = schema::book::table
@@ -330,6 +485,16 @@ pub fn get_books() -> Vec<BookWithAuthorsAndCoverAndSettings> {
         .select(models::BookSettings::as_select())
         .load(&mut conn)
         .unwrap();
+
+    let mut collections_with_book_link: Vec<(models::BookCollectionLink, models::Collection)> =
+        models::BookCollectionLink::belonging_to(&all_books)
+            .inner_join(schema::collection::table)
+            .select((
+                models::BookCollectionLink::as_select(),
+                models::Collection::as_select(),
+            ))
+            .load::<(models::BookCollectionLink, models::Collection)>(&mut conn)
+            .unwrap();
 
     let authors_with_book_link: Vec<(models::BookAuthorLink, models::Author)> =
         models::BookAuthorLink::belonging_to(&all_books)
@@ -345,33 +510,45 @@ pub fn get_books() -> Vec<BookWithAuthorsAndCoverAndSettings> {
         .grouped_by(&all_books)
         .into_iter()
         .zip(all_books)
-        .map(|(a, b)| BookWithAuthors {
-            book: b,
-            authors: a.into_iter().map(|(_, b)| b).collect(),
+        .map(|(book_author_link_with_author, book)| BookWithAuthors {
+            book,
+            authors: book_author_link_with_author
+                .into_iter()
+                .map(|(_, author)| author)
+                .collect(),
         })
         .collect();
 
-    let books_with_authors_and_cover: Vec<BookWithAuthorsAndCoverAndSettings> = books_with_authors
-        .into_iter()
-        .map(|book| {
-            let path = Path::new("mikomi-data/covers").join(book.book.id.clone());
+    let books_with_authors_and_cover: Vec<BookWithAuthorsAndCoverAndSettingsAndCollections> =
+        books_with_authors
+            .into_iter()
+            .map(|book| {
+                let path = Path::new("mikomi-data/covers").join(book.book.id.clone());
 
-            let mut book_settings: Option<models::BookSettings> = None;
-            for setting in &mut settings {
-                if setting.book_id == book.book.id {
-                    book_settings = Some(setting.clone());
-                    break;
+                let mut book_settings: Option<models::BookSettings> = None;
+                for setting in &mut settings {
+                    if setting.book_id == book.book.id {
+                        book_settings = Some(setting.clone());
+                        break;
+                    }
                 }
-            }
 
-            BookWithAuthorsAndCoverAndSettings {
-                book: book.book,
-                authors: book.authors,
-                cover: Some(String::from(path.to_string_lossy())),
-                settings: book_settings,
-            }
-        })
-        .collect();
+                let mut book_collections: Vec<models::Collection> = vec![];
+                for book_collection_link_with_collection in &mut collections_with_book_link {
+                    if book_collection_link_with_collection.0.book_id == book.book.id {
+                        book_collections.push(book_collection_link_with_collection.1.clone());
+                    }
+                }
+
+                BookWithAuthorsAndCoverAndSettingsAndCollections {
+                    book: book.book,
+                    authors: book.authors,
+                    cover: Some(String::from(path.to_string_lossy())),
+                    settings: book_settings,
+                    collections: book_collections,
+                }
+            })
+            .collect();
 
     books_with_authors_and_cover
 }
