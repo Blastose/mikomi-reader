@@ -614,8 +614,12 @@ fn scale_image(image_data: Vec<u8>, max_height: u32) -> Result<Vec<u8>, String> 
     };
 
     let new_width = (width as f32 * (new_height as f32 / height as f32)) as u32;
-    let scaled_image =
-        imageops::resize(&image, new_width, new_height, imageops::FilterType::Nearest);
+    let scaled_image = imageops::resize(
+        &image,
+        new_width,
+        new_height,
+        imageops::FilterType::Triangle,
+    );
 
     let mut scaled_image_data = Cursor::new(Vec::new());
     scaled_image
@@ -691,8 +695,27 @@ pub async fn add_book_from_file(path: String) -> Result<models::Book, String> {
         None => return Err(String::from("Epub does not have a title")),
     }
 
+    let language = doc.mdata("language");
+    let description = doc.mdata("description");
+    let identifier = doc.mdata("identifier");
+    let last_modified = doc.mdata("dcterms:modified");
+    let published_date = doc.mdata("date");
+    let publisher = doc.mdata("publisher");
+
     let start = SystemTime::now();
 
+    match language {
+        Some(v) => {
+            let _ = diesel::insert_into(schema::language::table)
+                .values(models::Language { name: v })
+                .on_conflict(schema::language::name)
+                .do_nothing()
+                .execute(&mut conn);
+        }
+        None => {}
+    }
+
+    let language = doc.mdata("language");
     let new_book = models::Book {
         title,
         path,
@@ -700,6 +723,13 @@ pub async fn add_book_from_file(path: String) -> Result<models::Book, String> {
         last_read: None,
         date_added: start.duration_since(UNIX_EPOCH).unwrap().as_secs() as i32,
         reading_status: String::from("Plan to read"),
+        language,
+        description,
+        identifier,
+        last_modified,
+        published_date,
+        publisher,
+        page_progression_direction: doc.page_progression_direction,
     };
 
     let res = diesel::insert_into(schema::book::table)

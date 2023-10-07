@@ -189,27 +189,32 @@
 			<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 				<div class="flex flex-col">
 					<p class="font-bold">Language</p>
-					<p>Japanese</p>
+					<p>{data.book.language}</p>
 				</div>
 
 				<div class="flex flex-col">
 					<p class="font-bold">Author(s)</p>
-					<p>{data.book.authors.at(0)?.name ?? ''}</p>
+					<p>{data.book.authors.at(0)?.name ?? 'N/A'}</p>
 				</div>
 
 				<div class="flex flex-col">
 					<p class="font-bold">Published on</p>
-					<p>Aug 25, 2020</p>
+					<p>{data.book.published_date?.split('T').at(0) ?? 'N/A'}</p>
+				</div>
+
+				<div class="flex flex-col">
+					<p class="font-bold">Last modified</p>
+					<p>{data.book.last_modified?.split('T').at(0) ?? 'N/A'}</p>
 				</div>
 
 				<div class="flex flex-col">
 					<p class="font-bold">Publisher</p>
-					<p>Kodansha</p>
+					<p>{data.book.publisher ?? 'N/A'}</p>
 				</div>
 
 				<div class="flex flex-col">
-					<p class="font-bold">ISBN</p>
-					<p>9781131313121</p>
+					<p class="font-bold">Identifier</p>
+					<p>{data.book.identifier ?? 'N/A'}</p>
 				</div>
 			</div>
 		</div>

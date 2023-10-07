@@ -15,6 +15,13 @@ diesel::table! {
         last_read -> Nullable<Integer>,
         date_added -> Integer,
         reading_status -> Text,
+        language -> Nullable<Text>,
+        last_modified -> Nullable<Text>,
+        identifier -> Nullable<Text>,
+        published_date -> Nullable<Text>,
+        description -> Nullable<Text>,
+        publisher -> Nullable<Text>,
+        page_progression_direction -> Nullable<Text>,
     }
 }
 
@@ -89,6 +96,12 @@ diesel::table! {
 }
 
 diesel::table! {
+    language (name) {
+        name -> Text,
+    }
+}
+
+diesel::table! {
     reader_theme (id) {
         id -> Text,
         name -> Text,
@@ -100,6 +113,7 @@ diesel::table! {
     }
 }
 
+diesel::joinable!(book -> language (language));
 diesel::joinable!(book_author_link -> author (author_id));
 diesel::joinable!(book_author_link -> book (book_id));
 diesel::joinable!(book_collection_link -> book (book_id));
@@ -117,5 +131,6 @@ diesel::allow_tables_to_appear_in_same_query!(
     bookmark,
     collection,
     highlight,
+    language,
     reader_theme,
 );

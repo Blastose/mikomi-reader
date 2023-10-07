@@ -24,6 +24,13 @@ pub struct Book {
     pub last_read: Option<i32>,
     pub date_added: i32,
     pub reading_status: String,
+    pub language: Option<String>,
+    pub last_modified: Option<String>,
+    pub identifier: Option<String>,
+    pub published_date: Option<String>,
+    pub description: Option<String>,
+    pub publisher: Option<String>,
+    pub page_progression_direction: Option<String>,
 }
 
 #[derive(Queryable, Selectable, Insertable, Serialize, Identifiable, Type, PartialEq, Debug)]
@@ -31,6 +38,14 @@ pub struct Book {
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 pub struct Author {
     pub id: String,
+    pub name: String,
+}
+
+#[derive(Queryable, Selectable, Insertable, Serialize, Identifiable, Type, PartialEq, Debug)]
+#[diesel(table_name = crate::schema::language)]
+#[diesel(primary_key(name))]
+#[diesel(check_for_backend(diesel::sqlite::Sqlite))]
+pub struct Language {
     pub name: String,
 }
 

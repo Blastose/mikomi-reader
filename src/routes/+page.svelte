@@ -51,7 +51,7 @@
 				{#each recentlyReadBooks.slice(0, 12) as book (book.id)}
 					<a
 						href="/book/{book.id}"
-						class="min-w-[128px] sm:min-w-[200px] flex flex-col gap-1 justify-end"
+						class="min-w-[128px] sm:min-w-[200px] sm:max-w-[200px] flex flex-col gap-1 justify-end"
 						class:pointer-events-none={disablePointerEvents}
 					>
 						{#if book.cover}
