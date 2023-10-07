@@ -37,6 +37,7 @@ fn main() {
             db::add_book_to_collection,
             db::add_book_to_collections,
             db::remove_book_from_collection,
+            db::get_languages,
         ],
         "../src/lib/bindings.ts",
     )
@@ -72,6 +73,7 @@ fn main() {
             db::add_book_to_collection,
             db::add_book_to_collections,
             db::remove_book_from_collection,
+            db::get_languages,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

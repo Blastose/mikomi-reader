@@ -107,6 +107,16 @@ pub fn update_bookmark(id: String, display_text: String) -> Result<(), String> {
 
 #[tauri::command]
 #[specta::specta]
+pub fn get_languages() -> Vec<models::Language> {
+    let mut conn: SqliteConnection = establish_connection();
+    schema::language::table
+        .select(models::Language::as_select())
+        .get_results(&mut conn)
+        .unwrap()
+}
+
+#[tauri::command]
+#[specta::specta]
 pub fn add_book_settings(new_book_settings: models::BookSettings) -> Result<(), String> {
     let mut conn: SqliteConnection = establish_connection();
     let res = diesel::insert_into(schema::book_settings::table)

@@ -7,7 +7,12 @@
 
 <div class="py-6 container-mi">
 	<div class="flex flex-col gap-4 @container">
-		<BookSearch searchText={data.queryData.searchQuery} readingStatuses={data.queryData.statuses} />
+		<BookSearch
+			searchText={data.queryData.searchQuery}
+			readingStatuses={data.queryData.statuses}
+			languages={data.queryData.languages}
+			databaseLanguages={data.databaseLanguages}
+		/>
 
 		{#if data.books.length > 0}
 			<p class="book-count font-bold text-lg">{data.books.length} books</p>

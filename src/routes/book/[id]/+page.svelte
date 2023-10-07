@@ -194,7 +194,9 @@
 
 				<div class="flex flex-col">
 					<p class="font-bold">Author(s)</p>
-					<p>{data.book.authors.at(0)?.name ?? 'N/A'}</p>
+					{#each data.book.authors as author}
+						<p>{author.name}</p>
+					{/each}
 				</div>
 
 				<div class="flex flex-col">
