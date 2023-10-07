@@ -109,13 +109,16 @@
 		>
 			{data.book.title}
 		</p>
-		<p class="text-xs line-clamp-1 sm:line-clamp-3 sm:text-sm">{data.book.authors[0]?.name}</p>
+		<p class="text-xs line-clamp-1 sm:line-clamp-3 sm:text-sm">
+			{data.book.authors.at(0)?.name ?? ''}
+		</p>
 	</div>
 
 	<div class="flex flex-wrap gap-2 description">
 		<button
 			on:click={readBook}
-			class="flex items-center justify-center h-fit w-full gap-2 px-12 py-4 font-bold text-white duration-300 rounded-md hover:bg-black bg-neutral-800 dark:bg-primary-100 dark:text-black dark:hover:bg-[#afafb6] sm:w-fit"
+			class="flex items-center justify-center h-fit w-full gap-2 px-12 py-4 font-bold text-white duration-300 rounded-md
+			 hover:bg-black bg-neutral-800 dark:bg-primary-100 dark:text-black dark:hover:bg-[#afafb6] sm:w-fit"
 		>
 			<IconBook />
 			Read book
@@ -127,7 +130,8 @@
 			on:click={() => {
 				modalOpen.set(true);
 			}}
-			class="text-black flex items-center justify-center h-fit w-full gap-2 px-8 py-4 font-bold duration-300 rounded-md hover:bg-neutral-400 bg-neutral-300 dark:bg-neutral-600 dark:text-white dark:hover:bg-neutral-700 sm:w-fit"
+			class="text-black flex items-center justify-center h-fit w-full gap-2 px-8 py-4 font-bold duration-300 rounded-md
+			hover:bg-neutral-400 bg-neutral-300 dark:bg-neutral-600 dark:text-white dark:hover:bg-neutral-700 sm:w-fit"
 		>
 			<IconFolders />
 			Add to collection
@@ -190,7 +194,7 @@
 
 				<div class="flex flex-col">
 					<p class="font-bold">Author(s)</p>
-					<p>{data.book.authors[0].name}</p>
+					<p>{data.book.authors.at(0)?.name ?? ''}</p>
 				</div>
 
 				<div class="flex flex-col">

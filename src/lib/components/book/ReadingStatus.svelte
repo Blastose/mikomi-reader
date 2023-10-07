@@ -13,7 +13,6 @@
 	import { addToast } from '../toast/ToastContainer.svelte';
 
 	const readingStatuses = ['Reading', 'Plan to read', 'Finished'] as const;
-	type readingStatus = (typeof readingStatuses)[number];
 
 	export let book: BookWithAuthorsAndCoverAndSettingsAndCollections;
 	export let currentStatus: string;

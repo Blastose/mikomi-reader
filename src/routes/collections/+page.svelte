@@ -15,10 +15,10 @@
 	async function handleAddCollection() {
 		try {
 			await addCollection({ id: crypto.randomUUID(), name: inputValue });
-			addToast({ data: { title: 'Added collection', color: '', description: '' } });
+			addToast({ data: { title: 'Created collection', color: '', description: '' } });
 			await invalidateAll();
 		} catch {
-			addToast({ data: { title: 'Cannot add collection', color: '', description: '' } });
+			addToast({ data: { title: 'Cannot create collection', color: '', description: '' } });
 		}
 	}
 </script>

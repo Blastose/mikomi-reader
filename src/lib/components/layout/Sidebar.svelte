@@ -27,16 +27,33 @@
 		</SidebarItem>
 
 		<p class="text-lg font-bold">Library</p>
-		<SidebarItem text="All" href="/books" active={$page.url.pathname === '/books'}>
+		<SidebarItem
+			text="All"
+			href="/books"
+			active={$page.url.pathname + $page.url.search === '/books'}
+		>
 			<IconBooks />
 		</SidebarItem>
-		<SidebarItem text="Reading" href="/" active={false}>
+		<SidebarItem
+			text="Reading"
+			href="/books?status=Reading"
+			active={$page.url.pathname + $page.url.search === '/books?status=Reading'}
+		>
 			<IconBook />
 		</SidebarItem>
-		<SidebarItem text="Plan to Read" href="/" active={false}>
+		<SidebarItem
+			text="Plan to Read"
+			href={`/books?status=${encodeURIComponent('Plan to read').replace(/%20/g, '+')}`}
+			active={$page.url.pathname + $page.url.search ===
+				`/books?status=${encodeURIComponent('Plan to read').replace(/%20/g, '+')}`}
+		>
 			<IconCircleArrowRight />
 		</SidebarItem>
-		<SidebarItem text="Finished" href="/" active={false}>
+		<SidebarItem
+			text="Finished"
+			href="/books?status=Finished"
+			active={$page.url.pathname + $page.url.search === '/books?status=Finished'}
+		>
 			<IconCheckbox />
 		</SidebarItem>
 		<SidebarItem

@@ -27,7 +27,7 @@ function textNodesInElement(el: HTMLElement) {
 	return textNodes as Text[];
 }
 
-function escapeRegExp(str: string) {
+export function escapeRegExp(str: string) {
 	return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
