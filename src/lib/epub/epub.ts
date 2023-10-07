@@ -104,7 +104,7 @@ export class Epub {
 			if (!this.coverId) {
 				const properties = item.getAttribute('properties');
 				const id = item.getAttribute('id');
-				if (properties && properties === 'cover-image' && id) {
+				if (properties && properties.includes('cover-image') && id) {
 					this.coverId = id;
 				}
 			}

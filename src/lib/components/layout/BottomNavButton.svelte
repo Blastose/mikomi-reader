@@ -6,7 +6,7 @@
 
 <a
 	{href}
-	class="duration-300 flex flex-col items-center justify-center {active
+	class="duration-300 flex flex-col w-[40px] items-center justify-center {active
 		? 'text-black dark:text-white'
 		: 'text-gray-500 hover:text-gray-700 dark:text-neutral-400 dark:hover:text-neutral-300'}"
 >

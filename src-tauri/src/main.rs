@@ -30,6 +30,13 @@ fn main() {
             db::add_reader_theme,
             db::remove_reader_theme,
             db::update_reader_theme,
+            db::get_collections,
+            db::add_collection,
+            db::update_collection_name,
+            db::remove_collection,
+            db::add_book_to_collection,
+            db::add_book_to_collections,
+            db::remove_book_from_collection,
         ],
         "../src/lib/bindings.ts",
     )
@@ -58,6 +65,13 @@ fn main() {
             db::add_reader_theme,
             db::remove_reader_theme,
             db::update_reader_theme,
+            db::get_collections,
+            db::add_collection,
+            db::update_collection_name,
+            db::remove_collection,
+            db::add_book_to_collection,
+            db::add_book_to_collections,
+            db::remove_book_from_collection,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

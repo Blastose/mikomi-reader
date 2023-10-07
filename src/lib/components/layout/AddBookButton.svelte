@@ -3,6 +3,7 @@
 	import { open } from '@tauri-apps/api/dialog';
 	import { addMultipleBooksFromFiles } from '$lib/bindings';
 	import { addToast } from '$lib/components/toast/ToastContainer.svelte';
+	import { invalidateAll } from '$app/navigation';
 
 	async function getEpubPathMany() {
 		const files = await open({
@@ -29,6 +30,7 @@
 			addToast({
 				data: { color: 'bg-green-500', description: `Added book(s)`, title: 'Success' }
 			});
+			invalidateAll();
 		} catch {
 			addToast({
 				data: { color: 'bg-green-500', description: `Unable to add books`, title: 'Failure' }

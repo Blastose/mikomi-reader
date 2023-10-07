@@ -59,6 +59,7 @@ a {
 .dialog-theme {
 	background-color: rgb(32, 32, 34);
 	color: rgb(222, 223, 228);
+	color-scheme: dark;
 }
 
 @layer components {

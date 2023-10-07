@@ -1,14 +1,19 @@
 <script lang="ts">
 	import { convertFileSrc } from '@tauri-apps/api/tauri';
-	import { IconBook, IconChevronUp } from '@tabler/icons-svelte';
+	import { IconBook, IconChevronUp, IconFolders } from '@tabler/icons-svelte';
 	import { WebviewWindow } from '@tauri-apps/api/window';
 	import { page } from '$app/stores';
 	import { themeStore } from '$lib/stores/themeStore.js';
 	import { updateBook } from '$lib/bindings.js';
+	import CollectionsModal from '$lib/components/collections/CollectionsModal.svelte';
+	import { writable } from 'svelte/store';
+	import ReadingStatus from '$lib/components/book/ReadingStatus.svelte';
 
 	export let data;
 
 	$: id = $page.params.id;
+
+	let modalOpen = writable(false);
 
 	let expandedSynopsis = false;
 	let parentSynopsisElement: HTMLDivElement;
@@ -68,6 +73,13 @@
 
 <svelte:window on:resize={onWindowResize} />
 
+<CollectionsModal
+	bookId={id}
+	openStore={modalOpen}
+	collections={data.collections}
+	bookCollections={data.book.collections}
+/>
+
 <div class="-mt-16 pb-8 grid-container container-mi">
 	<div
 		style:background-image={$themeStore === 'dark'
@@ -97,20 +109,36 @@
 		>
 			{data.book.title}
 		</p>
-		<p class="text-xs line-clamp-1 sm:line-clamp-3 sm:text-sm">{data.book.authors[0]?.name}</p>
+		<p class="text-xs line-clamp-1 sm:line-clamp-3 sm:text-sm">
+			{data.book.authors.at(0)?.name ?? ''}
+		</p>
 	</div>
 
-	<div class="flex flex-col gap-2 description">
+	<div class="flex flex-wrap gap-2 description">
 		<button
 			on:click={readBook}
-			class="flex items-center justify-center w-full gap-2 px-8 py-4 font-bold text-white duration-300 rounded-md hover:bg-black bg-neutral-800 dark:bg-primary-100 dark:text-black dark:hover:bg-[#afafb6] sm:w-fit"
+			class="flex items-center justify-center h-fit w-full gap-2 px-12 py-4 font-bold text-white duration-300 rounded-md
+			 hover:bg-black bg-neutral-800 dark:bg-primary-100 dark:text-black dark:hover:bg-[#afafb6] sm:w-fit"
 		>
 			<IconBook />
 			Read book
 		</button>
+
+		<ReadingStatus book={data.book} currentStatus={data.book.reading_status} />
+
+		<button
+			on:click={() => {
+				modalOpen.set(true);
+			}}
+			class="text-black flex items-center justify-center h-fit w-full gap-2 px-8 py-4 font-bold duration-300 rounded-md
+			hover:bg-neutral-400 bg-neutral-300 dark:bg-neutral-600 dark:text-white dark:hover:bg-neutral-700 sm:w-fit"
+		>
+			<IconFolders />
+			Add to collection
+		</button>
 	</div>
 
-	<div class="flex flex-col gap-4 content">
+	<div class="flex flex-col gap-12 content">
 		<div class="flex flex-col gap-2">
 			<p class="text-lg font-bold">Synopsis:</p>
 			<div
@@ -151,6 +179,39 @@
 					<span class="-mt-2 text-xs">{expandedSynopsis ? 'Show less' : 'Show more'}</span>
 				</button>
 			{/if}
+		</div>
+
+		<hr class="dark:border-[#46464b]" />
+
+		<div class="flex flex-col gap-2">
+			<h3 class="text-xl font-bold">Info:</h3>
+
+			<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+				<div class="flex flex-col">
+					<p class="font-bold">Language</p>
+					<p>Japanese</p>
+				</div>
+
+				<div class="flex flex-col">
+					<p class="font-bold">Author(s)</p>
+					<p>{data.book.authors.at(0)?.name ?? ''}</p>
+				</div>
+
+				<div class="flex flex-col">
+					<p class="font-bold">Published on</p>
+					<p>Aug 25, 2020</p>
+				</div>
+
+				<div class="flex flex-col">
+					<p class="font-bold">Publisher</p>
+					<p>Kodansha</p>
+				</div>
+
+				<div class="flex flex-col">
+					<p class="font-bold">ISBN</p>
+					<p>9781131313121</p>
+				</div>
+			</div>
 		</div>
 	</div>
 </div>

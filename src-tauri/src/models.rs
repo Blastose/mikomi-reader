@@ -23,6 +23,7 @@ pub struct Book {
     pub path: String,
     pub last_read: Option<i32>,
     pub date_added: i32,
+    pub reading_status: String,
 }
 
 #[derive(Queryable, Selectable, Insertable, Serialize, Identifiable, Type, PartialEq, Debug)]
@@ -159,4 +160,38 @@ pub struct BookAuthorLink {
     pub book_id: String,
     pub author_id: String,
     pub primary_creator: bool,
+}
+
+#[derive(
+    Queryable,
+    Selectable,
+    Insertable,
+    Deserialize,
+    Identifiable,
+    QueryableByName,
+    Serialize,
+    Type,
+    PartialEq,
+    Debug,
+    AsChangeset,
+    Clone,
+)]
+#[diesel(table_name = crate::schema::collection)]
+#[diesel(check_for_backend(diesel::sqlite::Sqlite))]
+pub struct Collection {
+    pub id: String,
+    pub name: String,
+}
+
+#[derive(
+    Queryable, Selectable, Insertable, Serialize, Associations, Identifiable, Type, PartialEq, Debug,
+)]
+#[diesel(belongs_to(Book))]
+#[diesel(belongs_to(Collection))]
+#[diesel(table_name = crate::schema::book_collection_link)]
+#[diesel(primary_key(book_id, collection_id))]
+#[diesel(check_for_backend(diesel::sqlite::Sqlite))]
+pub struct BookCollectionLink {
+    pub book_id: String,
+    pub collection_id: String,
 }

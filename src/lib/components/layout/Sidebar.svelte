@@ -4,7 +4,9 @@
 		IconBooks,
 		IconCheckbox,
 		IconCircleArrowRight,
-		IconSettings
+		IconSettings,
+		IconFolders,
+		IconBook
 	} from '@tabler/icons-svelte';
 	import SidebarItem from './SidebarItem.svelte';
 	import Logo from '$lib/components/logo/Logo.svelte';
@@ -25,14 +27,41 @@
 		</SidebarItem>
 
 		<p class="text-lg font-bold">Library</p>
-		<SidebarItem text="All" href="/books" active={$page.url.pathname === '/books'}>
+		<SidebarItem
+			text="All"
+			href="/books"
+			active={$page.url.pathname + $page.url.search === '/books'}
+		>
 			<IconBooks />
 		</SidebarItem>
-		<SidebarItem text="Plan to Read" href="/" active={false}>
+		<SidebarItem
+			text="Reading"
+			href="/books?status=Reading"
+			active={$page.url.pathname + $page.url.search === '/books?status=Reading'}
+		>
+			<IconBook />
+		</SidebarItem>
+		<SidebarItem
+			text="Plan to Read"
+			href={`/books?status=${encodeURIComponent('Plan to read').replace(/%20/g, '+')}`}
+			active={$page.url.pathname + $page.url.search ===
+				`/books?status=${encodeURIComponent('Plan to read').replace(/%20/g, '+')}`}
+		>
 			<IconCircleArrowRight />
 		</SidebarItem>
-		<SidebarItem text="Finished" href="/" active={false}>
+		<SidebarItem
+			text="Finished"
+			href="/books?status=Finished"
+			active={$page.url.pathname + $page.url.search === '/books?status=Finished'}
+		>
 			<IconCheckbox />
+		</SidebarItem>
+		<SidebarItem
+			text="Collections"
+			href="/collections"
+			active={$page.url.pathname === '/collections'}
+		>
+			<IconFolders />
 		</SidebarItem>
 		<SidebarItem text="Settings" href="/settings" active={$page.url.pathname === '/settings'}>
 			<IconSettings />

@@ -11,11 +11,11 @@ declare global {
 const invoke = () => window.__TAURI_INVOKE__;
 
 export function getBook(id: string) {
-    return invoke()<BookWithAuthorsAndCoverAndBookmarksAndHighlightsAndSettings | null>("get_book", { id })
+    return invoke()<BookWithAuthorsAndCoverAndBookmarksAndHighlightsAndSettingsAndCollections | null>("get_book", { id })
 }
 
 export function getBooks() {
-    return invoke()<BookWithAuthorsAndCoverAndSettings[]>("get_books")
+    return invoke()<BookWithAuthorsAndCoverAndSettingsAndCollections[]>("get_books")
 }
 
 export function addBookFromFile(path: string) {
@@ -82,11 +82,40 @@ export function updateReaderTheme(id: string, name: string) {
     return invoke()<null>("update_reader_theme", { id,name })
 }
 
+export function getCollections() {
+    return invoke()<Collection[]>("get_collections")
+}
+
+export function addCollection(newCollection: Collection) {
+    return invoke()<null>("add_collection", { newCollection })
+}
+
+export function updateCollectionName(id: string, name: string) {
+    return invoke()<null>("update_collection_name", { id,name })
+}
+
+export function removeCollection(id: string) {
+    return invoke()<null>("remove_collection", { id })
+}
+
+export function addBookToCollection(bookId: string, collectionId: string) {
+    return invoke()<null>("add_book_to_collection", { bookId,collectionId })
+}
+
+export function addBookToCollections(bookId: string, collectionIds: string[]) {
+    return invoke()<null>("add_book_to_collections", { bookId,collectionIds })
+}
+
+export function removeBookFromCollection(bookId: string, collectionId: string) {
+    return invoke()<null>("remove_book_from_collection", { bookId,collectionId })
+}
+
+export type Collection = { id: string; name: string }
 export type Highlight = { id: string; book_id: string; date_added: number; note: string; start_container: string; start_offset: number; end_container: string; end_offset: number; color: string }
-export type BookSettings = { id: string; book_id: string; width: number | null; height: number | null; percentage: number | null; last_element: string | null; last_page: number | null; font_size: number; line_height: string; margins: number; text_align: string; column_count: number; writing_mode: string; font_family: string; background_color: string; color: string; link_color: string; primary_color: string; image_blend_mode: string }
+export type BookWithAuthorsAndCoverAndBookmarksAndHighlightsAndSettingsAndCollections = ({ id: string; title: string; path: string; last_read: number | null; date_added: number; reading_status: string }) & { authors: Author[]; bookmarks: Bookmark[]; highlights: Highlight[]; collections: Collection[]; cover: string | null; settings: BookSettings | null }
 export type Author = { id: string; name: string }
+export type Book = { id: string; title: string; path: string; last_read: number | null; date_added: number; reading_status: string }
+export type BookWithAuthorsAndCoverAndSettingsAndCollections = ({ id: string; title: string; path: string; last_read: number | null; date_added: number; reading_status: string }) & { authors: Author[]; cover: string | null; settings: BookSettings | null; collections: Collection[] }
 export type Bookmark = { id: string; book_id: string; display_text: string; date_added: number; css_selector: string }
-export type BookWithAuthorsAndCoverAndBookmarksAndHighlightsAndSettings = ({ id: string; title: string; path: string; last_read: number | null; date_added: number }) & { authors: Author[]; bookmarks: Bookmark[]; highlights: Highlight[]; cover: string | null; settings: BookSettings | null }
-export type BookWithAuthorsAndCoverAndSettings = ({ id: string; title: string; path: string; last_read: number | null; date_added: number }) & { authors: Author[]; cover: string | null; settings: BookSettings | null }
-export type Book = { id: string; title: string; path: string; last_read: number | null; date_added: number }
+export type BookSettings = { id: string; book_id: string; width: number | null; height: number | null; percentage: number | null; last_element: string | null; last_page: number | null; font_size: number; line_height: string; margins: number; text_align: string; column_count: number; writing_mode: string; font_family: string; background_color: string; color: string; link_color: string; primary_color: string; image_blend_mode: string }
 export type ReaderTheme = { id: string; name: string; background_color: string; color: string; link_color: string; primary_color: string; image_blend_mode: string }

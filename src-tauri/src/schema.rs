@@ -14,6 +14,7 @@ diesel::table! {
         path -> Text,
         last_read -> Nullable<Integer>,
         date_added -> Integer,
+        reading_status -> Text,
     }
 }
 
@@ -22,6 +23,13 @@ diesel::table! {
         book_id -> Text,
         author_id -> Text,
         primary_creator -> Bool,
+    }
+}
+
+diesel::table! {
+    book_collection_link (book_id, collection_id) {
+        book_id -> Text,
+        collection_id -> Text,
     }
 }
 
@@ -60,6 +68,13 @@ diesel::table! {
 }
 
 diesel::table! {
+    collection (id) {
+        id -> Text,
+        name -> Text,
+    }
+}
+
+diesel::table! {
     highlight (id) {
         id -> Text,
         book_id -> Text,
@@ -87,6 +102,8 @@ diesel::table! {
 
 diesel::joinable!(book_author_link -> author (author_id));
 diesel::joinable!(book_author_link -> book (book_id));
+diesel::joinable!(book_collection_link -> book (book_id));
+diesel::joinable!(book_collection_link -> collection (collection_id));
 diesel::joinable!(book_settings -> book (book_id));
 diesel::joinable!(bookmark -> book (book_id));
 diesel::joinable!(highlight -> book (book_id));
@@ -95,8 +112,10 @@ diesel::allow_tables_to_appear_in_same_query!(
     author,
     book,
     book_author_link,
+    book_collection_link,
     book_settings,
     bookmark,
+    collection,
     highlight,
     reader_theme,
 );

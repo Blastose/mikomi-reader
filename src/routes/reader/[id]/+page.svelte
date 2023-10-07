@@ -42,6 +42,7 @@
 	import { tocStore, flatTocStore } from '$lib/components/reader/stores/tocStore.js';
 
 	appWindow.onCloseRequested(async () => {
+		if (domLoading || dataLoading) return;
 		if (!readerNode) return;
 		const el = getFirstVisibleElementInParentElement(readerNode, $readerSettingsStore.writingMode);
 		let selector: string | null = null;

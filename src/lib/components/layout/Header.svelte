@@ -33,6 +33,8 @@
 				{'Library'}
 			{:else if $page.url.pathname.startsWith('/settings')}
 				{'Settings'}
+			{:else if $page.url.pathname.startsWith('/collections')}
+				{'Collections'}
 			{:else}
 				{currentHeaderText}
 			{/if}
@@ -41,12 +43,12 @@
 		<div class="flex items-center gap-4">
 			<AddBookButton />
 
-			<button
+			<!-- <button
 				class="flex flex-col items-center text-gray-700 hover:text-black dark:text-neutral-300"
 			>
 				<IconDotsVertical />
 				<span class="text-xs">More</span>
-			</button>
+			</button> -->
 		</div>
 	</div>
 </div>
