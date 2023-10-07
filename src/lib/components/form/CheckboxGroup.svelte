@@ -8,6 +8,11 @@
 	export let groupName: string;
 	export let name: string;
 	export let group: string[];
+	export const resetCheckboxGroup = () => {
+		selectedMap.clear();
+		selectedMap = selectedMap;
+		group = [];
+	};
 
 	let selectedMap = new Map<string, string>();
 
@@ -17,10 +22,6 @@
 		}
 		selectedMap = selectedMap;
 	});
-
-	function resetCheckboxGroup() {
-		selectedMap.clear();
-	}
 
 	function setSelected(item: Item) {
 		selectedMap.set(item.value, item.value);

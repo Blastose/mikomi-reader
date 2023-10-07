@@ -29,6 +29,12 @@
 	});
 
 	export let readingStatusValues: string[];
+
+	let clearReadingStatuses: () => {};
+
+	function resetAllFilters() {
+		clearReadingStatuses();
+	}
 </script>
 
 <button
@@ -84,12 +90,14 @@
 							groupName="Reading status"
 							name="status"
 							bind:group={readingStatusValues}
+							bind:resetCheckboxGroup={clearReadingStatuses}
 						/>
 					</div>
 				</div>
 
 				<div class="flex flex-col-reverse sm:flex-row gap-2 sm:gap-4 items-center sm:justify-end">
 					<button
+						on:click={resetAllFilters}
 						type="button"
 						class="w-full sm:w-fit hover:bg-neutral-700 duration-300 rounded-md px-4 py-2"
 					>
