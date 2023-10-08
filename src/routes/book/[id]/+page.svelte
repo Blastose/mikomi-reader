@@ -188,6 +188,20 @@
 				</div>
 
 				<div class="flex flex-col">
+					<p class="font-bold">Reading progress</p>
+					<p>{data.book.settings?.percentage ?? 0}%</p>
+				</div>
+
+				<div class="flex flex-col">
+					<p class="font-bold">Last read</p>
+					{#if data.book.last_read}
+						<p>{new Date(data.book.last_read * 1000).toLocaleDateString()}</p>
+					{:else}
+						<p>Not yet read</p>
+					{/if}
+				</div>
+
+				<div class="flex flex-col">
 					<p class="font-bold">Published on</p>
 					<p>{data.book.published_date?.split('T').at(0) ?? 'N/A'}</p>
 				</div>
