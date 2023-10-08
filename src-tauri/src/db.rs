@@ -258,8 +258,6 @@ pub fn update_collection_name(id: String, name: String) -> Result<(), String> {
         .set(schema::collection::name.eq(name))
         .execute(&mut conn);
 
-    println!("{:#?}", res);
-
     match res {
         Ok(_) => return Ok(()),
         Err(_) => return Err(String::from("Cannot update collection")),
