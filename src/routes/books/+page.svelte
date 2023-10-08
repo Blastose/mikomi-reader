@@ -20,7 +20,7 @@
 			<p class="book-count font-bold text-lg">{data.books.length} books</p>
 			<div class="grid grid-cols-2 gap-4 @md:grid-cols-4 @4xl:grid-cols-6 @7xl:grid-cols-8">
 				{#each data.books as book}
-					<BookCard {book} />
+					<BookCard {book} collections={data.databaseCollections} />
 				{/each}
 			</div>
 		{:else}
