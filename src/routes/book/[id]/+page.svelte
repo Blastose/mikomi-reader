@@ -16,9 +16,9 @@
 
 	let modalOpen = writable(false);
 
-	let expandedSynopsis = false;
-	let parentSynopsisElement: HTMLDivElement;
-	let synopsisElement: HTMLParagraphElement;
+	let expandedDescription = false;
+	let parentDescriptionElement: HTMLDivElement;
+	let descriptionElement: HTMLParagraphElement;
 
 	let titleElement: HTMLParagraphElement;
 	let timeout: ReturnType<typeof setTimeout>;
@@ -43,11 +43,11 @@
 		}
 	}
 
-	function resizeSynopsis() {
-		if (expandedSynopsis) {
-			parentSynopsisElement.style.maxHeight = `${synopsisElement.clientHeight}px`;
+	function resizeDescription() {
+		if (expandedDescription) {
+			parentDescriptionElement.style.maxHeight = `${descriptionElement.clientHeight}px`;
 		} else {
-			parentSynopsisElement.style.maxHeight = `96px`;
+			parentDescriptionElement.style.maxHeight = `96px`;
 		}
 	}
 
@@ -55,7 +55,7 @@
 		clearTimeout(timeout);
 		timeout = setTimeout(() => {
 			resizeTitle(titleElement);
-			resizeSynopsis();
+			resizeDescription();
 		}, delay);
 	}
 
@@ -141,30 +141,30 @@
 
 	<div class="flex flex-col gap-12 content">
 		<div class="flex flex-col gap-2">
-			<p class="text-lg font-bold">Synopsis:</p>
+			<p class="text-lg font-bold">Description:</p>
 			<div
-				bind:this={parentSynopsisElement}
+				bind:this={parentDescriptionElement}
 				class="max-w-5xl overflow-hidden duration-300 max-h-24"
 			>
-				<p bind:this={synopsisElement}>
-					{@html DOMPurify.sanitize(data.book.description ?? 'No synopsis')}
+				<p bind:this={descriptionElement}>
+					{@html DOMPurify.sanitize(data.book.description ?? 'No description')}
 				</p>
 			</div>
 
-			{#if synopsisElement?.clientHeight > 96}
+			{#if descriptionElement?.clientHeight > 96}
 				<button
 					class="duration-300 flex flex-col items-center justify-center rounded-md hide-text-gradient
-					{expandedSynopsis ? 'mt-0' : '-mt-8'}"
+					{expandedDescription ? 'mt-0' : '-mt-8'}"
 					on:click={() => {
-						expandedSynopsis = !expandedSynopsis;
-						resizeSynopsis();
+						expandedDescription = !expandedDescription;
+						resizeDescription();
 					}}
-					aria-label={expandedSynopsis ? 'Show less' : 'Show more'}
+					aria-label={expandedDescription ? 'Show less' : 'Show more'}
 				>
 					<IconChevronUp
-						class="duration-200 ease-out {expandedSynopsis ? 'rotate-0' : 'rotate-180'}"
+						class="duration-200 ease-out {expandedDescription ? 'rotate-0' : 'rotate-180'}"
 					/>
-					<span class="-mt-2 text-xs">{expandedSynopsis ? 'Show less' : 'Show more'}</span>
+					<span class="-mt-2 text-xs">{expandedDescription ? 'Show less' : 'Show more'}</span>
 				</button>
 			{/if}
 		</div>
