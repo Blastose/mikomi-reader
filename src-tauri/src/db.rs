@@ -258,8 +258,6 @@ pub fn update_collection_name(id: String, name: String) -> Result<(), String> {
         .set(schema::collection::name.eq(name))
         .execute(&mut conn);
 
-    println!("{:#?}", res);
-
     match res {
         Ok(_) => return Ok(()),
         Err(_) => return Err(String::from("Cannot update collection")),
@@ -754,6 +752,45 @@ pub fn update_book(book: models::Book) -> Result<(), String> {
     match res {
         Ok(_) => return Ok(()),
         Err(_) => return Err(String::from("Cannot update book")),
+    }
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn remove_book(id: String) -> Result<(), String> {
+    let mut conn: SqliteConnection = establish_connection();
+    let res = conn.transaction(|conn| {
+        diesel::delete(
+            schema::book_collection_link::table
+                .filter(schema::book_collection_link::book_id.eq(&id)),
+        )
+        .execute(conn)?;
+        diesel::delete(
+            schema::book_author_link::table.filter(schema::book_author_link::book_id.eq(&id)),
+        )
+        .execute(conn)?;
+        diesel::delete(schema::bookmark::table.filter(schema::bookmark::book_id.eq(&id)))
+            .execute(conn)?;
+        diesel::delete(schema::highlight::table.filter(schema::highlight::book_id.eq(&id)))
+            .execute(conn)?;
+        diesel::delete(schema::book_settings::table.filter(schema::book_settings::book_id.eq(&id)))
+            .execute(conn)?;
+        diesel::delete(schema::book::table.filter(schema::book::id.eq(&id))).execute(conn)?;
+
+        diesel::result::QueryResult::Ok(())
+    });
+
+    match res {
+        Ok(_) => {}
+        Err(_) => return Err(String::from("Cannot delete book")),
+    }
+
+    let cover_path = Path::new("mikomi-data/covers").join(&id);
+    let res = fs::remove_file(cover_path);
+
+    match res {
+        Ok(_) => return Ok(()),
+        Err(_) => return Err(String::from("Cannot delete book")),
     }
 }
 

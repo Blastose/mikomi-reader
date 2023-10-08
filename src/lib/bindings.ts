@@ -30,6 +30,10 @@ export function updateBook(book: Book) {
     return invoke()<null>("update_book", { book })
 }
 
+export function removeBook(id: string) {
+    return invoke()<null>("remove_book", { id })
+}
+
 export function addBookmark(newBookmark: Bookmark) {
     return invoke()<null>("add_bookmark", { newBookmark })
 }

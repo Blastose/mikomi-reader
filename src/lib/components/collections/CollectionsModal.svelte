@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { createDialog, melt } from '@melt-ui/svelte';
 	import { fade, fly } from 'svelte/transition';
-	import { IconX } from '@tabler/icons-svelte';
-	import type { Writable } from 'svelte/store';
+	import { IconPlus, IconX } from '@tabler/icons-svelte';
+	import { writable, type Writable } from 'svelte/store';
 	import { addBookToCollections, type Collection } from '$lib/bindings';
 	import { invalidateAll } from '$app/navigation';
 	import { addToast } from '$lib/components/toast/ToastContainer.svelte';
+	import CollectionInputModal from './CollectionInputModal.svelte';
 
 	export let bookId: string;
 	export let openStore: Writable<boolean>;
@@ -13,6 +14,8 @@
 	export let bookCollections: Collection[];
 
 	let checkboxGroup: string[] = [];
+	let collectionInputModalStore = writable(false);
+	let inputValue: string = '';
 
 	for (const collection of collections) {
 		for (const bookCollection of bookCollections) {
@@ -66,6 +69,17 @@
 				</div>
 
 				<button
+					class="flex w-fit items-center px-2 py-1 bg-neutral-700 hover:bg-neutral-800 duration-300 gap-2 rounded-md"
+					on:click={() => {
+						collectionInputModalStore.set(true);
+					}}
+				>
+					<IconPlus />
+					Create collection
+				</button>
+				<CollectionInputModal {inputValue} openStore={collectionInputModalStore} />
+
+				<button
 					on:click={async () => {
 						await addBookToCollections(bookId, checkboxGroup);
 						invalidateAll();
@@ -74,7 +88,7 @@
 						});
 						openStore.set(false);
 					}}
-					class="bg-neutral-700 rounded-md p-2">Save</button
+					class="bg-neutral-700 hover:bg-neutral-800 duration-300 rounded-md p-2">Save</button
 				>
 			</div>
 

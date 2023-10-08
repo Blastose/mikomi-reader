@@ -1,13 +1,12 @@
 <script lang="ts">
 	import { convertFileSrc } from '@tauri-apps/api/tauri';
 	import { IconBook, IconChevronUp, IconFolders } from '@tabler/icons-svelte';
-	import { WebviewWindow } from '@tauri-apps/api/window';
 	import { page } from '$app/stores';
 	import { themeStore } from '$lib/stores/themeStore.js';
-	import { updateBook } from '$lib/bindings.js';
 	import CollectionsModal from '$lib/components/collections/CollectionsModal.svelte';
 	import { writable } from 'svelte/store';
 	import ReadingStatus from '$lib/components/book/ReadingStatus.svelte';
+	import { readBook } from '$lib/components/book/utils.js';
 	import DOMPurify from 'dompurify';
 
 	export let data;
@@ -58,18 +57,6 @@
 			resizeDescription();
 		}, delay);
 	}
-
-	function readBook() {
-		updateBook({ ...data.book, last_read: Math.floor(Date.now() / 1000) });
-		const newUrl = `/reader/${id}`;
-		new WebviewWindow(id, {
-			url: newUrl,
-			height: data.book.settings?.height ?? 860,
-			width: data.book.settings?.width ?? 512,
-			title: `${data.book.title} - Mikomi Reader`,
-			visible: false
-		});
-	}
 </script>
 
 <svelte:window on:resize={onWindowResize} />
@@ -117,7 +104,9 @@
 
 	<div class="flex flex-wrap gap-2 description">
 		<button
-			on:click={readBook}
+			on:click={() => {
+				readBook(data.book, data.book.settings);
+			}}
 			class="flex items-center justify-center h-fit w-full gap-2 px-12 py-4 font-bold text-white duration-300 rounded-md
 			 hover:bg-black bg-neutral-800 dark:bg-primary-100 dark:text-black dark:hover:bg-[#afafb6] sm:w-fit"
 		>

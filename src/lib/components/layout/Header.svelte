@@ -13,7 +13,7 @@
 <svelte:window bind:scrollY />
 
 <div
-	class="header sticky top-0 z-10 h-16
+	class="header sticky top-0 z-50 h-16
 	{isOnBookRoute ? 'header-transition' : 'bg-white dark:bg-dark-500'} 
 	{scrollY > 0 ? 'bg-white dark:bg-dark-500' : ''}"
 >

@@ -38,7 +38,6 @@ export const load = (async ({ url }) => {
 	let books = await getBooks();
 	const databaseLanguages = await getLanguages();
 	const databaseCollections = await getCollections();
-	databaseCollections.push({ id: 'None', name: '*No collection*' });
 
 	if (statuses.length > 0) {
 		console.log(statuses);

@@ -1,16 +1,29 @@
 <script lang="ts">
-	import type { BookWithAuthorsAndCoverAndSettingsAndCollections } from '$lib/bindings.js';
-	import { IconDotsVertical } from '@tabler/icons-svelte';
+	import { goto } from '$app/navigation';
+	import type {
+		BookWithAuthorsAndCoverAndSettingsAndCollections,
+		Collection
+	} from '$lib/bindings.js';
 	import { convertFileSrc } from '@tauri-apps/api/tauri';
+	import BookCardDropdown from './BookCardDropdown.svelte';
 
 	export let book: BookWithAuthorsAndCoverAndSettingsAndCollections;
-	export let disablePointerEvents: boolean = false;
+	export let collections: Collection[];
 </script>
 
-<a
-	href="/book/{book.id}"
-	class="flex flex-col gap-2 justify-end"
-	class:pointer-events-none={disablePointerEvents}
+<div
+	on:click={() => {
+		goto(`/book/${book.id}`);
+	}}
+	on:keydown={(e) => {
+		if (e.key === 'Enter' && e.currentTarget === e.target) {
+			e.preventDefault();
+			goto(`/book/${book.id}`);
+		}
+	}}
+	role="link"
+	tabindex="0"
+	class="cursor-pointer flex flex-col gap-2 justify-end"
 >
 	<div class="shadow-md overflow-hidden">
 		{#if book.cover}
@@ -25,7 +38,7 @@
 			<div class="w-full h-full bg-gray-300 shadow-md" />
 		{/if}
 	</div>
-	<div class="grid grid-cols-[1fr_min-content]">
+	<div class="grid grid-cols-[1fr_min-content] gap-1">
 		<div>
 			<p class="font-bold line-clamp-2" title={book.title}>
 				{book.title}
@@ -37,8 +50,6 @@
 				{book.authors[0]?.name ?? 'No author'}
 			</p>
 		</div>
-		<div class="flex justify-center w-6 mt-1 duration-300 rounded-full h-min hover:bg-gray-200">
-			<IconDotsVertical size={20} color="#999999" />
-		</div>
+		<BookCardDropdown {book} {collections} />
 	</div>
-</a>
+</div>
