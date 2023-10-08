@@ -3,11 +3,11 @@
 	import { IconCheck, IconChevronDown } from '@tabler/icons-svelte';
 	import { writable } from 'svelte/store';
 
+	export let allSelectedText: string;
 	export let selectName: string;
 	export let selectOptions: string[];
 	export let selected: string[];
 	export const resetSelected = () => {
-		console.log('jalsdjsld');
 		selectedMeltStore.set([]);
 		selected = [];
 	};
@@ -51,7 +51,7 @@
 	>
 		<span class="flex gap-2">
 			{#if selected.length === 0}
-				<span class="px-2 rounded-full text-sm text-black bg-neutral-200">All languages</span>
+				<span class="px-2 rounded-full text-sm text-black bg-neutral-200">{allSelectedText}</span>
 			{:else if selected.length <= 2}
 				{#each selected as selectItem}
 					<span class="px-2 rounded-full text-sm text-black bg-neutral-200">{selectItem}</span>

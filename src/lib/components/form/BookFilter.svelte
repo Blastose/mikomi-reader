@@ -5,20 +5,24 @@
 	import CheckboxGroup from './CheckboxGroup.svelte';
 	import { afterNavigate } from '$app/navigation';
 	import { page } from '$app/stores';
-	import type { Language } from '$lib/bindings';
+	import type { Collection, Language } from '$lib/bindings';
 	import MultiSelect from './MultiSelect.svelte';
 
 	export let handleSubmit: () => void;
 	export let databaseLanguages: Language[];
 	export let languageValues: string[];
 	export let readingStatusValues: string[];
+	export let collectionsValues: string[];
+	export let databaseCollections: Collection[];
 
 	let clearReadingStatuses: () => {};
 	let clearLanguages: () => {};
+	let clearCollections: () => {};
 
 	function resetAllFilters() {
 		clearReadingStatuses();
 		clearLanguages();
+		clearCollections();
 	}
 
 	const readingStatuses = ['Reading', 'Plan to read', 'Finished'] as const;
@@ -63,6 +67,9 @@
 {#each languageValues as languageValue}
 	<input name="lang" type="hidden" value={languageValue} />
 {/each}
+{#each collectionsValues as collectionsValue}
+	<input name="collection" type="hidden" value={collectionsValue} />
+{/each}
 
 <div use:melt={$portalled}>
 	{#if $open}
@@ -102,12 +109,23 @@
 						/>
 					</div>
 
-					<MultiSelect
-						selectName="Language"
-						selectOptions={databaseLanguages.map((l) => l.name)}
-						bind:selected={languageValues}
-						bind:resetSelected={clearLanguages}
-					/>
+					<div class="flex items-center flex-wrap gap-4">
+						<MultiSelect
+							allSelectedText="All languages"
+							selectName="Language"
+							selectOptions={databaseLanguages.map((l) => l.name)}
+							bind:selected={languageValues}
+							bind:resetSelected={clearLanguages}
+						/>
+
+						<MultiSelect
+							allSelectedText="Any collection"
+							selectName="Collection"
+							selectOptions={databaseCollections.map((c) => c.name)}
+							bind:selected={collectionsValues}
+							bind:resetSelected={clearCollections}
+						/>
+					</div>
 				</div>
 
 				<div class="flex flex-col-reverse sm:flex-row gap-2 sm:gap-4 items-center sm:justify-end">
