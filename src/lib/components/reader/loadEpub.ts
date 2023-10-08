@@ -4,6 +4,7 @@ import { parseNavToc, parseNcxToc } from '$lib/components/reader/toc/tocParser';
 import { Epub } from '$lib/epub/epub';
 import { convertFileSrc } from '@tauri-apps/api/tauri';
 import type { Toc } from '$lib/epub/epub';
+import DOMPurify from 'dompurify';
 
 async function prefixCss(css: string) {
 	const prefed = postcss()
@@ -154,7 +155,10 @@ export async function loadEpub(path: string) {
 	const { newHtml, blobUrls } = parseHtml(html, Object.fromEntries(img));
 
 	return {
-		newHtml,
+		newHtml: DOMPurify.sanitize(newHtml, {
+			ALLOWED_URI_REGEXP:
+				/^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp|xxx|blob|epub):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i
+		}),
 		blobUrls,
 		tocNavs
 	};

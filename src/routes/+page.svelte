@@ -14,7 +14,7 @@
 	}
 
 	$: recentlyReadBooks = data.books
-		.filter((b) => b.settings?.percentage && b.settings?.percentage < 100)
+		.filter((b) => b.settings?.percentage)
 		.sort((a, b) => {
 			if (a.last_read && b.last_read) {
 				return b.last_read - a.last_read;

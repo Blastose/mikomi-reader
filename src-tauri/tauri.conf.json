@@ -21,6 +21,13 @@
 				"open": true,
 				"save": false
 			},
+			"shell": {
+				"all": false,
+				"execute": false,
+				"open": true,
+				"scope": [],
+				"sidecar": false
+			},
 			"window": {
 				"all": false,
 				"center": false,

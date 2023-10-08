@@ -22,6 +22,7 @@
 		"@sveltejs/kit": "^1.25.1",
 		"@tailwindcss/container-queries": "^0.1.1",
 		"@tauri-apps/cli": "^1.5.0",
+		"@types/dompurify": "^3.0.3",
 		"@types/postcss-prefix-selector": "^1.15.0",
 		"@typescript-eslint/eslint-plugin": "^5.45.0",
 		"@typescript-eslint/parser": "^5.45.0",
@@ -47,6 +48,7 @@
 		"@tabler/icons-svelte": "^2.29.0",
 		"@tauri-apps/api": "^1.5.0",
 		"@zip.js/zip.js": "^2.7.29",
+		"dompurify": "^3.0.6",
 		"just-debounce-it": "^3.2.0",
 		"postcss-prefix-selector": "^1.16.0"
 	}

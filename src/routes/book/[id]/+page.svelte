@@ -8,6 +8,7 @@
 	import CollectionsModal from '$lib/components/collections/CollectionsModal.svelte';
 	import { writable } from 'svelte/store';
 	import ReadingStatus from '$lib/components/book/ReadingStatus.svelte';
+	import DOMPurify from 'dompurify';
 
 	export let data;
 
@@ -146,20 +147,7 @@
 				class="max-w-5xl overflow-hidden duration-300 max-h-24"
 			>
 				<p bind:this={synopsisElement}>
-					Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent ipsum nulla, pretium
-					vitae velit sollicitudin, facilisis tempus orci. Nulla a sem facilisis, ullamcorper mi
-					sed, vestibulum enim. Cras efficitur rutrum luctus. Maecenas tempus, arcu in lobortis
-					ultricies, massa tellus interdum arcu, nec rhoncus massa est sit amet neque. Quisque
-					volutpat, mauris eget iaculis dignissim, ipsum nibh maximus eros, nec molestie diam arcu
-					sed augue. Aliquam efficitur, tellus ac rutrum congue, nunc nulla elementum sapien, nec
-					laoreet justo metus vitae eros. Pellentesque imperdiet lectus nec ipsum elementum egestas.
-					Quisque interdum ipsum quis elementum malesuada. Morbi vulputate vulputate sapien, a
-					sodales sem faucibus ut. Maecenas ultricies ultricies velit eget ullamcorper. Class aptent
-					taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Proin
-					elementum turpis molestie, porta lectus quis, scelerisque risus. Sed sit amet mauris a
-					urna hendrerit vulputate. Pellentesque feugiat varius mauris et tempor. Aliquam tristique
-					massa a magna cursus, quis ultricies leo iaculis. Cras sed justo egestas, volutpat ipsum
-					ut, rhoncus quam.
+					{@html DOMPurify.sanitize(data.book.description ?? 'No synopsis')}
 				</p>
 			</div>
 
