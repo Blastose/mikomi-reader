@@ -109,7 +109,12 @@
 		}
 
 		:root::view-transition-group(header) {
-			z-index: 100;
+			z-index: 1;
+		}
+
+		:root::view-transition-group(book-filter),
+		:root::view-transition-group(book-filter-overlay) {
+			z-index: 2;
 		}
 	}
 </style>

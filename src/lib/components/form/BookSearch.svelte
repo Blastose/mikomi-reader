@@ -15,7 +15,7 @@
 	}
 </script>
 
-<form bind:this={formElement} method="get" class="top-search-bar flex gap-1 sm:gap-4">
+<form bind:this={formElement} method="get" class="top-search-bar flex gap-2 sm:gap-4">
 	<div class="flex relative w-full">
 		<input
 			name="q"
