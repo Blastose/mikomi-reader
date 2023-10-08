@@ -709,7 +709,7 @@ dependencies = [
 [[package]]
 name = "epub"
 version = "2.1.1"
-source = "git+https://github.com/Blastose/epub-rs.git#5d161d2a5f4996a654c18a8810ae979a35eb9e1e"
+source = "git+https://github.com/Blastose/epub-rs.git#30c73f4a5f8527bb7730467a1349981951912396"
 dependencies = [
  "percent-encoding",
  "regex",
