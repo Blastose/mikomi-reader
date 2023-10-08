@@ -1,10 +1,13 @@
 <script lang="ts">
+	import type { Language } from '$lib/bindings';
 	import BookFilter from '$lib/components/form/BookFilter.svelte';
 	import { IconSearch, IconX } from '@tabler/icons-svelte';
 	import { fade } from 'svelte/transition';
 
 	export let searchText: string | null;
 	export let readingStatuses: string[];
+	export let languages: string[];
+	export let databaseLanguages: Language[];
 	let formElement: HTMLFormElement;
 
 	function handleSubmit() {
@@ -12,7 +15,7 @@
 	}
 </script>
 
-<form bind:this={formElement} method="get" class="top-search-bar flex gap-1 sm:gap-4">
+<form bind:this={formElement} method="get" class="top-search-bar flex gap-2 sm:gap-4">
 	<div class="flex relative w-full">
 		<input
 			name="q"
@@ -40,7 +43,12 @@
 		{/if}
 	</div>
 
-	<BookFilter {handleSubmit} readingStatusValues={readingStatuses} />
+	<BookFilter
+		{handleSubmit}
+		readingStatusValues={readingStatuses}
+		languageValues={languages}
+		{databaseLanguages}
+	/>
 </form>
 
 <style>

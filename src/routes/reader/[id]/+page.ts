@@ -62,13 +62,18 @@ export const load = (async ({ params }) => {
 			primaryColor: book.settings.primary_color
 		});
 	} else {
+		let writingMode: Orientation = 'horizontal';
+		if (book.page_progression_direction === 'rtl') {
+			writingMode = 'vertical';
+		}
+
 		const defaultSettings = {
 			columnCount: 1,
 			fontSize: 16,
 			lineHeight: 'normal',
 			textAlign: 'initial',
 			fontFamily: 'initial',
-			writingMode: 'horizontal',
+			writingMode,
 			margins: 0
 		} as ReaderSettings;
 		readerSettingsStore.set(defaultSettings);

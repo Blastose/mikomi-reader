@@ -5,8 +5,21 @@
 	import CheckboxGroup from './CheckboxGroup.svelte';
 	import { afterNavigate } from '$app/navigation';
 	import { page } from '$app/stores';
+	import type { Language } from '$lib/bindings';
+	import MultiSelect from './MultiSelect.svelte';
 
 	export let handleSubmit: () => void;
+	export let databaseLanguages: Language[];
+	export let languageValues: string[];
+	export let readingStatusValues: string[];
+
+	let clearReadingStatuses: () => {};
+	let clearLanguages: () => {};
+
+	function resetAllFilters() {
+		clearReadingStatuses();
+		clearLanguages();
+	}
 
 	const readingStatuses = ['Reading', 'Plan to read', 'Finished'] as const;
 
@@ -27,14 +40,6 @@
 			open.set(false);
 		}, 100);
 	});
-
-	export let readingStatusValues: string[];
-
-	let clearReadingStatuses: () => {};
-
-	function resetAllFilters() {
-		clearReadingStatuses();
-	}
 </script>
 
 <button
@@ -55,6 +60,9 @@
 {#each readingStatusValues as readingStatusValue}
 	<input name="status" type="hidden" value={readingStatusValue} />
 {/each}
+{#each languageValues as languageValue}
+	<input name="lang" type="hidden" value={languageValue} />
+{/each}
 
 <div use:melt={$portalled}>
 	{#if $open}
@@ -64,7 +72,7 @@
 			class="book-filter-overlay fixed inset-0 z-50 bg-black/50"
 		/>
 		<div
-			class="book-filter dialog-theme fixed left-[50%] top-[50%] z-50 max-h-[85vh] w-[85vw] max-w-6xl
+			class="book-filter dialog-theme fixed left-[50%] top-[50%] z-50 min-h-[50vh] max-h-[85vh] w-[85vw] max-w-6xl
             translate-x-[-50%] translate-y-[-50%] rounded-xl bg-white
             overflow-y-scroll custom-scroll
             p-6 shadow-lg"
@@ -79,7 +87,7 @@
 				<h2 use:melt={$title} class="m-0 text-2xl font-bold">Filter</h2>
 
 				<div class="flex flex-col gap-4">
-					<div class="flex flex-wrap gap-2">
+					<div class="flex items-center flex-wrap gap-2">
 						<CheckboxGroup
 							items={readingStatuses.map((v) => {
 								return {
@@ -93,6 +101,13 @@
 							bind:resetCheckboxGroup={clearReadingStatuses}
 						/>
 					</div>
+
+					<MultiSelect
+						selectName="Language"
+						selectOptions={databaseLanguages.map((l) => l.name)}
+						bind:selected={languageValues}
+						bind:resetSelected={clearLanguages}
+					/>
 				</div>
 
 				<div class="flex flex-col-reverse sm:flex-row gap-2 sm:gap-4 items-center sm:justify-end">

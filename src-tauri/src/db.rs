@@ -4,14 +4,11 @@ use diesel::prelude::*;
 use diesel::{Connection, SqliteConnection};
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use epub::doc::EpubDoc;
-use image::imageops;
-use image::GenericImageView;
 use serde::Serialize;
 use specta::Type;
 use std::error::Error;
 use std::fs;
 use std::fs::File;
-use std::io::Cursor;
 use std::io::Write;
 use std::path::Path;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -103,6 +100,16 @@ pub fn update_bookmark(id: String, display_text: String) -> Result<(), String> {
         Ok(_) => return Ok(()),
         Err(_) => return Err(String::from("Cannot update bookmark")),
     }
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn get_languages() -> Vec<models::Language> {
+    let mut conn: SqliteConnection = establish_connection();
+    schema::language::table
+        .select(models::Language::as_select())
+        .get_results(&mut conn)
+        .unwrap()
 }
 
 #[tauri::command]
@@ -601,30 +608,6 @@ fn insert_book_author_link(book_id: String, author_id: String, primary: bool) {
         .expect("Error adding new book");
 }
 
-fn scale_image(image_data: Vec<u8>, max_height: u32) -> Result<Vec<u8>, String> {
-    let format = image::guess_format(&image_data).unwrap();
-    let image = image::load_from_memory(&image_data).unwrap();
-
-    let (width, height) = image.dimensions();
-
-    let new_height = if height > max_height {
-        max_height
-    } else {
-        height
-    };
-
-    let new_width = (width as f32 * (new_height as f32 / height as f32)) as u32;
-    let scaled_image =
-        imageops::resize(&image, new_width, new_height, imageops::FilterType::Nearest);
-
-    let mut scaled_image_data = Cursor::new(Vec::new());
-    scaled_image
-        .write_to(&mut scaled_image_data, format)
-        .unwrap();
-
-    Ok(scaled_image_data.into_inner())
-}
-
 fn write_cover_to_file(
     cover_data: (Vec<u8>, String),
     path: std::path::PathBuf,
@@ -663,10 +646,8 @@ pub async fn add_book_from_file(path: String) -> Result<models::Book, String> {
     let cover_op = doc.get_cover();
     match cover_op {
         Some(data) => {
-            let a = scale_image(data.0, 340).unwrap();
-
             match write_cover_to_file(
-                (a, data.1),
+                (data.0, data.1),
                 Path::new("mikomi-data/covers").join(uuid.clone()),
             ) {
                 Ok(_) => (),
@@ -691,8 +672,27 @@ pub async fn add_book_from_file(path: String) -> Result<models::Book, String> {
         None => return Err(String::from("Epub does not have a title")),
     }
 
+    let language = doc.mdata("language");
+    let description = doc.mdata("description");
+    let identifier = doc.mdata("identifier");
+    let last_modified = doc.mdata("dcterms:modified");
+    let published_date = doc.mdata("date");
+    let publisher = doc.mdata("publisher");
+
     let start = SystemTime::now();
 
+    match language {
+        Some(v) => {
+            let _ = diesel::insert_into(schema::language::table)
+                .values(models::Language { name: v })
+                .on_conflict(schema::language::name)
+                .do_nothing()
+                .execute(&mut conn);
+        }
+        None => {}
+    }
+
+    let language = doc.mdata("language");
     let new_book = models::Book {
         title,
         path,
@@ -700,6 +700,13 @@ pub async fn add_book_from_file(path: String) -> Result<models::Book, String> {
         last_read: None,
         date_added: start.duration_since(UNIX_EPOCH).unwrap().as_secs() as i32,
         reading_status: String::from("Plan to read"),
+        language,
+        description,
+        identifier,
+        last_modified,
+        published_date,
+        publisher,
+        page_progression_direction: doc.page_progression_direction,
     };
 
     let res = diesel::insert_into(schema::book::table)

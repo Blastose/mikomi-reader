@@ -19,6 +19,7 @@
 	import type { EnglishFont, LineHeight, TextAlign } from './settings/settings';
 	import Slider from '$lib/components/reader/slider/Slider.svelte';
 	import ImageDialog from '$lib/components/reader/image-dialog/ImageDialog.svelte';
+	import { open } from '@tauri-apps/api/shell';
 
 	export let html: string;
 	export let drawerOpen: Writable<boolean>;
@@ -223,7 +224,11 @@
 
 		if (a?.tagName === 'A') {
 			e.preventDefault();
-			if (!a.href.startsWith('epub://')) return;
+			if (!a.href.startsWith('epub://') && a.href.startsWith('http')) {
+				// Open link in user's browser
+				open(a.href);
+				return;
+			}
 			onAnchorClick(a);
 		} else if (target?.tagName === 'IMG' || target?.tagName.toUpperCase() === 'IMAGE') {
 			if (!e.altKey) return;

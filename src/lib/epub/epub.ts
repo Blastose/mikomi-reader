@@ -47,6 +47,7 @@ export type Resource = {
 };
 
 export type Toc = { kind: 'Ncx' | 'Nav'; content: string; path: string };
+export type PageProgressionDirection = 'ltr' | 'rtl' | 'default';
 
 export class Epub {
 	archive: Archive;
@@ -58,6 +59,7 @@ export class Epub {
 	current: number;
 	uniqueIdentifier: string | null;
 	coverId: string | null;
+	pageProgressionDirection: PageProgressionDirection;
 
 	constructor(archive: Archive, rootFilePath: string, rootBasePath: string) {
 		this.archive = archive;
@@ -69,6 +71,7 @@ export class Epub {
 		this.current = 0;
 		this.uniqueIdentifier = null;
 		this.coverId = null;
+		this.pageProgressionDirection = 'default';
 	}
 
 	static async fromUrl(url: string): Promise<Epub> {
@@ -115,6 +118,9 @@ export class Epub {
 		// Spine
 		const spine = root.querySelector('spine');
 		if (!spine) throw new Error('Invalid epub');
+		const direction = spine.getAttribute('page-progression-direction');
+		this.pageProgressionDirection = (direction as PageProgressionDirection) ?? 'default';
+
 		const itemrefs = spine.children;
 		for (const itemref of itemrefs) {
 			const id = itemref.getAttribute('idref');
@@ -138,7 +144,7 @@ export class Epub {
 					setMapArray(this.metadata, name, content);
 				} else if (property) {
 					const text = item.textContent ?? '';
-					setMapArray(this.metadata, name, text);
+					setMapArray(this.metadata, property, text);
 				}
 			} else {
 				const name = item.localName;

@@ -17,21 +17,25 @@ tauri-build = { version = "1.5.0", features = [] }
 [dependencies]
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "1.5.0", features = [ "window-show", "protocol-asset", "window-close", "window-create", "dialog-open", "window-set-size", "window-set-title"] }
+tauri = { version = "1.5.0", features = [ "shell-open", "window-show", "protocol-asset", "window-close", "window-create", "dialog-open", "window-set-size", "window-set-title"] }
 diesel = { version = "2.1.0", features = ["sqlite"] }
 diesel_migrations = { version = "2.1.0", features = ["sqlite"] }
 libsqlite3-sys = { version = "0.26.0", features = ["bundled"] }
 dotenvy = "0.15"
-epub = "2.1.1"
+epub = { git = "https://github.com/Blastose/epub-rs.git" }
 uuid = { version = "1.4.1", features = ["v4"] }
 specta = "1.0.5"
 tauri-specta = { version = "1.0.2", features = ["typescript"] }
-image = "0.24.6"
-sqlx = { version = "0.7", features = [ "runtime-tokio" ] }
-xml = "0.8"
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.
 # If you use cargo directly instead of tauri's cli you can use this feature flag to switch between tauri's `dev` and `build` modes.
 # DO NOT REMOVE!!
 custom-protocol = ["tauri/custom-protocol"]
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true
