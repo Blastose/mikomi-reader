@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Language } from '$lib/bindings';
+	import type { Collection, Language } from '$lib/bindings';
 	import BookFilter from '$lib/components/form/BookFilter.svelte';
 	import { IconSearch, IconX } from '@tabler/icons-svelte';
 	import { fade } from 'svelte/transition';
@@ -8,6 +8,9 @@
 	export let readingStatuses: string[];
 	export let languages: string[];
 	export let databaseLanguages: Language[];
+	export let collections: string[];
+	export let databaseCollections: Collection[];
+
 	let formElement: HTMLFormElement;
 
 	function handleSubmit() {
@@ -48,6 +51,8 @@
 		readingStatusValues={readingStatuses}
 		languageValues={languages}
 		{databaseLanguages}
+		collectionsValues={collections}
+		{databaseCollections}
 	/>
 </form>
 

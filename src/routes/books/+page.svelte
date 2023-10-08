@@ -12,6 +12,8 @@
 			readingStatuses={data.queryData.statuses}
 			languages={data.queryData.languages}
 			databaseLanguages={data.databaseLanguages}
+			collections={data.queryData.collections}
+			databaseCollections={data.databaseCollections}
 		/>
 
 		{#if data.books.length > 0}
