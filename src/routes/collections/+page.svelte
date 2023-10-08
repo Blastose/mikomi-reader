@@ -1,9 +1,6 @@
 <script lang="ts">
-	import { invalidateAll } from '$app/navigation';
-	import { addCollection } from '$lib/bindings';
+	import CollectionInputModal from '$lib/components/collections/CollectionInputModal.svelte';
 	import CollectionItem from '$lib/components/collections/CollectionItem.svelte';
-	import InputModal from '$lib/components/modal/InputModal.svelte';
-	import { addToast } from '$lib/components/toast/ToastContainer.svelte';
 	import { IconPlus } from '@tabler/icons-svelte';
 	import { writable } from 'svelte/store';
 
@@ -11,27 +8,9 @@
 
 	let openStore = writable(false);
 	let inputValue: string = '';
-
-	async function handleAddCollection() {
-		try {
-			await addCollection({ id: crypto.randomUUID(), name: inputValue });
-			addToast({ data: { title: 'Created collection', color: '', description: '' } });
-			await invalidateAll();
-		} catch {
-			addToast({ data: { title: 'Cannot create collection', color: '', description: '' } });
-		}
-	}
 </script>
 
-<InputModal
-	modalTitle="Add new collection"
-	{openStore}
-	placeholder="Collection name"
-	onSave={handleAddCollection}
-	confirmText="Create collection"
-	cancelText="Cancel"
-	bind:inputValue
-/>
+<CollectionInputModal {inputValue} {openStore} />
 
 <div class="container-mi py-6 flex flex-col gap-6 w-full">
 	<button
