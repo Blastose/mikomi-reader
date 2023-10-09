@@ -1,13 +1,22 @@
 <script lang="ts">
-	import { IconDotsVertical } from '@tabler/icons-svelte';
+	import { IconBook, IconDotsVertical, IconFolders, IconTrash, IconX } from '@tabler/icons-svelte';
 	import { page } from '$app/stores';
 	import { IconArrowLeft } from '@tabler/icons-svelte';
 	import AddBookButton from './AddBookButton.svelte';
+	import { mainStateStore } from '$lib/stores/mainStateStore';
+	import { selectedBookMapStore } from '$lib/stores/mainStateStore';
+	import { beforeNavigate } from '$app/navigation';
+	import HeaderButton from './HeaderButton.svelte';
 
 	let currentHeaderText: string = 'Home';
 
 	let scrollY: number;
 	$: isOnBookRoute = $page.url.pathname.startsWith('/book/');
+
+	beforeNavigate(() => {
+		mainStateStore.set('default');
+		selectedBookMapStore.reset();
+	});
 </script>
 
 <svelte:window bind:scrollY />
@@ -17,38 +26,92 @@
 	{isOnBookRoute ? 'header-transition' : 'bg-white dark:bg-dark-500'} 
 	{scrollY > 0 ? 'bg-white dark:bg-dark-500' : ''}"
 >
-	<div class="flex items-center justify-between h-full container-mi">
-		<div class="text-4xl font-bold">
-			{#if isOnBookRoute}
-				<button
-					class="p-2 duration-300 rounded-full hover:bg-neutral-300"
-					on:click={() => {
-						history.back();
-					}}
-					aria-label="Go back"
-				>
-					<IconArrowLeft />
-				</button>
-			{:else if $page.url.pathname.startsWith('/books')}
-				{'Library'}
-			{:else if $page.url.pathname.startsWith('/settings')}
-				{'Settings'}
-			{:else if $page.url.pathname.startsWith('/collections')}
-				{'Collections'}
-			{:else}
-				{currentHeaderText}
+	<div class="grid h-full">
+		<div class="flex items-center justify-between h-full container-mi">
+			{#if $mainStateStore === 'default'}
+				<div class="text-4xl font-bold text-ellipsis overflow-hidden whitespace-nowrap">
+					{#if isOnBookRoute}
+						<button
+							class="p-2 duration-300 rounded-full hover:bg-neutral-300"
+							on:click={() => {
+								history.back();
+							}}
+							aria-label="Go back"
+						>
+							<IconArrowLeft />
+						</button>
+					{:else if $page.url.pathname.startsWith('/books')}
+						{'Library'}
+					{:else if $page.url.pathname.startsWith('/settings')}
+						{'Settings'}
+					{:else if $page.url.pathname.startsWith('/collections')}
+						{'Collections'}
+					{:else}
+						{currentHeaderText}
+					{/if}
+				</div>
+
+				<div class="flex items-center gap-4">
+					<AddBookButton />
+
+					<HeaderButton
+						handleClick={() => {
+							if (!$page.url.pathname.startsWith('/books')) {
+								return;
+							}
+							mainStateStore.set('multiselect');
+						}}
+						subText={'More'}
+					>
+						<IconDotsVertical />
+					</HeaderButton>
+				</div>
+			{:else if $mainStateStore === 'multiselect'}
+				<div class="flex items-center gap-4">
+					<HeaderButton
+						handleClick={() => {
+							mainStateStore.set('default');
+							selectedBookMapStore.reset();
+						}}
+						subText={'Clear'}
+					>
+						<IconX />
+					</HeaderButton>
+					<p>{$selectedBookMapStore.size} selected</p>
+				</div>
+
+				<div class="flex items-center gap-4">
+					<HeaderButton
+						handleClick={() => {
+							mainStateStore.set('default');
+							selectedBookMapStore.reset();
+						}}
+						subText={'Edit reading status'}
+					>
+						<IconBook />
+					</HeaderButton>
+
+					<HeaderButton
+						handleClick={() => {
+							mainStateStore.set('default');
+							selectedBookMapStore.reset();
+						}}
+						subText={'Edit collection'}
+					>
+						<IconFolders />
+					</HeaderButton>
+
+					<HeaderButton
+						handleClick={() => {
+							mainStateStore.set('default');
+							selectedBookMapStore.reset();
+						}}
+						subText={'Remove books'}
+					>
+						<IconTrash />
+					</HeaderButton>
+				</div>
 			{/if}
-		</div>
-
-		<div class="flex items-center gap-4">
-			<AddBookButton />
-
-			<!-- <button
-				class="flex flex-col items-center text-gray-700 hover:text-black dark:text-neutral-300"
-			>
-				<IconDotsVertical />
-				<span class="text-xs">More</span>
-			</button> -->
 		</div>
 	</div>
 </div>

@@ -13,6 +13,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import { readBook } from './utils';
 	import CollectionsModal from '$lib/components/collections/CollectionsModal.svelte';
+	import { mainStateStore } from '$lib/stores/mainStateStore';
 
 	export let book: BookWithAuthorsAndCoverAndSettingsAndCollections;
 	export let collections: Collection[];
@@ -32,6 +33,7 @@
 
 <button
 	class="h-fit w-fit py-1 text-gray-500"
+	class:hidden={$mainStateStore !== 'default'}
 	on:click={(e) => {
 		e.stopPropagation();
 	}}
