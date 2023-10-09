@@ -9,11 +9,14 @@
 		selectedBookIdsStore,
 		databaseCollectionsStore
 	} from '$lib/stores/mainStateStore';
-	import { beforeNavigate } from '$app/navigation';
+	import { beforeNavigate, invalidateAll } from '$app/navigation';
 	import HeaderButton from './HeaderButton.svelte';
 	import CollectionsModal from '$lib/components/collections/CollectionsModal.svelte';
 	import { writable } from 'svelte/store';
 	import ReadingStatusModal from '$lib/components/book/ReadingStatusModal.svelte';
+	import ConfirmModal from '$lib/components/modal/ConfirmModal.svelte';
+	import { addToast } from '$lib/components/toast/ToastContainer.svelte';
+	import { removeBook } from '$lib/bindings';
 
 	let currentHeaderText: string = 'Home';
 
@@ -22,6 +25,7 @@
 
 	let collectionsModalOpen = writable(false);
 	let readingStatusModalOpen = writable(false);
+	let confirmDeleteModalOpen = writable(false);
 	let clearSelectedCollections: () => {};
 	let resetSelectedStatus: () => {};
 
@@ -45,6 +49,24 @@
 	currentStatus={'Reading'}
 	openStore={readingStatusModalOpen}
 	bind:resetSelectedStatus
+/>
+<ConfirmModal
+	modalTitle="Remove book"
+	subText={`Are you sure you want to remove ${$selectedBookMapStore.size} books? This will also remove any saved bookmarks or highlights.`}
+	openStore={confirmDeleteModalOpen}
+	onConfirm={async () => {
+		const promises = [];
+		for (const bookId of $selectedBookIdsStore) {
+			promises.push(removeBook(bookId));
+		}
+		await Promise.allSettled(promises);
+		invalidateAll();
+		addToast({
+			data: { title: 'Removed books successfully', color: '', description: '' }
+		});
+	}}
+	cancelText="Cancel"
+	confirmText="Delete"
 />
 
 <div
@@ -95,7 +117,7 @@
 					{/if}
 				</div>
 			{:else if $mainStateStore === 'multiselect'}
-				<div class="flex items-center sm:gap-4">
+				<div class="flex items-center gap-1 sm:gap-4">
 					<HeaderButton
 						handleClick={() => {
 							mainStateStore.set('default');
@@ -131,8 +153,7 @@
 
 					<HeaderButton
 						handleClick={() => {
-							mainStateStore.set('default');
-							selectedBookMapStore.reset();
+							confirmDeleteModalOpen.set(true);
 						}}
 						subText={'Remove books'}
 					>
