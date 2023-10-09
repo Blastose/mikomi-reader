@@ -114,7 +114,7 @@
 			Read book
 		</button>
 
-		<ReadingStatus book={data.book} currentStatus={data.book.reading_status} />
+		<ReadingStatus bookIds={[data.book.id]} currentStatus={data.book.reading_status} />
 
 		<button
 			on:click={() => {

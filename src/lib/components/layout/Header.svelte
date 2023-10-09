@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { IconBook, IconDotsVertical, IconFolders, IconTrash, IconX } from '@tabler/icons-svelte';
+	import { IconBook, IconFolders, IconPointerCheck, IconTrash, IconX } from '@tabler/icons-svelte';
 	import { page } from '$app/stores';
 	import { IconArrowLeft } from '@tabler/icons-svelte';
 	import AddBookButton from './AddBookButton.svelte';
@@ -13,6 +13,7 @@
 	import HeaderButton from './HeaderButton.svelte';
 	import CollectionsModal from '$lib/components/collections/CollectionsModal.svelte';
 	import { writable } from 'svelte/store';
+	import ReadingStatusModal from '$lib/components/book/ReadingStatusModal.svelte';
 
 	let currentHeaderText: string = 'Home';
 
@@ -20,7 +21,9 @@
 	$: isOnBookRoute = $page.url.pathname.startsWith('/book/');
 
 	let collectionsModalOpen = writable(false);
+	let readingStatusModalOpen = writable(false);
 	let clearSelectedCollections: () => {};
+	let resetSelectedStatus: () => {};
 
 	beforeNavigate(() => {
 		mainStateStore.set('default');
@@ -36,6 +39,12 @@
 	collections={$databaseCollectionsStore}
 	bookCollections={[]}
 	bind:clearSelected={clearSelectedCollections}
+/>
+<ReadingStatusModal
+	bookIds={$selectedBookIdsStore}
+	currentStatus={'Reading'}
+	openStore={readingStatusModalOpen}
+	bind:resetSelectedStatus
 />
 
 <div
@@ -71,17 +80,19 @@
 				<div class="flex items-center gap-4">
 					<AddBookButton />
 
-					<HeaderButton
-						handleClick={() => {
-							if (!$page.url.pathname.startsWith('/books')) {
-								return;
-							}
-							mainStateStore.set('multiselect');
-						}}
-						subText={'More'}
-					>
-						<IconDotsVertical />
-					</HeaderButton>
+					{#if $page.url.pathname.startsWith('/books')}
+						<HeaderButton
+							handleClick={() => {
+								if (!$page.url.pathname.startsWith('/books')) {
+									return;
+								}
+								mainStateStore.set('multiselect');
+							}}
+							subText={'Select books'}
+						>
+							<IconPointerCheck />
+						</HeaderButton>
+					{/if}
 				</div>
 			{:else if $mainStateStore === 'multiselect'}
 				<div class="flex items-center sm:gap-4">
@@ -100,8 +111,8 @@
 				<div class="flex items-center gap-1 sm:gap-4">
 					<HeaderButton
 						handleClick={() => {
-							mainStateStore.set('default');
-							selectedBookMapStore.reset();
+							resetSelectedStatus();
+							readingStatusModalOpen.set(true);
 						}}
 						subText={'Edit reading status'}
 					>

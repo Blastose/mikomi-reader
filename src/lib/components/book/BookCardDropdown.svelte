@@ -32,8 +32,9 @@
 </script>
 
 <button
-	class="h-fit w-fit py-1 text-gray-500"
-	class:hidden={$mainStateStore !== 'default'}
+	class="h-fit w-fit py-1 text-gray-500 {$mainStateStore !== 'default'
+		? 'pointer-events-none opacity-0'
+		: ''}"
 	on:click={(e) => {
 		e.stopPropagation();
 	}}

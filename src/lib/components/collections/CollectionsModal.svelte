@@ -7,6 +7,8 @@
 	import { invalidateAll } from '$app/navigation';
 	import { addToast } from '$lib/components/toast/ToastContainer.svelte';
 	import CollectionInputModal from './CollectionInputModal.svelte';
+	import { mainStateStore, selectedBookMapStore } from '$lib/stores/mainStateStore';
+	import LoadingButton from '../modal/LoadingButton.svelte';
 
 	export let bookIds: string[];
 	export let openStore: Writable<boolean>;
@@ -37,7 +39,6 @@
 		addToast({
 			data: { title: 'Collections successfully updated', color: '', description: '' }
 		});
-		openStore.set(false);
 	}
 
 	async function addBookToCollectionsMultiple(ids: string[]) {
@@ -52,7 +53,6 @@
 		addToast({
 			data: { title: 'Collections successfully updated', color: '', description: '' }
 		});
-		openStore.set(false);
 	}
 
 	$: console.log(checkboxGroup);
@@ -108,23 +108,20 @@
 				</button>
 				<CollectionInputModal {inputValue} openStore={collectionInputModalStore} />
 
-				<button
-					on:click={async () => {
+				<LoadingButton
+					buttonText="Save"
+					handleClick={async () => {
 						if (bookIds.length === 1) {
-							addBookToCollectionsSingle(bookIds[0]);
+							await addBookToCollectionsSingle(bookIds[0]);
 						} else {
-							addBookToCollectionsMultiple(bookIds);
+							await addBookToCollectionsMultiple(bookIds);
 						}
+						openStore.set(false);
+						mainStateStore.set('default');
+						selectedBookMapStore.reset();
 					}}
-					disabled={loading}
-					class="flex justify-center bg-neutral-700 hover:bg-neutral-800 duration-300 rounded-md p-2"
-				>
-					{#if loading}
-						<IconLoader2 class="animate-spin" />
-					{:else}
-						Save
-					{/if}
-				</button>
+					{loading}
+				/>
 			</div>
 
 			<button
