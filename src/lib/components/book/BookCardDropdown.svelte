@@ -44,7 +44,7 @@
 </button>
 
 <CollectionsModal
-	bookId={book.id}
+	bookIds={[book.id]}
 	openStore={collectionsModalOpen}
 	{collections}
 	bookCollections={book.collections}

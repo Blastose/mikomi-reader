@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Collection, Language } from '$lib/bindings';
 	import BookFilter from '$lib/components/form/BookFilter.svelte';
+	import { mainStateStore } from '$lib/stores/mainStateStore';
 	import { IconSearch, IconX } from '@tabler/icons-svelte';
 	import { fade } from 'svelte/transition';
 
@@ -18,7 +19,12 @@
 	}
 </script>
 
-<form bind:this={formElement} method="get" class="top-search-bar flex gap-2 sm:gap-4">
+<form
+	bind:this={formElement}
+	method="get"
+	class="top-search-bar flex gap-2 sm:gap-4"
+	class:pointer-events-none={$mainStateStore !== 'default'}
+>
 	<div class="flex relative w-full">
 		<input
 			name="q"

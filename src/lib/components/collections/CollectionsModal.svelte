@@ -1,17 +1,20 @@
 <script lang="ts">
 	import { createDialog, melt } from '@melt-ui/svelte';
 	import { fade, fly } from 'svelte/transition';
-	import { IconPlus, IconX } from '@tabler/icons-svelte';
+	import { IconLoader2, IconPlus, IconX } from '@tabler/icons-svelte';
 	import { writable, type Writable } from 'svelte/store';
 	import { addBookToCollections, type Collection } from '$lib/bindings';
 	import { invalidateAll } from '$app/navigation';
 	import { addToast } from '$lib/components/toast/ToastContainer.svelte';
 	import CollectionInputModal from './CollectionInputModal.svelte';
 
-	export let bookId: string;
+	export let bookIds: string[];
 	export let openStore: Writable<boolean>;
 	export let collections: Collection[];
 	export let bookCollections: Collection[];
+	export const clearSelected = () => {
+		checkboxGroup = [];
+	};
 
 	let checkboxGroup: string[] = [];
 	let collectionInputModalStore = writable(false);
@@ -24,6 +27,32 @@
 				break;
 			}
 		}
+	}
+
+	let loading = false;
+
+	async function addBookToCollectionsSingle(id: string) {
+		await addBookToCollections(id, checkboxGroup);
+		invalidateAll();
+		addToast({
+			data: { title: 'Collections successfully updated', color: '', description: '' }
+		});
+		openStore.set(false);
+	}
+
+	async function addBookToCollectionsMultiple(ids: string[]) {
+		loading = true;
+		const promises = [];
+		for (const bookId of ids) {
+			promises.push(addBookToCollections(bookId, checkboxGroup));
+		}
+		await Promise.allSettled(promises);
+		loading = false;
+		invalidateAll();
+		addToast({
+			data: { title: 'Collections successfully updated', color: '', description: '' }
+		});
+		openStore.set(false);
 	}
 
 	$: console.log(checkboxGroup);
@@ -81,15 +110,21 @@
 
 				<button
 					on:click={async () => {
-						await addBookToCollections(bookId, checkboxGroup);
-						invalidateAll();
-						addToast({
-							data: { title: 'Collections successfully updated', color: '', description: '' }
-						});
-						openStore.set(false);
+						if (bookIds.length === 1) {
+							addBookToCollectionsSingle(bookIds[0]);
+						} else {
+							addBookToCollectionsMultiple(bookIds);
+						}
 					}}
-					class="bg-neutral-700 hover:bg-neutral-800 duration-300 rounded-md p-2">Save</button
+					disabled={loading}
+					class="flex justify-center bg-neutral-700 hover:bg-neutral-800 duration-300 rounded-md p-2"
 				>
+					{#if loading}
+						<IconLoader2 class="animate-spin" />
+					{:else}
+						Save
+					{/if}
+				</button>
 			</div>
 
 			<button

@@ -4,14 +4,23 @@
 	import { IconArrowLeft } from '@tabler/icons-svelte';
 	import AddBookButton from './AddBookButton.svelte';
 	import { mainStateStore } from '$lib/stores/mainStateStore';
-	import { selectedBookMapStore } from '$lib/stores/mainStateStore';
+	import {
+		selectedBookMapStore,
+		selectedBookIdsStore,
+		databaseCollectionsStore
+	} from '$lib/stores/mainStateStore';
 	import { beforeNavigate } from '$app/navigation';
 	import HeaderButton from './HeaderButton.svelte';
+	import CollectionsModal from '$lib/components/collections/CollectionsModal.svelte';
+	import { writable } from 'svelte/store';
 
 	let currentHeaderText: string = 'Home';
 
 	let scrollY: number;
 	$: isOnBookRoute = $page.url.pathname.startsWith('/book/');
+
+	let collectionsModalOpen = writable(false);
+	let clearSelectedCollections: () => {};
 
 	beforeNavigate(() => {
 		mainStateStore.set('default');
@@ -20,6 +29,14 @@
 </script>
 
 <svelte:window bind:scrollY />
+
+<CollectionsModal
+	bookIds={$selectedBookIdsStore}
+	openStore={collectionsModalOpen}
+	collections={$databaseCollectionsStore}
+	bookCollections={[]}
+	bind:clearSelected={clearSelectedCollections}
+/>
 
 <div
 	class="header sticky top-0 z-50 h-16
@@ -67,7 +84,7 @@
 					</HeaderButton>
 				</div>
 			{:else if $mainStateStore === 'multiselect'}
-				<div class="flex items-center gap-4">
+				<div class="flex items-center sm:gap-4">
 					<HeaderButton
 						handleClick={() => {
 							mainStateStore.set('default');
@@ -80,7 +97,7 @@
 					<p>{$selectedBookMapStore.size} selected</p>
 				</div>
 
-				<div class="flex items-center gap-4">
+				<div class="flex items-center gap-1 sm:gap-4">
 					<HeaderButton
 						handleClick={() => {
 							mainStateStore.set('default');
@@ -93,8 +110,8 @@
 
 					<HeaderButton
 						handleClick={() => {
-							mainStateStore.set('default');
-							selectedBookMapStore.reset();
+							clearSelectedCollections();
+							collectionsModalOpen.set(true);
 						}}
 						subText={'Edit collection'}
 					>

@@ -2,6 +2,7 @@ import type { PageLoad } from './$types';
 import { getBooks, getLanguages, type Collection, getCollections } from '$lib/bindings';
 import { escapeRegExp } from '$lib/components/reader/search/search';
 import { redirect } from '@sveltejs/kit';
+import { databaseCollectionsStore } from '$lib/stores/mainStateStore';
 
 function searchParamsCollectionIncludesCollection(
 	searchparamsCollectionMap: Map<string, string>,
@@ -38,6 +39,8 @@ export const load = (async ({ url }) => {
 	let books = await getBooks();
 	const databaseLanguages = await getLanguages();
 	const databaseCollections = await getCollections();
+	databaseCollections.sort((a, b) => a.name.localeCompare(b.name));
+	databaseCollectionsStore.set(databaseCollections);
 
 	if (statuses.length > 0) {
 		console.log(statuses);

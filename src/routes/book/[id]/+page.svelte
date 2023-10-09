@@ -62,7 +62,7 @@
 <svelte:window on:resize={onWindowResize} />
 
 <CollectionsModal
-	bookId={id}
+	bookIds={[id]}
 	openStore={modalOpen}
 	collections={data.collections}
 	bookCollections={data.book.collections}
