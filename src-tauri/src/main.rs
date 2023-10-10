@@ -81,6 +81,13 @@ fn main() {
             db::remove_book_from_collection,
             db::get_languages,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application")
+        .run(|_app_handle, event| match event {
+            tauri::RunEvent::ExitRequested { .. } => {
+                let mut conn = db::establish_connection();
+                let _ = conn.batch_execute("PRAGMA wal_checkpoint(TRUNCATE);");
+            }
+            _ => {}
+        });
 }
