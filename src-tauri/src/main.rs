@@ -1,6 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use diesel::connection::SimpleConnection;
 use specta::collect_types;
 use tauri_specta::ts;
 
@@ -47,6 +48,7 @@ fn main() {
 
     let mut conn = db::establish_connection();
     db::run_migrations(&mut conn).expect("Unable to run migrations");
+    let _ = conn.batch_execute("PRAGMA journal_mode = WAL;");
 
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
