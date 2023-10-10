@@ -62,7 +62,7 @@
 <svelte:window on:resize={onWindowResize} />
 
 <CollectionsModal
-	bookId={id}
+	bookIds={[id]}
 	openStore={modalOpen}
 	collections={data.collections}
 	bookCollections={data.book.collections}
@@ -114,7 +114,7 @@
 			Read book
 		</button>
 
-		<ReadingStatus book={data.book} currentStatus={data.book.reading_status} />
+		<ReadingStatus bookIds={[data.book.id]} currentStatus={data.book.reading_status} />
 
 		<button
 			on:click={() => {

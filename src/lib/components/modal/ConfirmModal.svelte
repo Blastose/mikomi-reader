@@ -3,6 +3,8 @@
 	import { fade, fly } from 'svelte/transition';
 	import { IconX } from '@tabler/icons-svelte';
 	import type { Writable } from 'svelte/store';
+	import LoadingButton from './LoadingButton.svelte';
+	import { mainStateStore, selectedBookMapStore } from '$lib/stores/mainStateStore';
 
 	export let modalTitle: string;
 	export let subText: string;
@@ -11,6 +13,7 @@
 	export let cancelText: string;
 	export let confirmText: string;
 
+	let loading = false;
 	const {
 		elements: { overlay, content, title, close, portalled, description }
 	} = createDialog({
@@ -47,13 +50,19 @@
 					<button use:melt={$close} class="hover:bg-neutral-700 duration-300 rounded-md px-4 py-2">
 						{cancelText}
 					</button>
-					<button
-						on:click={() => {
-							onConfirm();
+
+					<LoadingButton
+						buttonText={confirmText}
+						handleClick={async () => {
+							loading = true;
+							await onConfirm();
 							openStore.set(false);
+							mainStateStore.set('default');
+							selectedBookMapStore.reset();
+							loading = false;
 						}}
-						class="bg-neutral-600 hover:bg-neutral-700 rounded-md px-4 py-2">{confirmText}</button
-					>
+						{loading}
+					/>
 				</div>
 			</div>
 

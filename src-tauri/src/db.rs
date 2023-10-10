@@ -757,6 +757,20 @@ pub fn update_book(book: models::Book) -> Result<(), String> {
 
 #[tauri::command]
 #[specta::specta]
+pub fn update_book_reading_status(id: String, reading_status: String) -> Result<(), String> {
+    let mut conn: SqliteConnection = establish_connection();
+    let res = diesel::update(schema::book::table.filter(schema::book::id.eq(id)))
+        .set(schema::book::reading_status.eq(reading_status))
+        .execute(&mut conn);
+
+    match res {
+        Ok(_) => return Ok(()),
+        Err(_) => return Err(String::from("Cannot update book")),
+    }
+}
+
+#[tauri::command]
+#[specta::specta]
 pub fn remove_book(id: String) -> Result<(), String> {
     let mut conn: SqliteConnection = establish_connection();
     let res = conn.transaction(|conn| {

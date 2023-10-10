@@ -4,6 +4,7 @@
 	import { addMultipleBooksFromFiles } from '$lib/bindings';
 	import { addToast } from '$lib/components/toast/ToastContainer.svelte';
 	import { invalidateAll } from '$app/navigation';
+	import HeaderButton from './HeaderButton.svelte';
 
 	async function getEpubPathMany() {
 		const files = await open({
@@ -39,12 +40,6 @@
 	}
 </script>
 
-<button
-	type="button"
-	class="flex flex-col items-center p-2 text-gray-700 dark:text-neutral-300 dark:hover:text-black duration-300 rounded-md hover:text-black hover:bg-gray-200"
-	on:click={onClick}
-	aria-label="Add books"
->
+<HeaderButton handleClick={onClick} subText={'Add book(s)'}>
 	<IconPlus />
-	<span class="text-xs">Add book(s)</span>
-</button>
+</HeaderButton>
