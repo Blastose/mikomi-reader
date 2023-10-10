@@ -18,7 +18,9 @@
 
 		{#if data.books.length > 0}
 			<p class="book-count font-bold text-lg">{data.books.length} books</p>
-			<div class="grid grid-cols-2 gap-2 @md:grid-cols-4 @4xl:grid-cols-6 @7xl:grid-cols-8">
+			<div
+				class="grid grid-cols-2 gap-2 @md:grid-cols-4 @2xl:grid-cols-5 @4xl:grid-cols-6 @7xl:grid-cols-8"
+			>
 				{#each data.books as book}
 					<BookCard {book} collections={data.databaseCollections} />
 				{/each}

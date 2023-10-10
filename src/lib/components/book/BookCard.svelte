@@ -38,7 +38,7 @@
 	<div class="shadow-md overflow-hidden">
 		{#if book.cover}
 			<img
-				class="object-cover object-top w-full h-full rounded-md duration-200 hover:scale-105"
+				class="object-cover object-top w-full h-full rounded-md"
 				height="200"
 				width="134"
 				src={convertFileSrc(book.cover)}
@@ -51,7 +51,7 @@
 	<div class="grid grid-cols-[1fr_min-content] gap-1">
 		<div>
 			<p
-				class="font-bold line-clamp-2"
+				class="font-bold line-clamp-1"
 				class:text-white={$selectedBookMapStore.get(book.id)}
 				title={book.title}
 			>
