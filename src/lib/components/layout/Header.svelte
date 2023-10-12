@@ -2,7 +2,6 @@
 	import { IconBook, IconFolders, IconPointerCheck, IconTrash, IconX } from '@tabler/icons-svelte';
 	import { page } from '$app/stores';
 	import { IconArrowLeft } from '@tabler/icons-svelte';
-	import AddBookButton from './AddBookButton.svelte';
 	import { mainStateStore } from '$lib/stores/mainStateStore';
 	import {
 		selectedBookMapStore,
@@ -17,6 +16,7 @@
 	import ConfirmModal from '$lib/components/modal/ConfirmModal.svelte';
 	import { addToast } from '$lib/components/toast/ToastContainer.svelte';
 	import { removeBook } from '$lib/bindings';
+	import AddBooksModal from '../modal/AddBooksModal.svelte';
 
 	let currentHeaderText: string = 'Home';
 
@@ -100,7 +100,7 @@
 				</div>
 
 				<div class="flex items-center gap-4">
-					<AddBookButton />
+					<AddBooksModal />
 
 					{#if $page.url.pathname.startsWith('/books')}
 						<HeaderButton
