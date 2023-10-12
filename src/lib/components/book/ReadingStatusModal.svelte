@@ -45,11 +45,9 @@
 
 	async function updateReadingStatusMultiple(ids: string[]) {
 		loading = true;
-		const promises = [];
 		for (const bookId of ids) {
-			promises.push(updateBookReadingStatus(bookId, newStatus));
+			await updateBookReadingStatus(bookId, newStatus);
 		}
-		await Promise.allSettled(promises);
 		loading = false;
 		invalidateAll();
 		addToast({ data: { title: 'Updated reading statuses', color: '', description: '' } });
