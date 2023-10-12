@@ -43,11 +43,9 @@
 
 	async function addBookToCollectionsMultiple(ids: string[]) {
 		loading = true;
-		const promises = [];
 		for (const bookId of ids) {
-			promises.push(addBookToCollections(bookId, checkboxGroup));
+			addBookToCollections(bookId, checkboxGroup);
 		}
-		await Promise.allSettled(promises);
 		loading = false;
 		invalidateAll();
 		addToast({

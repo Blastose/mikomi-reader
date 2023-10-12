@@ -55,11 +55,9 @@
 	subText={`Are you sure you want to remove ${$selectedBookMapStore.size} books? This will also remove any saved bookmarks or highlights.`}
 	openStore={confirmDeleteModalOpen}
 	onConfirm={async () => {
-		const promises = [];
 		for (const bookId of $selectedBookIdsStore) {
-			promises.push(removeBook(bookId));
+			await removeBook(bookId);
 		}
-		await Promise.allSettled(promises);
 		invalidateAll();
 		addToast({
 			data: { title: 'Removed books successfully', color: '', description: '' }
