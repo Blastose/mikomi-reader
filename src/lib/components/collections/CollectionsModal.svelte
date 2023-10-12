@@ -55,8 +55,6 @@
 		});
 	}
 
-	$: console.log(checkboxGroup);
-
 	const {
 		elements: { overlay, content, title, close, portalled }
 	} = createDialog({
