@@ -39,6 +39,7 @@
 		{#if book.cover}
 			<img
 				class="object-cover object-top w-full h-full rounded-md"
+				loading="lazy"
 				height="200"
 				width="134"
 				src={convertFileSrc(book.cover)}
