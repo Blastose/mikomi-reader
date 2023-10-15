@@ -54,7 +54,9 @@
 	}
 </script>
 
-<div class="flex flex-col gap-4 bg-[#e1e3e6] dark:bg-[#39393a] p-4 rounded-md">
+<div
+	class="collection-item-container flex flex-col gap-4 bg-[#e1e3e6] dark:bg-[#39393a] p-4 rounded-md"
+>
 	<div class="grid">
 		<div class="flex overflow-hidden text-ellipsis whitespace-nowrap">
 			<p
@@ -73,13 +75,13 @@
 			{:else}
 				<div class="flex gap-2">
 					<button
-						class="rounded-full focus:bg-gray-300 focus:dark:bg-neutral-500 flex items-center justify-center h-8 w-8"
+						class="up-button rounded-full focus:bg-gray-300 focus:dark:bg-neutral-500 flex items-center justify-center h-8 w-8"
 						on:click={moveUp}
 					>
 						<IconChevronUp />
 					</button>
 					<button
-						class="rounded-full focus:bg-gray-300 focus:dark:bg-neutral-500 flex items-center justify-center h-8 w-8"
+						class="down-button rounded-full focus:bg-gray-300 focus:dark:bg-neutral-500 flex items-center justify-center h-8 w-8"
 						on:click={moveDown}
 					>
 						<IconChevronDown />

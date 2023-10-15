@@ -5,6 +5,7 @@
 	import CollectionItem from '$lib/components/collections/CollectionItem.svelte';
 	import { mainStateStore } from '$lib/stores/mainStateStore';
 	import { IconPlus } from '@tabler/icons-svelte';
+	import { tick } from 'svelte';
 	import { flip } from 'svelte/animate';
 	import { quintOut } from 'svelte/easing';
 	import { writable } from 'svelte/store';
@@ -13,8 +14,9 @@
 
 	let openStore = writable(false);
 	let inputValue: string = '';
+	let collectionItemsContainer: HTMLDivElement;
 
-	function moveDown(index: number) {
+	async function moveDown(index: number, direction: 'up' | 'down') {
 		if (index < 0) return;
 		if (index + 1 === data.collectionsWithBooks.length) return;
 
@@ -30,6 +32,16 @@
 			};
 		});
 		reorderCollections(reorderedCollections);
+
+		await tick();
+		const items = collectionItemsContainer.querySelectorAll('div.collection-item-container');
+		const indexFromDirection = direction === 'up' ? index : index + 1;
+		const button = items[indexFromDirection].querySelector<HTMLButtonElement>(
+			`button.${direction === 'up' ? 'up-button' : 'down-button'}`
+		);
+		if (button) {
+			button.focus();
+		}
 	}
 
 	beforeNavigate(() => {
@@ -55,16 +67,16 @@
 		<h2 class="text-2xl font-bold">Reorder Collections</h2>
 	{/if}
 
-	<div class="flex flex-col gap-6">
+	<div class="flex flex-col gap-6" bind:this={collectionItemsContainer}>
 		{#each data.collectionsWithBooks as collectionWithBooks, index (collectionWithBooks.collection.id)}
 			<div animate:flip={{ duration: 450, easing: quintOut }}>
 				<CollectionItem
 					{collectionWithBooks}
 					moveUp={() => {
-						moveDown(index - 1);
+						moveDown(index - 1, 'up');
 					}}
 					moveDown={() => {
-						moveDown(index);
+						moveDown(index, 'down');
 					}}
 				/>
 			</div>
