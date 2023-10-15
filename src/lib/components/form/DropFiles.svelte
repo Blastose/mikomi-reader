@@ -71,7 +71,9 @@
 	onMount(() => {
 		fileDropHover = event.listen('tauri://file-drop', (e) => {
 			const validPaths = getValidPathsWithExtensions(e.payload as string[]);
-			addEpubToDatabase(validPaths);
+			if (validPaths.length > 0) {
+				addEpubToDatabase(validPaths);
+			}
 		});
 	});
 
@@ -82,7 +84,7 @@
 </script>
 
 <button on:click={handleClick} class="drop-container flex gap-4 items-center h-full justify-center">
-	<span class="flex flex-col items-center gap-2">
+	<span class="flex flex-col items-center p-2 gap-2">
 		{#if loadingFiles}
 			<p>Adding books...</p>
 			{#key numberOfBooksToAdd}
@@ -91,7 +93,7 @@
 			<p>{$progressValue} / {numberOfBooksToAdd}</p>
 		{:else}
 			<IconBookUpload />
-			<p>Choose files or drag them here</p>
+			<p>Choose .epub files or drag them here</p>
 		{/if}
 	</span>
 </button>

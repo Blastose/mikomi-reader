@@ -23,7 +23,7 @@ function createMapStore() {
 	};
 }
 
-export type MainState = 'default' | 'multiselect';
+export type MainState = 'default' | 'multiselect' | 'reorderCollections';
 export const mainStateStore = writable<MainState>('default');
 export const selectedBookMapStore = createMapStore();
 export const selectedBookIdsStore = derived<typeof selectedBookMapStore, string[]>(

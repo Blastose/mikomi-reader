@@ -5,7 +5,13 @@
 		type Collection,
 		removeCollection
 	} from '$lib/bindings';
-	import { IconDotsVertical, IconPencil, IconTrash } from '@tabler/icons-svelte';
+	import {
+		IconChevronDown,
+		IconChevronUp,
+		IconDotsVertical,
+		IconPencil,
+		IconTrash
+	} from '@tabler/icons-svelte';
 	import BookImageCard from '$lib/components/book/BookImageCard.svelte';
 	import BookSwiper from '$lib/components/book/BookSwiper.svelte';
 	import { createDropdownMenu, melt } from '@melt-ui/svelte';
@@ -15,11 +21,14 @@
 	import { addToast } from '../toast/ToastContainer.svelte';
 	import { invalidateAll } from '$app/navigation';
 	import ConfirmModal from '../modal/ConfirmModal.svelte';
+	import { mainStateStore } from '$lib/stores/mainStateStore';
 
 	export let collectionWithBooks: {
 		collection: Collection;
 		books: BookWithAuthorsAndCoverAndSettingsAndCollections[];
 	};
+	export let moveUp: () => void;
+	export let moveDown: () => void;
 
 	const {
 		elements: { trigger, menu, item },
@@ -45,7 +54,9 @@
 	}
 </script>
 
-<div class="flex flex-col gap-4 bg-[#e1e3e6] dark:bg-[#39393a] p-4 rounded-md">
+<div
+	class="collection-item-container flex flex-col gap-4 bg-[#e1e3e6] dark:bg-[#39393a] p-4 rounded-md"
+>
 	<div class="grid">
 		<div class="flex overflow-hidden text-ellipsis whitespace-nowrap">
 			<p
@@ -53,26 +64,46 @@
 			>
 				{collectionWithBooks.collection.name}
 			</p>
-			<button
-				use:melt={$trigger}
-				aria-label="Open collection options for {collectionWithBooks.collection.name}"
-			>
-				<IconDotsVertical />
-			</button>
+
+			{#if $mainStateStore !== 'reorderCollections'}
+				<button
+					use:melt={$trigger}
+					aria-label="Open collection options for {collectionWithBooks.collection.name}"
+				>
+					<IconDotsVertical />
+				</button>
+			{:else}
+				<div class="flex gap-2">
+					<button
+						class="up-button rounded-full focus:bg-gray-300 focus:dark:bg-neutral-500 flex items-center justify-center h-8 w-8"
+						on:click={moveUp}
+					>
+						<IconChevronUp />
+					</button>
+					<button
+						class="down-button rounded-full focus:bg-gray-300 focus:dark:bg-neutral-500 flex items-center justify-center h-8 w-8"
+						on:click={moveDown}
+					>
+						<IconChevronDown />
+					</button>
+				</div>
+			{/if}
 		</div>
 		<span class="text-sm sm:text-base text-gray-500 dark:text-neutral-300"
 			>{collectionWithBooks.books.length} books</span
 		>
 	</div>
 
-	{#if collectionWithBooks.books.length > 0}
-		<BookSwiper let:scroll>
-			{#each collectionWithBooks.books as book}
-				<div class="item">
-					<BookImageCard {book} disablePointerEvents={scroll} hideSubText={true} />
-				</div>
-			{/each}
-		</BookSwiper>
+	{#if $mainStateStore !== 'reorderCollections'}
+		{#if collectionWithBooks.books.length > 0}
+			<BookSwiper let:scroll>
+				{#each collectionWithBooks.books as book}
+					<div class="item">
+						<BookImageCard {book} disablePointerEvents={scroll} hideSubText={true} />
+					</div>
+				{/each}
+			</BookSwiper>
+		{/if}
 	{/if}
 </div>
 

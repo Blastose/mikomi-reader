@@ -50,9 +50,6 @@ export const load = (async () => {
 		});
 	}
 
-	collectionsWithBooks.sort((a, b) => a.collection.name.localeCompare(b.collection.name));
-	// console.log(collectionsWithBooks);
-
 	return {
 		collections,
 		books,

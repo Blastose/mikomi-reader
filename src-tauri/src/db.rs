@@ -4,6 +4,7 @@ use diesel::prelude::*;
 use diesel::{Connection, SqliteConnection};
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use epub::doc::EpubDoc;
+use serde::Deserialize;
 use serde::Serialize;
 use specta::Type;
 use std::error::Error;
@@ -228,6 +229,7 @@ pub fn get_collections() -> Vec<models::Collection> {
 
     schema::collection::table
         .select(models::Collection::as_select())
+        .order(schema::collection::sort_order)
         .get_results(&mut conn)
         .unwrap()
 }
@@ -246,6 +248,32 @@ pub fn add_collection(new_collection: models::Collection) -> Result<(), String> 
     match res {
         Ok(_) => return Ok(()),
         Err(_) => return Err(String::from("Cannot add collection")),
+    }
+}
+
+#[derive(Serialize, Deserialize, Type)]
+pub struct CollectionIdWithSortOrder {
+    pub id: String,
+    pub sort_order: i32,
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn reorder_collections(collections: Vec<CollectionIdWithSortOrder>) -> Result<(), String> {
+    let mut conn: SqliteConnection = establish_connection();
+    let res = conn.transaction(|conn| {
+        for col in collections {
+            diesel::update(schema::collection::table.filter(schema::collection::id.eq(col.id)))
+                .set(schema::collection::sort_order.eq(col.sort_order))
+                .execute(conn)?;
+        }
+
+        diesel::result::QueryResult::Ok(())
+    });
+
+    match res {
+        Ok(_) => return Ok(()),
+        Err(_) => return Err(String::from("Cannot reorder collections")),
     }
 }
 

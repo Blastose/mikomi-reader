@@ -196,6 +196,7 @@ pub struct BookAuthorLink {
 pub struct Collection {
     pub id: String,
     pub name: String,
+    pub sort_order: Option<i32>,
 }
 
 #[derive(

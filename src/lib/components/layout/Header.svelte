@@ -1,5 +1,13 @@
 <script lang="ts">
-	import { IconBook, IconFolders, IconPointerCheck, IconTrash, IconX } from '@tabler/icons-svelte';
+	import {
+		IconBook,
+		IconCheck,
+		IconFolders,
+		IconPointerCheck,
+		IconReorder,
+		IconTrash,
+		IconX
+	} from '@tabler/icons-svelte';
 	import { page } from '$app/stores';
 	import { IconArrowLeft } from '@tabler/icons-svelte';
 	import { mainStateStore } from '$lib/stores/mainStateStore';
@@ -75,29 +83,31 @@
 	<div class="grid h-full">
 		<div class="flex items-center justify-between h-full container-mi">
 			{#if $mainStateStore === 'default'}
-				<div class="text-4xl font-bold text-ellipsis overflow-hidden whitespace-nowrap">
-					{#if isOnBookRoute}
-						<button
-							class="p-2 duration-300 rounded-full hover:bg-neutral-300"
-							on:click={() => {
-								history.back();
-							}}
-							aria-label="Go back"
-						>
-							<IconArrowLeft />
-						</button>
-					{:else if $page.url.pathname.startsWith('/books')}
-						{'Library'}
-					{:else if $page.url.pathname.startsWith('/settings')}
-						{'Settings'}
-					{:else if $page.url.pathname.startsWith('/collections')}
-						{'Collections'}
-					{:else}
-						{currentHeaderText}
-					{/if}
+				<div class="grid">
+					<div class="text-4xl font-bold text-ellipsis overflow-hidden whitespace-nowrap">
+						{#if isOnBookRoute}
+							<button
+								class="p-2 duration-300 rounded-full hover:bg-neutral-300"
+								on:click={() => {
+									history.back();
+								}}
+								aria-label="Go back"
+							>
+								<IconArrowLeft />
+							</button>
+						{:else if $page.url.pathname.startsWith('/books')}
+							{'Library'}
+						{:else if $page.url.pathname.startsWith('/settings')}
+							{'Settings'}
+						{:else if $page.url.pathname.startsWith('/collections')}
+							{'Collections'}
+						{:else}
+							{currentHeaderText}
+						{/if}
+					</div>
 				</div>
 
-				<div class="flex items-center gap-4">
+				<div class="flex items-center gap-2 sm:gap-4">
 					<AddBooksModal />
 
 					{#if $page.url.pathname.startsWith('/books')}
@@ -111,6 +121,18 @@
 							subText={'Select books'}
 						>
 							<IconPointerCheck />
+						</HeaderButton>
+					{:else if $page.url.pathname === '/collections'}
+						<HeaderButton
+							handleClick={() => {
+								if ($page.url.pathname !== '/collections') {
+									return;
+								}
+								mainStateStore.set('reorderCollections');
+							}}
+							subText={'Reorder collections'}
+						>
+							<IconReorder />
 						</HeaderButton>
 					{/if}
 				</div>
@@ -158,6 +180,22 @@
 						<IconTrash />
 					</HeaderButton>
 				</div>
+			{:else if $mainStateStore === 'reorderCollections'}
+				<div class="grid">
+					<div class="text-4xl font-bold text-ellipsis overflow-hidden whitespace-nowrap">
+						Reorder Collections
+					</div>
+				</div>
+
+				<HeaderButton
+					handleClick={() => {
+						mainStateStore.set('default');
+						selectedBookMapStore.reset();
+					}}
+					subText={'Done'}
+				>
+					<IconCheck />
+				</HeaderButton>
 			{/if}
 		</div>
 	</div>

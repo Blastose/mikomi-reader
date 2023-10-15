@@ -102,6 +102,10 @@ export function updateCollectionName(id: string, name: string) {
     return invoke()<null>("update_collection_name", { id,name })
 }
 
+export function reorderCollections(collections: CollectionIdWithSortOrder[]) {
+    return invoke()<null>("reorder_collections", { collections })
+}
+
 export function removeCollection(id: string) {
     return invoke()<null>("remove_collection", { id })
 }
@@ -122,13 +126,14 @@ export function getLanguages() {
     return invoke()<Language[]>("get_languages")
 }
 
-export type BookWithAuthorsAndCoverAndSettingsAndCollections = ({ id: string; title: string; path: string; last_read: number | null; date_added: number; reading_status: string; language: string | null; last_modified: string | null; identifier: string | null; published_date: string | null; description: string | null; publisher: string | null; page_progression_direction: string | null }) & { authors: Author[]; cover: string | null; settings: BookSettings | null; collections: Collection[] }
 export type Highlight = { id: string; book_id: string; date_added: number; note: string; start_container: string; start_offset: number; end_container: string; end_offset: number; color: string }
+export type BookWithAuthorsAndCoverAndBookmarksAndHighlightsAndSettingsAndCollections = ({ id: string; title: string; path: string; last_read: number | null; date_added: number; reading_status: string; language: string | null; last_modified: string | null; identifier: string | null; published_date: string | null; description: string | null; publisher: string | null; page_progression_direction: string | null }) & { authors: Author[]; bookmarks: Bookmark[]; highlights: Highlight[]; collections: Collection[]; cover: string | null; settings: BookSettings | null }
 export type Language = { name: string }
 export type Bookmark = { id: string; book_id: string; display_text: string; date_added: number; css_selector: string }
-export type BookWithAuthorsAndCoverAndBookmarksAndHighlightsAndSettingsAndCollections = ({ id: string; title: string; path: string; last_read: number | null; date_added: number; reading_status: string; language: string | null; last_modified: string | null; identifier: string | null; published_date: string | null; description: string | null; publisher: string | null; page_progression_direction: string | null }) & { authors: Author[]; bookmarks: Bookmark[]; highlights: Highlight[]; collections: Collection[]; cover: string | null; settings: BookSettings | null }
 export type BookSettings = { id: string; book_id: string; width: number | null; height: number | null; percentage: number | null; last_element: string | null; last_page: number | null; font_size: number; line_height: string; margins: number; text_align: string; column_count: number; writing_mode: string; font_family: string; background_color: string; color: string; link_color: string; primary_color: string; image_blend_mode: string }
 export type Book = { id: string; title: string; path: string; last_read: number | null; date_added: number; reading_status: string; language: string | null; last_modified: string | null; identifier: string | null; published_date: string | null; description: string | null; publisher: string | null; page_progression_direction: string | null }
 export type ReaderTheme = { id: string; name: string; background_color: string; color: string; link_color: string; primary_color: string; image_blend_mode: string }
-export type Collection = { id: string; name: string }
+export type Collection = { id: string; name: string; sort_order: number | null }
 export type Author = { id: string; name: string }
+export type BookWithAuthorsAndCoverAndSettingsAndCollections = ({ id: string; title: string; path: string; last_read: number | null; date_added: number; reading_status: string; language: string | null; last_modified: string | null; identifier: string | null; published_date: string | null; description: string | null; publisher: string | null; page_progression_direction: string | null }) & { authors: Author[]; cover: string | null; settings: BookSettings | null; collections: Collection[] }
+export type CollectionIdWithSortOrder = { id: string; sort_order: number }

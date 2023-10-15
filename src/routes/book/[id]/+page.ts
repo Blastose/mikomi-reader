@@ -9,7 +9,5 @@ export const load = (async ({ params }) => {
 		throw Error('');
 	}
 
-	collections.sort((a, b) => a.name.localeCompare(b.name));
-
 	return { book, collections };
 }) satisfies PageLoad;

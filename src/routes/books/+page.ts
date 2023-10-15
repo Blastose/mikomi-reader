@@ -39,7 +39,6 @@ export const load = (async ({ url }) => {
 	let books = await getBooks();
 	const databaseLanguages = await getLanguages();
 	const databaseCollections = await getCollections();
-	databaseCollections.sort((a, b) => a.name.localeCompare(b.name));
 	databaseCollectionsStore.set(databaseCollections);
 
 	if (statuses.length > 0) {
