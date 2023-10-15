@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { beforeNavigate } from '$app/navigation';
+	import { reorderCollections } from '$lib/bindings.js';
 	import CollectionInputModal from '$lib/components/collections/CollectionInputModal.svelte';
 	import CollectionItem from '$lib/components/collections/CollectionItem.svelte';
 	import { mainStateStore } from '$lib/stores/mainStateStore';
@@ -14,12 +15,21 @@
 	let inputValue: string = '';
 
 	function moveDown(index: number) {
+		if (index < 0) return;
 		if (index + 1 === data.collectionsWithBooks.length) return;
 
 		[data.collectionsWithBooks[index], data.collectionsWithBooks[index + 1]] = [
 			data.collectionsWithBooks[index + 1],
 			data.collectionsWithBooks[index]
 		];
+
+		const reorderedCollections = data.collectionsWithBooks.map((c, index) => {
+			return {
+				id: c.collection.id,
+				sort_order: index
+			};
+		});
+		reorderCollections(reorderedCollections);
 	}
 
 	beforeNavigate(() => {
@@ -27,7 +37,7 @@
 	});
 </script>
 
-<CollectionInputModal {inputValue} {openStore} />
+<CollectionInputModal {inputValue} {openStore} numCollections={data.collections.length} />
 
 <div class="container-mi py-6 flex flex-col gap-6 w-full">
 	{#if $mainStateStore !== 'reorderCollections'}

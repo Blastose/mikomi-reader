@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createDialog, melt } from '@melt-ui/svelte';
 	import { fade, fly } from 'svelte/transition';
-	import { IconLoader2, IconPlus, IconX } from '@tabler/icons-svelte';
+	import { IconPlus, IconX } from '@tabler/icons-svelte';
 	import { writable, type Writable } from 'svelte/store';
 	import { addBookToCollections, type Collection } from '$lib/bindings';
 	import { invalidateAll } from '$app/navigation';
@@ -102,7 +102,11 @@
 					<IconPlus />
 					Create collection
 				</button>
-				<CollectionInputModal {inputValue} openStore={collectionInputModalStore} />
+				<CollectionInputModal
+					{inputValue}
+					openStore={collectionInputModalStore}
+					numCollections={collections.length}
+				/>
 
 				<LoadingButton
 					buttonText="Save"

@@ -7,10 +7,15 @@
 
 	export let openStore: Writable<boolean>;
 	export let inputValue: string;
+	export let numCollections: number;
 
 	async function handleAddCollection() {
 		try {
-			await addCollection({ id: crypto.randomUUID(), name: inputValue });
+			await addCollection({
+				id: crypto.randomUUID(),
+				name: inputValue,
+				sort_order: numCollections
+			});
 			addToast({ data: { title: 'Created collection', color: '', description: '' } });
 			await invalidateAll();
 		} catch {

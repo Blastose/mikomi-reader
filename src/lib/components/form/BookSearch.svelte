@@ -58,7 +58,10 @@
 		languageValues={languages}
 		{databaseLanguages}
 		collectionsValues={collections}
-		databaseCollections={[...databaseCollections, { id: 'None', name: '*No collection*' }]}
+		databaseCollections={[
+			...databaseCollections,
+			{ id: 'None', name: '*No collection*', sort_order: null }
+		]}
 	/>
 </form>
 

@@ -78,6 +78,7 @@ diesel::table! {
     collection (id) {
         id -> Text,
         name -> Text,
+        sort_order -> Nullable<Integer>,
     }
 }
 
