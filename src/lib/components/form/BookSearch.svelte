@@ -12,6 +12,7 @@
 	export let collections: string[];
 	export let databaseCollections: Collection[];
 
+	let inputValue = searchText;
 	let formElement: HTMLFormElement;
 
 	function handleSubmit() {
@@ -35,13 +36,13 @@
 			type="text"
 			placeholder="Search"
 			autocomplete="off"
-			value={searchText}
+			bind:value={inputValue}
 		/>
 		<button tabindex="-1" class="absolute left-0 p-2" type="submit"><IconSearch /></button>
-		{#if searchText}
+		{#if inputValue}
 			<button
 				on:click={() => {
-					searchText = '';
+					inputValue = '';
 				}}
 				transition:fade={{ duration: 150 }}
 				class="absolute right-0 p-2"
