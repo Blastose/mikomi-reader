@@ -78,7 +78,8 @@
 		<button
 			class="text-left pr-6 pl-4 py-2 flex gap-4 hover:bg-neutral-600 duration-150 rounded-md"
 			use:melt={$item}
-			on:click={() => {
+			on:click={async () => {
+				await invalidateAll();
 				readBook(book, book.settings);
 			}}
 		>

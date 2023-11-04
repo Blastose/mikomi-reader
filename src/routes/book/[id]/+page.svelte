@@ -8,6 +8,7 @@
 	import ReadingStatus from '$lib/components/book/ReadingStatus.svelte';
 	import { readBook } from '$lib/components/book/utils.js';
 	import DOMPurify from 'dompurify';
+	import { invalidateAll } from '$app/navigation';
 
 	export let data;
 
@@ -104,7 +105,8 @@
 
 	<div class="flex flex-wrap gap-2 description">
 		<button
-			on:click={() => {
+			on:click={async () => {
+				await invalidateAll();
 				readBook(data.book, data.book.settings);
 			}}
 			class="flex items-center justify-center h-fit w-full gap-2 px-12 py-4 font-bold text-white duration-300 rounded-md
