@@ -59,11 +59,20 @@
 >
 	<div class="grid">
 		<div class="flex overflow-hidden text-ellipsis whitespace-nowrap">
-			<p
-				class="text-xl font-bold w-full overflow-hidden text-ellipsis whitespace-nowrap target-title"
-			>
-				{collectionWithBooks.collection.name}
-			</p>
+			{#if $mainStateStore === 'reorderCollections'}
+				<p
+					class="text-xl font-bold w-full overflow-hidden text-ellipsis whitespace-nowrap target-title"
+				>
+					{collectionWithBooks.collection.name}
+				</p>
+			{:else}
+				<a
+					href="/collection/{collectionWithBooks.collection.id}"
+					class="text-xl font-bold w-full overflow-hidden text-ellipsis whitespace-nowrap target-title"
+				>
+					{collectionWithBooks.collection.name}
+				</a>
+			{/if}
 
 			{#if $mainStateStore !== 'reorderCollections'}
 				<button

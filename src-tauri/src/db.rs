@@ -586,6 +586,49 @@ pub fn get_books() -> Vec<BookWithAuthorsAndCoverAndSettingsAndCollections> {
     books_with_authors_and_cover
 }
 
+#[derive(Serialize, Deserialize, Type)]
+pub struct BookWithCover {
+    #[serde(flatten)]
+    pub book: models::Book,
+    pub cover: Option<String>,
+}
+#[derive(Serialize, Deserialize, Type)]
+pub struct CollectionWithBooks {
+    pub collection: models::Collection,
+    pub books: Vec<BookWithCover>,
+}
+
+#[tauri::command]
+#[specta::specta]
+pub fn get_books_belonging_to_collections(collection_id: String) -> CollectionWithBooks {
+    let mut conn: SqliteConnection = establish_connection();
+
+    let collection = schema::collection::table
+        .filter(schema::collection::id.eq(collection_id))
+        .select(models::Collection::as_select())
+        .get_result(&mut conn)
+        .unwrap();
+
+    let books = models::BookCollectionLink::belonging_to(&collection)
+        .inner_join(schema::book::table)
+        .select(models::Book::as_select())
+        .load(&mut conn)
+        .unwrap();
+
+    let books = books
+        .into_iter()
+        .map(|b| {
+            let path = Path::new("mikomi-data/covers").join(b.id.clone());
+            BookWithCover {
+                book: b,
+                cover: Some(String::from(path.to_string_lossy())),
+            }
+        })
+        .collect();
+
+    CollectionWithBooks { collection, books }
+}
+
 pub fn upsert_author(name: String) -> String {
     let mut conn = establish_connection();
 

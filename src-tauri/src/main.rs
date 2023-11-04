@@ -15,6 +15,7 @@ fn main() {
         collect_types![
             db::get_book,
             db::get_books,
+            db::get_books_belonging_to_collections,
             db::add_book_from_file,
             db::add_multiple_books_from_files,
             db::update_book,
@@ -55,6 +56,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             db::get_book,
             db::get_books,
+            db::get_books_belonging_to_collections,
             db::add_book_from_file,
             db::add_multiple_books_from_files,
             db::update_book,

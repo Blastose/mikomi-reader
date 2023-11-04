@@ -101,6 +101,8 @@
 							{'Settings'}
 						{:else if $page.url.pathname.startsWith('/collections')}
 							{'Collections'}
+						{:else if $page.url.pathname.startsWith('/collection/')}
+							{'Collection'}
 						{:else}
 							{currentHeaderText}
 						{/if}
@@ -131,6 +133,18 @@
 								mainStateStore.set('reorderCollections');
 							}}
 							subText={'Reorder collections'}
+						>
+							<IconReorder />
+						</HeaderButton>
+					{:else if $page.url.pathname.startsWith('/collection/')}
+						<HeaderButton
+							handleClick={() => {
+								if (!$page.url.pathname.startsWith('/collection/')) {
+									return;
+								}
+								mainStateStore.set('reorderCollections');
+							}}
+							subText={'Reorder books'}
 						>
 							<IconReorder />
 						</HeaderButton>
@@ -183,7 +197,11 @@
 			{:else if $mainStateStore === 'reorderCollections'}
 				<div class="grid">
 					<div class="text-4xl font-bold text-ellipsis overflow-hidden whitespace-nowrap">
-						Reorder Collections
+						{#if $page.url.pathname === '/collections'}
+							Reorder Collections
+						{:else}
+							Reorder Books
+						{/if}
 					</div>
 				</div>
 

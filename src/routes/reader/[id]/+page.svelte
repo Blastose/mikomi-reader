@@ -50,6 +50,8 @@
 			selector = getSelector(el);
 		}
 		console.log(currentPage);
+		console.log(window.innerHeight);
+		console.log(window.innerWidth);
 		await addBookSettingsFromSettingsAndTheme(
 			$page.params.id,
 			window.innerHeight ?? 860,
@@ -62,6 +64,7 @@
 			selector ?? undefined,
 			currentPage
 		);
+		console.log('aksakljsasajjkdjklasjkasjasjkldsjkl');
 	});
 
 	export let data;
