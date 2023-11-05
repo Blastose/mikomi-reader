@@ -10,7 +10,7 @@
 </script>
 
 <div
-	class="book-item-container dark:bg-neutral-700
+	class="book-item-container bg-neutral-200 dark:bg-neutral-700
       p-2 rounded-md
       grid grid-cols-[64px_1fr] gap-2 sm:gap-4"
 >
