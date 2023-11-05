@@ -38,9 +38,11 @@
 		preventScroll: false,
 		selected: selectedMeltStore
 	});
+
+	let containerWidth: number;
 </script>
 
-<div class="w-full sm:max-w-xs flex flex-col gap-1">
+<div bind:clientWidth={containerWidth} class="w-full sm:max-w-xs flex flex-col gap-1">
 	<!-- svelte-ignore a11y-label-has-associated-control - $label contains the 'for' attribute -->
 	<label class="block text-lg font-bold" use:melt={$label}>{selectName}</label>
 	<button
@@ -51,16 +53,24 @@
 	>
 		<span class="flex gap-2">
 			{#if selected.length === 0}
-				<span class="px-2 rounded-full text-sm text-black bg-neutral-200">{allSelectedText}</span>
-			{:else if selected.length <= 2}
+				<span class="max-w-[128px] truncate px-2 rounded-full text-sm text-black bg-neutral-200"
+					>{allSelectedText}</span
+				>
+			{:else if selected.length <= 2 && containerWidth > 128 * 2 + 50}
 				{#each selected as selectItem}
-					<span class="px-2 rounded-full text-sm text-black bg-neutral-200">{selectItem}</span>
+					<span class="max-w-[128px] truncate px-2 rounded-full text-sm text-black bg-neutral-200"
+						>{selectItem}</span
+					>
 				{/each}
 			{:else}
-				<span class="px-2 rounded-full text-sm text-black bg-neutral-200">{selected[0]}</span>
-				<span class="px-2 rounded-full text-sm text-black bg-neutral-200"
-					>+{selected.length - 1} more</span
+				<span class="max-w-[128px] truncate px-2 rounded-full text-sm text-black bg-neutral-200"
+					>{selected[0]}</span
 				>
+				{#if selected.length !== 1}
+					<span class="px-2 rounded-full text-sm text-black bg-neutral-200"
+						>+{selected.length - 1} more</span
+					>
+				{/if}
 			{/if}
 		</span>
 
@@ -68,7 +78,7 @@
 	</button>
 	{#if $open}
 		<div
-			class="z-10 overflow-y-auto flex gap-1 max-h-[300px] flex-col
+			class="z-10 overflow-y-auto overflow-x-hidden flex gap-1 max-h-[300px] flex-col
      rounded-lg bg-[#404040fe] p-1
     focus:!ring-0"
 			use:melt={$menu}
