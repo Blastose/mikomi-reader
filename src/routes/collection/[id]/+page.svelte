@@ -114,5 +114,12 @@
 				/>
 			</div>
 		{/each}
+		{#if data.books.length === 0}
+			<div class="flex items-center justify-center">
+				<p class="dark:bg-neutral-700 text-lg px-4 py-4 rounded-sm w-full text-center">
+					No books in collection.
+				</p>
+			</div>
+		{/if}
 	</div>
 </div>
