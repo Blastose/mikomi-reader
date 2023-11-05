@@ -162,6 +162,17 @@
 
 		<hr class="dark:border-[#46464b]" />
 
+		{#if data.book.collections.length > 0}
+			<div class="flex flex-col gap-2">
+				<h3 class="text-xl font-bold">Collections:</h3>
+				{#each data.book.collections as collection}
+					<a class="w-fit" href="/collection/{collection.id}">{collection.name}</a>
+				{/each}
+			</div>
+
+			<hr class="dark:border-[#46464b]" />
+		{/if}
+
 		<div class="flex flex-col gap-2">
 			<h3 class="text-xl font-bold">Info:</h3>
 
