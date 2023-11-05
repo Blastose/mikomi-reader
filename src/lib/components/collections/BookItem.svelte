@@ -1,11 +1,13 @@
 <script lang="ts">
-	import type { BookWithCover } from '$lib/bindings';
+	import type { BookWithCover, Collection } from '$lib/bindings';
 	import { mainStateStore } from '$lib/stores/mainStateStore';
 	import { IconChevronDown, IconChevronUp } from '@tabler/icons-svelte';
 	import { convertFileSrc } from '@tauri-apps/api/tauri';
 	import DOMPurify from 'dompurify';
+	import BookItemDropdown from './BookItemDropdown.svelte';
 
 	export let book: BookWithCover;
+	export let collection: Collection;
 	export let moveUp: () => void;
 	export let moveDown: () => void;
 </script>
@@ -23,9 +25,12 @@
 
 	<div class="flex flex-col justify-between">
 		<div class="flex flex-col gap-1">
-			<p class="font-bold">
-				<a class="line-clamp-1" href="/book/{book.id}">{book.title}</a>
-			</p>
+			<div class="flex justify-between gap-2">
+				<p class="font-bold flex items-center">
+					<a class="line-clamp-1" href="/book/{book.id}">{book.title}</a>
+				</p>
+				<BookItemDropdown {book} {collection} />
+			</div>
 			{#if book.description}
 				<p class="line-clamp-2">{@html DOMPurify.sanitize(book.description)}</p>
 			{/if}

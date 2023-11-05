@@ -108,6 +108,7 @@
 			<div animate:flip={{ duration: 450, easing: quintOut }}>
 				<BookItem
 					{book}
+					collection={data.collection}
 					moveUp={() => {
 						moveDown(index - 1, 'up');
 					}}
