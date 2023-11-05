@@ -25,13 +25,7 @@
 			data.collectionsWithBooks[index]
 		];
 
-		const reorderedCollections = data.collectionsWithBooks.map((c, index) => {
-			return {
-				id: c.collection.id,
-				sort_order: index
-			};
-		});
-		reorderCollections(reorderedCollections);
+		reorderCollectionsByCurrentPositions();
 
 		await tick();
 		const items = collectionItemsContainer.querySelectorAll('div.collection-item-container');
@@ -44,12 +38,22 @@
 		}
 	}
 
+	async function reorderCollectionsByCurrentPositions() {
+		const reorderedCollections = data.collectionsWithBooks.map((c, index) => {
+			return {
+				id: c.collection.id,
+				sort_order: index
+			};
+		});
+		reorderCollections(reorderedCollections);
+	}
+
 	beforeNavigate(() => {
 		mainStateStore.set('default');
 	});
 </script>
 
-<CollectionInputModal {inputValue} {openStore} numCollections={data.collections.length} />
+<CollectionInputModal {inputValue} {openStore} numCollections={data.collectionsWithBooks.length} />
 
 <div class="container-mi py-6 flex flex-col gap-6 w-full">
 	{#if $mainStateStore !== 'reorderCollections'}
@@ -78,6 +82,7 @@
 					moveDown={() => {
 						moveDown(index, 'down');
 					}}
+					{reorderCollectionsByCurrentPositions}
 				/>
 			</div>
 		{/each}

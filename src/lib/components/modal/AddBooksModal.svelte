@@ -19,6 +19,8 @@
 	function handleClick() {
 		openStore.set(true);
 	}
+
+	let autoCreateCollection = false;
 </script>
 
 <HeaderButton {handleClick} subText={'Add book(s)'}>
@@ -45,9 +47,15 @@
 			}}
 		>
 			<div class="flex flex-col gap-4 h-full">
-				<h2 use:melt={$title} class="m-0 text-lg font-medium">Select files</h2>
+				<div>
+					<h2 use:melt={$title} class="m-0 text-lg font-medium">Select files</h2>
+					<label class="flex items-center gap-2">
+						<input type="checkbox" bind:value={autoCreateCollection} />
+						<span>Automatically create collection and add books to it</span>
+					</label>
+				</div>
 
-				<DropFiles {openStore} extensions={['epub']} />
+				<DropFiles {openStore} extensions={['epub']} {autoCreateCollection} />
 			</div>
 
 			<button

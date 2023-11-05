@@ -18,6 +18,10 @@ export function getBooks() {
     return invoke()<BookWithAuthorsAndCoverAndSettingsAndCollections[]>("get_books")
 }
 
+export function getBooksBelongingToCollections(collectionId: string) {
+    return invoke()<CollectionWithBooks>("get_books_belonging_to_collections", { collectionId })
+}
+
 export function addBookFromFile(path: string) {
     return invoke()<Book>("add_book_from_file", { path })
 }
@@ -94,6 +98,10 @@ export function getCollections() {
     return invoke()<Collection[]>("get_collections")
 }
 
+export function getCollectionsAndTheirBooks() {
+    return invoke()<CollectionWithBooks[]>("get_collections_and_their_books")
+}
+
 export function addCollection(newCollection: Collection) {
     return invoke()<null>("add_collection", { newCollection })
 }
@@ -106,12 +114,12 @@ export function reorderCollections(collections: CollectionIdWithSortOrder[]) {
     return invoke()<null>("reorder_collections", { collections })
 }
 
-export function removeCollection(id: string) {
-    return invoke()<null>("remove_collection", { id })
+export function reorderBooksInCollection(bookCollectionLinks: BookCollectionLink[]) {
+    return invoke()<null>("reorder_books_in_collection", { bookCollectionLinks })
 }
 
-export function addBookToCollection(bookId: string, collectionId: string) {
-    return invoke()<null>("add_book_to_collection", { bookId,collectionId })
+export function removeCollection(id: string) {
+    return invoke()<null>("remove_collection", { id })
 }
 
 export function addBookToCollections(bookId: string, collectionIds: string[]) {
@@ -133,7 +141,10 @@ export type Bookmark = { id: string; book_id: string; display_text: string; date
 export type BookSettings = { id: string; book_id: string; width: number | null; height: number | null; percentage: number | null; last_element: string | null; last_page: number | null; font_size: number; line_height: string; margins: number; text_align: string; column_count: number; writing_mode: string; font_family: string; background_color: string; color: string; link_color: string; primary_color: string; image_blend_mode: string }
 export type Book = { id: string; title: string; path: string; last_read: number | null; date_added: number; reading_status: string; language: string | null; last_modified: string | null; identifier: string | null; published_date: string | null; description: string | null; publisher: string | null; page_progression_direction: string | null }
 export type ReaderTheme = { id: string; name: string; background_color: string; color: string; link_color: string; primary_color: string; image_blend_mode: string }
+export type BookCollectionLink = { book_id: string; collection_id: string; sort_order: number | null }
 export type Collection = { id: string; name: string; sort_order: number | null }
 export type Author = { id: string; name: string }
 export type BookWithAuthorsAndCoverAndSettingsAndCollections = ({ id: string; title: string; path: string; last_read: number | null; date_added: number; reading_status: string; language: string | null; last_modified: string | null; identifier: string | null; published_date: string | null; description: string | null; publisher: string | null; page_progression_direction: string | null }) & { authors: Author[]; cover: string | null; settings: BookSettings | null; collections: Collection[] }
 export type CollectionIdWithSortOrder = { id: string; sort_order: number }
+export type BookWithCover = ({ id: string; title: string; path: string; last_read: number | null; date_added: number; reading_status: string; language: string | null; last_modified: string | null; identifier: string | null; published_date: string | null; description: string | null; publisher: string | null; page_progression_direction: string | null }) & { cover: string | null }
+export type CollectionWithBooks = { collection: Collection; books: BookWithCover[] }

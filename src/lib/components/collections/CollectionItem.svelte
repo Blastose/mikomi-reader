@@ -1,9 +1,9 @@
 <script lang="ts">
 	import {
 		updateCollectionName,
-		type BookWithAuthorsAndCoverAndSettingsAndCollections,
 		type Collection,
-		removeCollection
+		removeCollection,
+		type BookWithCover
 	} from '$lib/bindings';
 	import {
 		IconChevronDown,
@@ -25,10 +25,11 @@
 
 	export let collectionWithBooks: {
 		collection: Collection;
-		books: BookWithAuthorsAndCoverAndSettingsAndCollections[];
+		books: BookWithCover[];
 	};
 	export let moveUp: () => void;
 	export let moveDown: () => void;
+	export let reorderCollectionsByCurrentPositions: () => Promise<void>;
 
 	const {
 		elements: { trigger, menu, item },
@@ -59,11 +60,20 @@
 >
 	<div class="grid">
 		<div class="flex overflow-hidden text-ellipsis whitespace-nowrap">
-			<p
-				class="text-xl font-bold w-full overflow-hidden text-ellipsis whitespace-nowrap target-title"
-			>
-				{collectionWithBooks.collection.name}
-			</p>
+			{#if $mainStateStore === 'reorderCollections'}
+				<p
+					class="text-xl font-bold w-full overflow-hidden text-ellipsis whitespace-nowrap target-title"
+				>
+					{collectionWithBooks.collection.name}
+				</p>
+			{:else}
+				<a
+					href="/collection/{collectionWithBooks.collection.id}"
+					class="text-xl font-bold w-full overflow-hidden text-ellipsis whitespace-nowrap target-title"
+				>
+					{collectionWithBooks.collection.name}
+				</a>
+			{/if}
 
 			{#if $mainStateStore !== 'reorderCollections'}
 				<button
@@ -128,7 +138,8 @@
 			addToast({
 				data: { title: 'Deleted collection successfully', color: '', description: '' }
 			});
-			invalidateAll();
+			await invalidateAll();
+			await reorderCollectionsByCurrentPositions();
 		} catch {
 			addToast({ data: { title: 'Unable to delete collection', color: '', description: '' } });
 		}
@@ -151,7 +162,7 @@
 			}}
 		>
 			<IconPencil />
-			<span>Edit</span>
+			<span>Edit name</span>
 		</button>
 		<button
 			class="text-left pr-6 pl-4 py-2 flex gap-4 hover:bg-neutral-600 duration-150 rounded-md"
@@ -175,22 +186,22 @@
 
 	@media (min-width: 640px) {
 		.item {
-			flex: 0 0 20%;
+			flex: 0 0 16%;
 		}
 	}
 	@media (min-width: 768px) {
 		.item {
-			flex: 0 0 16%;
+			flex: 0 0 12%;
 		}
 	}
 	@media (min-width: 1280px) {
 		.item {
-			flex: 0 0 14%;
+			flex: 0 0 8%;
 		}
 	}
 	@media (min-width: 1536px) {
 		.item {
-			flex: 0 0 10%;
+			flex: 0 0 5%;
 		}
 	}
 </style>

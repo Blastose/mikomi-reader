@@ -33,18 +33,10 @@
 
 	let loading = false;
 
-	async function addBookToCollectionsSingle(id: string) {
-		await addBookToCollections(id, checkboxGroup);
-		invalidateAll();
-		addToast({
-			data: { title: 'Collections successfully updated', color: '', description: '' }
-		});
-	}
-
 	async function addBookToCollectionsMultiple(ids: string[]) {
 		loading = true;
 		for (const bookId of ids) {
-			addBookToCollections(bookId, checkboxGroup);
+			await addBookToCollections(bookId, checkboxGroup);
 		}
 		loading = false;
 		invalidateAll();
@@ -111,11 +103,7 @@
 				<LoadingButton
 					buttonText="Save"
 					handleClick={async () => {
-						if (bookIds.length === 1) {
-							await addBookToCollectionsSingle(bookIds[0]);
-						} else {
-							await addBookToCollectionsMultiple(bookIds);
-						}
+						await addBookToCollectionsMultiple(bookIds);
 						openStore.set(false);
 						mainStateStore.set('default');
 						selectedBookMapStore.reset();

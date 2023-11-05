@@ -1,9 +1,9 @@
 <script lang="ts">
-	import type { BookWithAuthorsAndCoverAndSettingsAndCollections } from '$lib/bindings.js';
+	import type { BookWithCover } from '$lib/bindings.js';
 	import { relativeTime } from '$lib/util/util';
 	import { convertFileSrc } from '@tauri-apps/api/tauri';
 
-	export let book: BookWithAuthorsAndCoverAndSettingsAndCollections;
+	export let book: BookWithCover;
 	export let disablePointerEvents: boolean = false;
 	export let hideSubText: boolean = false;
 </script>

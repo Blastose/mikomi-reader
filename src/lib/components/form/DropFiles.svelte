@@ -1,6 +1,11 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
-	import { addBookFromFile } from '$lib/bindings';
+	import {
+		addBookFromFile,
+		addBookToCollections,
+		addCollection,
+		getCollections
+	} from '$lib/bindings';
 	import { event } from '@tauri-apps/api';
 	import { open } from '@tauri-apps/api/dialog';
 	import { onDestroy, onMount } from 'svelte';
@@ -11,6 +16,7 @@
 
 	export let openStore: Writable<boolean>;
 	export let extensions: string[];
+	export let autoCreateCollection: boolean;
 	let loadingFiles = false;
 
 	function getValidPathsWithExtensions(paths: string[]) {
@@ -46,14 +52,26 @@
 		numberOfBooksToAdd = paths.length;
 		progressValue.set(0);
 		let failedUploads = 0;
+		const addedBookIds = [];
 		for (const path of paths) {
 			try {
-				await addBookFromFile(path);
+				const addedBook = await addBookFromFile(path);
+				addedBookIds.push(addedBook.id);
 				progressValue.update((v) => v + 1);
 			} catch {
 				failedUploads++;
 			}
 		}
+		if (autoCreateCollection) {
+			const collectionId = crypto.randomUUID();
+			const collections = await getCollections();
+			const name = Date.now().toString();
+			await addCollection({ id: collectionId, name, sort_order: collections.length });
+			for (const bookId of addedBookIds) {
+				await addBookToCollections(bookId, [collectionId]);
+			}
+		}
+
 		invalidateAll();
 		openStore.set(false);
 		if (failedUploads > 0) {
