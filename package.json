@@ -44,7 +44,7 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"@melt-ui/svelte": "^0.52.0",
+		"@melt-ui/svelte": "^0.58.0",
 		"@tabler/icons-svelte": "^2.29.0",
 		"@tauri-apps/api": "^1.5.0",
 		"@zip.js/zip.js": "^2.7.29",

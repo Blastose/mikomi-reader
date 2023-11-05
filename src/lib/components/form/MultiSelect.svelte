@@ -25,7 +25,7 @@
 
 	const {
 		elements: { trigger, menu, option, label },
-		states: { selectedLabel, open },
+		states: { open },
 		helpers: { isSelected }
 	} = createSelect({
 		forceVisible: true,
@@ -68,17 +68,17 @@
 	</button>
 	{#if $open}
 		<div
-			class="z-10 flex gap-1 max-h-[300px] flex-col
-    overflow-y-auto rounded-lg bg-neutral-700 p-1
-    shadow focus:!ring-0 text-white"
+			class="z-10 overflow-y-auto flex gap-1 max-h-[300px] flex-col
+     rounded-lg bg-[#404040fe] p-1
+    focus:!ring-0"
 			use:melt={$menu}
 		>
 			{#each selectOptions as selectOption}
 				<div
 					class="relative cursor-pointer rounded-lg py-1 pr-4 pl-10 text-neutral-200
             focus:z-10 focus:text-neutral-700 duration-150
-          data-[highlighted]:bg-neutral-400 data-[selected]:bg-neutral-300
-          data-[highlighted]:text-neutral-900 data-[selected]:text-neutral-900"
+          data-[highlighted]:bg-[#a3a3a3fe] data-[selected]:bg-[#d5d5d5fe]
+          data-[highlighted]:text-[#171717fe] data-[selected]:text-[#171717fe]"
 					use:melt={$option({ value: selectOption, label: selectOption })}
 				>
 					<div class="check {$isSelected(selectOption) ? 'block' : 'hidden'}">
