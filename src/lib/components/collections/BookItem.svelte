@@ -12,7 +12,7 @@
 <div
 	class="book-item-container dark:bg-neutral-700
       p-2 rounded-md
-      grid grid-cols-[64px_1fr] gap-2"
+      grid grid-cols-[64px_1fr] gap-2 sm:gap-4"
 >
 	{#if book.cover}
 		<img class="rounded-md" src={convertFileSrc(book.cover)} alt="" />

@@ -25,13 +25,7 @@
 			data.collectionsWithBooks[index]
 		];
 
-		const reorderedCollections = data.collectionsWithBooks.map((c, index) => {
-			return {
-				id: c.collection.id,
-				sort_order: index
-			};
-		});
-		reorderCollections(reorderedCollections);
+		reorderCollectionsByCurrentPositions();
 
 		await tick();
 		const items = collectionItemsContainer.querySelectorAll('div.collection-item-container');
@@ -42,6 +36,16 @@
 		if (button) {
 			button.focus();
 		}
+	}
+
+	async function reorderCollectionsByCurrentPositions() {
+		const reorderedCollections = data.collectionsWithBooks.map((c, index) => {
+			return {
+				id: c.collection.id,
+				sort_order: index
+			};
+		});
+		reorderCollections(reorderedCollections);
 	}
 
 	beforeNavigate(() => {
@@ -78,6 +82,7 @@
 					moveDown={() => {
 						moveDown(index, 'down');
 					}}
+					{reorderCollectionsByCurrentPositions}
 				/>
 			</div>
 		{/each}

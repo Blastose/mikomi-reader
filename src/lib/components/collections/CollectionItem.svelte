@@ -29,6 +29,7 @@
 	};
 	export let moveUp: () => void;
 	export let moveDown: () => void;
+	export let reorderCollectionsByCurrentPositions: () => Promise<void>;
 
 	const {
 		elements: { trigger, menu, item },
@@ -137,7 +138,8 @@
 			addToast({
 				data: { title: 'Deleted collection successfully', color: '', description: '' }
 			});
-			invalidateAll();
+			await invalidateAll();
+			await reorderCollectionsByCurrentPositions();
 		} catch {
 			addToast({ data: { title: 'Unable to delete collection', color: '', description: '' } });
 		}
@@ -160,7 +162,7 @@
 			}}
 		>
 			<IconPencil />
-			<span>Edit</span>
+			<span>Edit name</span>
 		</button>
 		<button
 			class="text-left pr-6 pl-4 py-2 flex gap-4 hover:bg-neutral-600 duration-150 rounded-md"

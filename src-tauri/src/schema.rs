@@ -37,6 +37,7 @@ diesel::table! {
     book_collection_link (book_id, collection_id) {
         book_id -> Text,
         collection_id -> Text,
+        sort_order -> Nullable<Integer>,
     }
 }
 

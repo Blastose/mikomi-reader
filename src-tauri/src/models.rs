@@ -200,7 +200,16 @@ pub struct Collection {
 }
 
 #[derive(
-    Queryable, Selectable, Insertable, Serialize, Associations, Identifiable, Type, PartialEq, Debug,
+    Queryable,
+    Selectable,
+    Deserialize,
+    Insertable,
+    Serialize,
+    Associations,
+    Identifiable,
+    Type,
+    PartialEq,
+    Debug,
 )]
 #[diesel(belongs_to(Book))]
 #[diesel(belongs_to(Collection))]
@@ -210,4 +219,5 @@ pub struct Collection {
 pub struct BookCollectionLink {
     pub book_id: String,
     pub collection_id: String,
+    pub sort_order: Option<i32>,
 }
