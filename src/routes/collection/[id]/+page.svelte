@@ -93,8 +93,11 @@
 {/if}
 
 <div class="container-mi py-6 flex flex-col gap-4">
-	<div class="flex justify-between items-center">
-		<h2 class="text-2xl font-bold">{data.collection.name}</h2>
+	<div class="flex justify-between">
+		<div>
+			<h2 class="text-2xl font-bold">{data.collection.name}</h2>
+			<span>{data.books.length} books</span>
+		</div>
 		<button use:melt={$trigger} aria-label="Open collection options for {data.collection.name}">
 			<IconDotsVertical />
 		</button>

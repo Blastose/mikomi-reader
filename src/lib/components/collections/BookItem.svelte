@@ -3,6 +3,7 @@
 	import { mainStateStore } from '$lib/stores/mainStateStore';
 	import { IconChevronDown, IconChevronUp } from '@tabler/icons-svelte';
 	import { convertFileSrc } from '@tauri-apps/api/tauri';
+	import DOMPurify from 'dompurify';
 
 	export let book: BookWithCover;
 	export let moveUp: () => void;
@@ -15,13 +16,20 @@
       grid grid-cols-[64px_1fr] gap-2 sm:gap-4"
 >
 	{#if book.cover}
-		<img class="rounded-md" src={convertFileSrc(book.cover)} alt="" />
+		<a href="/book/{book.id}">
+			<img class="rounded-md" src={convertFileSrc(book.cover)} alt="" />
+		</a>
 	{/if}
 
 	<div class="flex flex-col justify-between">
-		<p class="font-bold">
-			<a class="line-clamp-1" href="/book/{book.id}">{book.title}</a>
-		</p>
+		<div class="flex flex-col gap-1">
+			<p class="font-bold">
+				<a class="line-clamp-1" href="/book/{book.id}">{book.title}</a>
+			</p>
+			{#if book.description}
+				<p class="line-clamp-2">{@html DOMPurify.sanitize(book.description)}</p>
+			{/if}
+		</div>
 
 		{#if $mainStateStore === 'reorderCollections'}
 			<div class="self-end flex gap-2">
