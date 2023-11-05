@@ -1,9 +1,9 @@
 <script lang="ts">
 	import {
 		updateCollectionName,
-		type BookWithAuthorsAndCoverAndSettingsAndCollections,
 		type Collection,
-		removeCollection
+		removeCollection,
+		type BookWithCover
 	} from '$lib/bindings';
 	import {
 		IconChevronDown,
@@ -25,7 +25,7 @@
 
 	export let collectionWithBooks: {
 		collection: Collection;
-		books: BookWithAuthorsAndCoverAndSettingsAndCollections[];
+		books: BookWithCover[];
 	};
 	export let moveUp: () => void;
 	export let moveDown: () => void;

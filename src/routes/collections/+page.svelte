@@ -53,7 +53,7 @@
 	});
 </script>
 
-<CollectionInputModal {inputValue} {openStore} numCollections={data.collections.length} />
+<CollectionInputModal {inputValue} {openStore} numCollections={data.collectionsWithBooks.length} />
 
 <div class="container-mi py-6 flex flex-col gap-6 w-full">
 	{#if $mainStateStore !== 'reorderCollections'}

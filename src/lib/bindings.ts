@@ -98,6 +98,10 @@ export function getCollections() {
     return invoke()<Collection[]>("get_collections")
 }
 
+export function getCollectionsAndTheirBooks() {
+    return invoke()<CollectionWithBooks[]>("get_collections_and_their_books")
+}
+
 export function addCollection(newCollection: Collection) {
     return invoke()<null>("add_collection", { newCollection })
 }

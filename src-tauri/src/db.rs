@@ -685,6 +685,54 @@ pub fn get_books_belonging_to_collections(collection_id: String) -> CollectionWi
     CollectionWithBooks { collection, books }
 }
 
+#[tauri::command]
+#[specta::specta]
+pub fn get_collections_and_their_books() -> Vec<CollectionWithBooks> {
+    let mut conn: SqliteConnection = establish_connection();
+
+    let all_collections = schema::collection::table
+        .order(schema::collection::sort_order)
+        .select(models::Collection::as_select())
+        .load(&mut conn)
+        .unwrap();
+
+    let books_with_collection_link: Vec<(models::BookCollectionLink, models::Book)> =
+        models::BookCollectionLink::belonging_to(&all_collections)
+            .inner_join(schema::book::table)
+            .order(schema::book_collection_link::sort_order)
+            .select((
+                models::BookCollectionLink::as_select(),
+                models::Book::as_select(),
+            ))
+            .load::<(models::BookCollectionLink, models::Book)>(&mut conn)
+            .unwrap();
+
+    let books_per_collection = books_with_collection_link
+        .grouped_by(&all_collections)
+        .into_iter()
+        .zip(all_collections)
+        .map(|(links, col)| {
+            let books = links
+                .into_iter()
+                .map(|(_, b)| {
+                    let path = Path::new("mikomi-data/covers").join(b.id.clone());
+                    BookWithCover {
+                        book: b,
+                        cover: Some(String::from(path.to_string_lossy())),
+                    }
+                })
+                .collect();
+
+            CollectionWithBooks {
+                collection: col,
+                books,
+            }
+        })
+        .collect();
+
+    books_per_collection
+}
+
 pub fn upsert_author(name: String) -> String {
     let mut conn = establish_connection();
 
