@@ -186,22 +186,22 @@
 
 	@media (min-width: 640px) {
 		.item {
-			flex: 0 0 20%;
+			flex: 0 0 16%;
 		}
 	}
 	@media (min-width: 768px) {
 		.item {
-			flex: 0 0 16%;
+			flex: 0 0 12%;
 		}
 	}
 	@media (min-width: 1280px) {
 		.item {
-			flex: 0 0 14%;
+			flex: 0 0 8%;
 		}
 	}
 	@media (min-width: 1536px) {
 		.item {
-			flex: 0 0 10%;
+			flex: 0 0 5%;
 		}
 	}
 </style>
