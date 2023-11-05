@@ -14,13 +14,37 @@
 
 	let inputValue = searchText;
 	let formElement: HTMLFormElement;
+	let inputElement: HTMLInputElement;
 
 	function handleSubmit() {
 		formElement.requestSubmit();
 	}
+
+	function jumpToSearchInput(_node: HTMLFormElement) {
+		const jumpTosearch = (e: KeyboardEvent) => {
+			if (e.key === '/') {
+				if (document.activeElement?.tagName === 'INPUT') {
+					return;
+				}
+				if (document.activeElement !== inputElement) {
+					e.preventDefault();
+					inputElement.focus();
+				}
+			}
+		};
+
+		addEventListener('keydown', jumpTosearch);
+
+		return {
+			destroy() {
+				removeEventListener('keydown', jumpTosearch);
+			}
+		};
+	}
 </script>
 
 <form
+	use:jumpToSearchInput
 	bind:this={formElement}
 	method="get"
 	class="top-search-bar flex gap-2 sm:gap-4"
@@ -36,6 +60,7 @@
 			type="text"
 			placeholder="Search"
 			autocomplete="off"
+			bind:this={inputElement}
 			bind:value={inputValue}
 		/>
 		<button tabindex="-1" class="absolute left-0 p-2" type="submit"><IconSearch /></button>
