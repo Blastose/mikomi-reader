@@ -3,29 +3,22 @@
 	import { IconCheck, IconChevronDown } from '@tabler/icons-svelte';
 	import { writable } from 'svelte/store';
 
-	export let allSelectedText: string;
 	export let selectName: string;
-	export let selectOptions: string[];
-	export let selected: string[];
+	export let selectOptions: ReadonlyArray<string>;
+	export let selected: string;
+	export let defaultValue: string;
 	export const resetSelected = () => {
-		selectedMeltStore.set([]);
-		selected = [];
+		selectedMeltStore.set({ value: defaultValue, label: defaultValue });
+		selected = defaultValue;
 	};
 
-	let selectedMeltStore = writable<SelectOption<string>[]>(
-		selected.map((i) => {
-			return {
-				value: i,
-				label: i
-			};
-		})
-	);
+	let selectedMeltStore = writable<SelectOption<string>>({ value: selected, label: selected });
 
-	$: selected = $selectedMeltStore.map((v) => v.value);
+	$: selected = $selectedMeltStore.value;
 
 	const {
 		elements: { trigger, menu, option, label },
-		states: { open },
+		states: { selectedLabel, open },
 		helpers: { isSelected }
 	} = createSelect({
 		forceVisible: true,
@@ -34,7 +27,6 @@
 			fitViewport: true,
 			sameWidth: true
 		},
-		multiple: true,
 		preventScroll: false,
 		selected: selectedMeltStore
 	});
@@ -52,26 +44,7 @@
 		aria-label="Food"
 	>
 		<span class="flex gap-2">
-			{#if selected.length === 0}
-				<span class="max-w-[128px] truncate px-2 rounded-full text-sm text-black bg-neutral-200"
-					>{allSelectedText}</span
-				>
-			{:else if selected.length <= 2 && containerWidth > 128 * 2 + 50}
-				{#each selected as selectItem}
-					<span class="max-w-[128px] truncate px-2 rounded-full text-sm text-black bg-neutral-200"
-						>{selectItem}</span
-					>
-				{/each}
-			{:else}
-				<span class="max-w-[128px] truncate px-2 rounded-full text-sm text-black bg-neutral-200"
-					>{selected[0]}</span
-				>
-				{#if selected.length !== 1}
-					<span class="px-2 rounded-full text-sm text-black bg-neutral-200"
-						>+{selected.length - 1} more</span
-					>
-				{/if}
-			{/if}
+			{$selectedLabel}
 		</span>
 
 		<IconChevronDown class="square-5" />

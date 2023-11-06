@@ -13,21 +13,19 @@
 		return array;
 	}
 
-	$: recentlyReadBooks = data.books
-		.filter((b) => b.settings?.percentage)
-		.sort((a, b) => {
-			if (a.last_read && b.last_read) {
-				return b.last_read - a.last_read;
-			}
-			if (a.last_read && !b.last_read) {
-				return -1;
-			}
-			if (b.last_read && !a.last_read) {
-				return 1;
-			}
+	$: recentlyReadBooks = data.books.sort((a, b) => {
+		if (a.last_read && b.last_read) {
+			return b.last_read - a.last_read;
+		}
+		if (a.last_read && !b.last_read) {
+			return -1;
+		}
+		if (b.last_read && !a.last_read) {
+			return 1;
+		}
 
-			return 0;
-		});
+		return 0;
+	});
 
 	$: recentlyAddedBooks = data.books
 		.filter((b) => !b.last_read)

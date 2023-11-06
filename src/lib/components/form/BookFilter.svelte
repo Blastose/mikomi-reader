@@ -7,6 +7,8 @@
 	import { page } from '$app/stores';
 	import type { Collection, Language } from '$lib/bindings';
 	import MultiSelect from './MultiSelect.svelte';
+	import Select from './Select.svelte';
+	import { sortByArray, type SortBy } from './utils';
 
 	export let handleSubmit: () => void;
 	export let databaseLanguages: Language[];
@@ -14,15 +16,18 @@
 	export let readingStatusValues: string[];
 	export let collectionsValues: string[];
 	export let databaseCollections: Collection[];
+	export let sortByValue: SortBy;
 
 	let clearReadingStatuses: () => {};
 	let clearLanguages: () => {};
 	let clearCollections: () => {};
+	let clearSortBy: () => {};
 
 	function resetAllFilters() {
 		clearReadingStatuses();
 		clearLanguages();
 		clearCollections();
+		clearSortBy();
 	}
 
 	const readingStatuses = ['Reading', 'Plan to read', 'Finished'] as const;
@@ -70,6 +75,7 @@
 {#each collectionsValues as collectionsValue}
 	<input name="collection" type="hidden" value={collectionsValue} />
 {/each}
+<input name="sort" type="hidden" value={sortByValue} />
 
 <div use:melt={$portalled}>
 	{#if $open}
@@ -124,6 +130,14 @@
 							selectOptions={databaseCollections.map((c) => c.name)}
 							bind:selected={collectionsValues}
 							bind:resetSelected={clearCollections}
+						/>
+
+						<Select
+							selectName="Sort by"
+							defaultValue="Title Ascending"
+							selectOptions={sortByArray}
+							bind:selected={sortByValue}
+							bind:resetSelected={clearSortBy}
 						/>
 					</div>
 				</div>

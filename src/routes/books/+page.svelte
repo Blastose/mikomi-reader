@@ -10,6 +10,7 @@
 		<BookSearch
 			searchText={data.queryData.searchQuery}
 			readingStatuses={data.queryData.statuses}
+			sortBy={data.queryData.sortBy}
 			languages={data.queryData.languages}
 			databaseLanguages={data.databaseLanguages}
 			collections={data.queryData.collections}
