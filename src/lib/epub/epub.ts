@@ -361,11 +361,19 @@ export class Epub {
 				kind: 'Ncx'
 			},
 			{
+				id: 'ncxuks',
+				kind: 'Ncx'
+			},
+			{
 				id: 'nav',
 				kind: 'Nav'
 			},
 			{
 				id: 'toc',
+				kind: 'Nav'
+			},
+			{
+				id: 'navuks',
 				kind: 'Nav'
 			}
 		];
