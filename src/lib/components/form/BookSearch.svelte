@@ -4,8 +4,10 @@
 	import { mainStateStore } from '$lib/stores/mainStateStore';
 	import { IconSearch, IconX } from '@tabler/icons-svelte';
 	import { fade } from 'svelte/transition';
+	import type { SortBy } from './utils';
 
 	export let searchText: string | null;
+	export let sortBy: SortBy | null;
 	export let readingStatuses: string[];
 	export let languages: string[];
 	export let databaseLanguages: Language[];
@@ -81,6 +83,7 @@
 	<BookFilter
 		{handleSubmit}
 		readingStatusValues={readingStatuses}
+		sortByValue={sortBy ?? 'Title Ascending'}
 		languageValues={languages}
 		{databaseLanguages}
 		collectionsValues={collections}
