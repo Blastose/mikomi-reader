@@ -2,6 +2,8 @@
 
 Mikomi Reader is a desktop ebook reader built with SvelteKit and Tauri.
 
+![Main page](./readme-images/main.png)
+
 ## Features
 
 - Add bookmarks and highlights when reading
@@ -9,3 +11,5 @@ Mikomi Reader is a desktop ebook reader built with SvelteKit and Tauri.
 - Create collections to manage your books
 - Search your collection of books with filters
 - Light and dark theme
+
+![Reader](./readme-images/reader.png)

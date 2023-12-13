@@ -7,7 +7,7 @@
 		"distDir": "../build"
 	},
 	"package": {
-		"productName": "mikomi-reader",
+		"productName": "Mikomi Reader",
 		"version": "0.1.0"
 	},
 	"tauri": {
